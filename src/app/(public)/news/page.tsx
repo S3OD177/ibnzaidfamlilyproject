@@ -1,16 +1,70 @@
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Search, Filter, Calendar, ArrowRight, ChevronLeft } from "lucide-react";
+"use client";
 
-export const metadata = {
-    title: "أرشيف الأخبار | منصة العائلة",
-};
+import { useState } from "react";
+import Link from "next/link";
+import { Search, Filter, Calendar, ArrowRight, ChevronLeft, X } from "lucide-react";
+
+// Mock Data
+const NEWS_ITEMS = [
+    {
+        id: 1,
+        title: "تكريم الدكتور أحمد لحصوله على جائزة الملك فيصل العالمية",
+        category: "قصص نجاح",
+        date: "15 نوفمبر 2023",
+        year: "2023",
+        excerpt: "في حفل بهيج حضره كبار الشخصيات، تم تكريم ابن العائلة الدكتور أحمد نظير إسهاماته العلمية المتميزة في مجال الطب والجراحة، والتي رفعت اسم العائلة عالياً...",
+        categoryColor: "bg-primary/90"
+    },
+    {
+        id: 2,
+        title: "تحديد موعد الاجتماع السنوي التاسع للعائلة في الرياض",
+        category: "إعلانات",
+        date: "01 أكتوبر 2023",
+        year: "2023",
+        excerpt: "يسر مجلس العائلة دعوة جميع الأفراد لحضور الاجتماع السنوي الذي سيقام في قاعة الاحتفالات الكبرى، وسيتضمن اللقاء فقرات متنوعة وتكريم للمتفوقين...",
+        categoryColor: "bg-blue-600/90"
+    },
+    {
+        id: 3,
+        title: "افتتاح معرض الفنون التشكيلية لمواهب العائلة الشابة",
+        category: "فعاليات",
+        date: "20 سبتمبر 2023",
+        year: "2023",
+        excerpt: "في مبادرة لدعم المواهب، تم افتتاح المعرض الفني الذي يضم أكثر من ٥٠ عملاً فنياً من إبداع أبناء وبنات العائلة، ويستمر المعرض لمدة ثلاثة أيام...",
+        categoryColor: "bg-orange-500/90"
+    },
+    {
+        id: 4,
+        title: "نعي فاضل: المغفور له بإذن الله الشيخ عبدالله",
+        category: "وفيات",
+        date: "10 أغسطس 2023",
+        year: "2023",
+        excerpt: "بقلوب مؤمنة بقضاء الله وقدره، تنعي العائلة فقيدها الشيخ عبدالله الذي وافته المنية صباح اليوم. وسيوارى جثمانه الثرى بعد صلاة العصر...",
+        categoryColor: "bg-gray-600/90"
+    }
+];
 
 export default function NewsArchivePage() {
-    return (
-        <div className="bg-white min-h-screen flex flex-col font-body">
-            <Header />
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("كل التصنيفات");
+    const [selectedYear, setSelectedYear] = useState("كل السنوات");
 
+    // Filter Logic
+    const filteredNews = NEWS_ITEMS.filter((item) => {
+        const matchesSearch = item.title.includes(searchQuery) || item.excerpt.includes(searchQuery);
+        const matchesCategory = selectedCategory === "كل التصنيفات" || item.category === selectedCategory;
+        const matchesYear = selectedYear === "كل السنوات" || item.year === selectedYear;
+        return matchesSearch && matchesCategory && matchesYear;
+    });
+
+    const clearFilters = () => {
+        setSearchQuery("");
+        setSelectedCategory("كل التصنيفات");
+        setSelectedYear("كل السنوات");
+    };
+
+    return (
+        <>
             {/* Page Header */}
             <div className="bg-white border-b border-[#f0f4f2] py-12 mb-8">
                 <div className="max-w-[1280px] mx-auto px-4 sm:px-10 text-center">
@@ -33,27 +87,42 @@ export default function NewsArchivePage() {
                                 type="text"
                                 placeholder="بحث في الأرشيف..."
                                 className="w-full h-full bg-transparent border-none outline-none pr-12 pl-4 text-sm font-medium placeholder:text-[#61896f]"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
 
                         {/* Filters */}
                         <div className="grid grid-cols-2 md:flex gap-4">
-                            <select className="bg-[#f0f4f0] border-none text-[#111813] h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[140px] text-sm font-bold">
+                            <select
+                                className="bg-[#f0f4f0] border-none text-[#111813] h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[140px] text-sm font-bold"
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                            >
                                 <option>كل التصنيفات</option>
                                 <option>إعلانات</option>
                                 <option>قصص نجاح</option>
                                 <option>وفيات</option>
+                                <option>فعاليات</option>
                             </select>
 
-                            <select className="bg-[#f0f4f0] border-none text-[#111813] h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[120px] text-sm font-bold">
+                            <select
+                                className="bg-[#f0f4f0] border-none text-[#111813] h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[120px] text-sm font-bold"
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(e.target.value)}
+                            >
+                                <option>كل السنوات</option>
                                 <option>2024</option>
                                 <option>2023</option>
                                 <option>2022</option>
                             </select>
 
-                            <button className="bg-primary text-white px-8 h-12 rounded-lg font-bold hover:bg-green-600 transition flex items-center justify-center gap-2 shadow-lg shadow-primary/20 col-span-2 md:col-span-1">
-                                <Filter className="w-5 h-5" />
-                                <span>تصفية</span>
+                            <button
+                                onClick={clearFilters}
+                                className="bg-white border border-gray-200 text-gray-600 px-6 h-12 rounded-lg font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2 col-span-2 md:col-span-1"
+                            >
+                                <X className="w-5 h-5" />
+                                <span>مسح</span>
                             </button>
                         </div>
                     </div>
@@ -61,56 +130,40 @@ export default function NewsArchivePage() {
 
                 {/* News List */}
                 <div className="flex flex-col gap-6">
-                    <ArticleCard
-                        title="تكريم الدكتور أحمد لحصوله على جائزة الملك فيصل العالمية"
-                        category="قصص نجاح"
-                        date="15 نوفمبر 2023"
-                        excerpt="في حفل بهيج حضره كبار الشخصيات، تم تكريم ابن العائلة الدكتور أحمد نظير إسهاماته العلمية المتميزة في مجال الطب والجراحة، والتي رفعت اسم العائلة عالياً..."
-                    />
-                    <ArticleCard
-                        title="تحديد موعد الاجتماع السنوي التاسع للعائلة في الرياض"
-                        category="إعلانات"
-                        categoryColor="bg-blue-600/90"
-                        date="01 أكتوبر 2023"
-                        excerpt="يسر مجلس العائلة دعوة جميع الأفراد لحضور الاجتماع السنوي الذي سيقام في قاعة الاحتفالات الكبرى، وسيتضمن اللقاء فقرات متنوعة وتكريم للمتفوقين..."
-                    />
-                    <ArticleCard
-                        title="افتتاح معرض الفنون التشكيلية لمواهب العائلة الشابة"
-                        category="فعاليات"
-                        categoryColor="bg-orange-500/90"
-                        date="20 سبتمبر 2023"
-                        excerpt="في مبادرة لدعم المواهب، تم افتتاح المعرض الفني الذي يضم أكثر من ٥٠ عملاً فنياً من إبداع أبناء وبنات العائلة، ويستمر المعرض لمدة ثلاثة أيام..."
-                    />
-                    <ArticleCard
-                        title="نعي فاضل: المغفور له بإذن الله الشيخ عبدالله"
-                        category="وفيات"
-                        categoryColor="bg-gray-600/90"
-                        date="10 أغسطس 2023"
-                        excerpt="بقلوب مؤمنة بقضاء الله وقدره، تنعي العائلة فقيدها الشيخ عبدالله الذي وافته المنية صباح اليوم. وسيوارى جثمانه الثرى بعد صلاة العصر..."
-                    />
+                    {filteredNews.length > 0 ? (
+                        filteredNews.map((item) => (
+                            <ArticleCard
+                                key={item.id}
+                                title={item.title}
+                                category={item.category}
+                                date={item.date}
+                                excerpt={item.excerpt}
+                                categoryColor={item.categoryColor}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                            <h3 className="text-lg font-bold text-gray-900">لا توجد نتائج</h3>
+                            <p className="text-gray-500">جرب البحث بكلمات مختلفة أو تغيير التصنيف</p>
+                        </div>
+                    )}
                 </div>
 
-                {/* Pagination */}
-                <div className="mt-12 flex justify-center gap-2">
-                    <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-slate-50 transition text-slate-500">
-                        <ChevronLeft className="w-5 h-5 rotate-180" />
-                    </button>
-                    <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20">
-                        1
-                    </button>
-                    <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-slate-50 transition text-[#111813] font-medium">
-                        2
-                    </button>
-                    <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-slate-50 transition text-[#111813] font-medium">
-                        3
-                    </button>
-                    <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-slate-50 transition text-slate-500">
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                </div>
+                {/* Pagination (Static for demo) */}
+                {filteredNews.length > 0 && (
+                    <div className="mt-12 flex justify-center gap-2">
+                        <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-slate-50 transition text-slate-500">
+                            <ChevronLeft className="w-5 h-5 rotate-180" />
+                        </button>
+                        <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20">
+                            1
+                        </button>
+                    </div>
+                )}
 
             </div>
-        </div>
+        </>
     );
 }
 

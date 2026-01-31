@@ -1,7 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, Users } from "lucide-react";
 
 export function Header() {
+    const pathname = usePathname();
+
+    const isActive = (path: string) => {
+        if (path === "/") {
+            return pathname === "/";
+        }
+        return pathname?.startsWith(path);
+    };
+
+    const getLinkClass = (path: string) => {
+        return isActive(path)
+            ? "text-primary text-sm font-bold leading-normal outline-none"
+            : "text-[#111813] text-sm font-medium leading-normal hover:text-primary transition-colors outline-none";
+    };
+
     return (
         <header className="sticky top-0 z-50 bg-white border-b border-[#f0f4f2]">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-3 flex items-center justify-between whitespace-nowrap">
@@ -19,26 +37,28 @@ export function Header() {
                 {/* Desktop Navigation - Center */}
                 <div className="hidden lg:flex flex-1 justify-end gap-8 items-center">
                     <nav className="flex items-center gap-9">
-                        <Link className="text-primary text-sm font-bold leading-normal" href="/">
+                        <Link className={getLinkClass("/")} href="/">
                             الرئيسية
                         </Link>
-                        <Link className="text-[#111813] text-sm font-medium leading-normal hover:text-primary transition-colors" href="/news">
+                        <Link className={getLinkClass("/news")} href="/news">
                             الأخبار
                         </Link>
-                        <Link className="text-[#111813] text-sm font-medium leading-normal hover:text-primary transition-colors" href="/portal/tree">
-                            شجرة العائلة
-                        </Link>
-                        <Link className="text-[#111813] text-sm font-medium leading-normal hover:text-primary transition-colors" href="/about">
+
+                        <Link className={getLinkClass("/about")} href="/about">
                             عن العائلة
+                        </Link>
+                        <Link className={getLinkClass("/council")} href="/council">
+                            مجلس العائلة
                         </Link>
                     </nav>
 
                     {/* Login Button */}
                     <Link
                         href="/portal/login"
-                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary hover:bg-green-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                        className="flex items-center gap-2 bg-[#111812] text-white px-5 py-2 rounded-lg font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md"
                     >
-                        <span className="truncate">تسجيل الدخول</span>
+                        <Menu className="w-[18px] h-[18px]" />
+                        <span>الخدمات الإلكترونية</span>
                     </Link>
                 </div>
 

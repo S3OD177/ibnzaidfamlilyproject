@@ -6,17 +6,16 @@
   --font-body: var(--font-cairo);
   --font-naskh: var(--font-naskh);
   --font-sans: var(--font-cairo);
-  /* Default sans */
 
   /* Colors */
-  --color-primary: #0fbd49;
-  --color-primary-dark: #0a8a0a;
-  --color-primary-light: #dcfce7;
-  --color-accent: #102210;
+  --color-primary: #D4AF37;
+  --color-primary-dark: #B5952F;
+  --color-primary-light: #F3EACF;
+  --color-accent: #4B3F35;
   --color-surface: #ffffff;
 
-  /* Brand aliases for compatibility if needed */
-  --color-brand-600: #16a34a;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 }
 
 :root {

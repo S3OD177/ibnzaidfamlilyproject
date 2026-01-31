@@ -1,0 +1,54 @@
+@media print {
+
+    /* Hide all UI elements except the tree */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Show only the React Flow pane */
+    .react-flow,
+    .react-flow * {
+        visibility: visible;
+    }
+
+    /* Position the tree at the top left */
+    .react-flow {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        height: 100% !important;
+        background: white !important;
+        z-index: 9999;
+    }
+
+    /* Hide Controls/Minimap/Panel */
+    .react-flow__controls,
+    .react-flow__minimap,
+    .react-flow__panel,
+    .react-flow__attribution {
+        display: none !important;
+    }
+
+    /* Ensure nodes look good */
+    .react-flow__node {
+        border-color: #000 !important;
+        /* Sharp borders for print */
+        color: #000 !important;
+        /* Ensure black text */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Optional: Add family header if needed */
+    .print-header {
+        visibility: visible;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+        display: block !important;
+    }
+}

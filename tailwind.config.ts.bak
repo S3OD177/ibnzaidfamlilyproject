@@ -16,11 +16,12 @@ export default {
                 background: "var(--background)",
                 foreground: "var(--foreground)",
                 primary: {
-                    DEFAULT: "#0fbd49", // Stitch: #0fbd49 or #0fbd0f - using the greener one
-                    dark: "#0a8a0a",
-                    light: "#dcfce7",
+                    DEFAULT: "#D4AF37", // Logo Gold
+                    dark: "#B5952F",
+                    light: "#F3EACF",
+                    foreground: "#111812",
                 },
-                accent: "#102210",
+                accent: "#4B3F35", // Logo Dark Brown
                 surface: "#ffffff",
                 // Keeping "brand" for legacy/shadcn compatibility if needed, but aliasing to new primary
                 brand: {
