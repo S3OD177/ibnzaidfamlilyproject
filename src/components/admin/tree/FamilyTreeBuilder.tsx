@@ -313,7 +313,8 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
 
     return (
         <div className="h-[calc(100vh-140px)] w-full bg-gray-50 relative">
-            <div className="absolute top-4 right-4 z-10 flex gap-2">
+            {/* Wraps onto two rows on phones; labels stay on one line. */}
+            <div className="absolute top-4 right-4 left-4 lg:left-auto z-10 flex flex-wrap gap-2 whitespace-nowrap">
                 <button
                     onClick={onLayout}
                     className="bg-white p-2 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 text-[#111814] font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer"
@@ -321,7 +322,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                     <RotateCcw className="w-4 h-4" />
                     إعادة توزيع
                 </button>
-                <div className="h-6 w-px bg-gray-300 mx-2" />
+                <div className="hidden lg:block h-6 w-px bg-gray-300 mx-2" />
                 <button
                     onClick={() => setIsPrintDialogOpen(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-primary/30 transition-all shadow-sm"
@@ -385,7 +386,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                 proOptions={{ hideAttribution: true }}
             >
                 <Controls />
-                <MiniMap />
+                <MiniMap className="!hidden md:!block" />
                 <Background gap={12} size={1} />
             </ReactFlow>
 

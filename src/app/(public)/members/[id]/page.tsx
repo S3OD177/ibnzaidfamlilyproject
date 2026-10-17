@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMemberProfile } from "@/lib/data/members";
+import ShareButton from "@/components/common/ShareButton";
 import { getSession } from "@/lib/auth/current";
 import {
     User,
@@ -11,7 +12,6 @@ import {
     Award,
     Clock,
     ArrowRight,
-    Share,
     Edit,
     Users,
     Heart,
@@ -47,7 +47,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                     <div className="px-8 pb-8 -mt-16 relative flex flex-col md:flex-row items-end justify-between gap-6">
                         <div className="flex flex-col md:flex-row items-end gap-6 w-full">
                             {/* Profile Picture Placeholder */}
-                            <div className="relative">
+                            <div className="relative self-center md:self-auto">
                                 <div className="size-36 rounded-xl bg-white p-1 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center bg-gray-50">
                                     {member.photoUrl ? (
                                         // eslint-disable-next-line @next/next/no-img-element
@@ -96,10 +96,10 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                         {/* Actions */}
                         <div className="flex gap-3 pb-2 w-full md:w-auto">
-                            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-all shadow-md shadow-primary/20">
-                                <Share className="w-5 h-5" />
-                                <span>مشاركة الملف</span>
-                            </button>
+                            <ShareButton
+                                title={member.name}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-all shadow-md shadow-primary/20 cursor-pointer"
+                            />
                         </div>
                     </div>
                 </div>

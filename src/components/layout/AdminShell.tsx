@@ -139,27 +139,40 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                 {/* Header */}
                 <header className="h-16 bg-white border-b border-[#f0f4f2] flex items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-gray-500">
+                        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-gray-500" aria-label="فتح القائمة">
                             <Menu className="w-6 h-6" />
                         </button>
 
-                        <div className="hidden md:flex items-center bg-[#f6f8f7] px-3 py-1.5 rounded-lg border border-[#dbe6e0] w-full max-w-sm">
+                        <form action="/portal/admin/search" method="get" role="search" className="hidden md:flex items-center bg-[#f6f8f7] px-3 py-1.5 rounded-lg border border-[#dbe6e0] w-full max-w-sm">
                             <Search className="w-4 h-4 text-[#618975] ml-2" />
                             <input
+                                name="q"
                                 className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-[#618975] outline-none"
-                                placeholder="بحث عن عضو، خبر، أو مستند..."
-                                type="text"
+                                placeholder="بحث عن عضو، خبر، قرار، أو وثيقة..."
+                                type="search"
                             />
-                        </div>
+                        </form>
+                        <Link href="/portal/admin/search" className="md:hidden p-2 text-gray-500" aria-label="بحث">
+                            <Search className="w-5 h-5" />
+                        </Link>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="p-2 text-[#618975] hover:bg-[#f0f4f2] rounded-full relative">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-                        </button>
-                        <div className="h-8 w-px bg-[#f0f4f2]"></div>
-                        <div className="flex items-center gap-3">
+                        {/* Join requests are the only notifications for now (admins only). */}
+                        {role === "admin" && (
+                            <>
+                                <Link
+                                    href="/portal/admin/approvals"
+                                    className="p-2 text-[#618975] hover:bg-[#f0f4f2] rounded-full relative"
+                                    aria-label={pendingRequests > 0 ? `${pendingRequests} طلبات انضمام جديدة` : "طلبات الانضمام"}
+                                >
+                                    <Bell className="w-5 h-5" />
+                                    {pendingRequests > 0 && <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>}
+                                </Link>
+                                <div className="h-8 w-px bg-[#f0f4f2]"></div>
+                            </>
+                        )}
+                        <Link href="/portal/account" className="flex items-center gap-3" aria-label="حسابي">
                             <div className="text-left hidden sm:block">
                                 <p className="text-sm font-bold text-[#111814] leading-none">{displayName}</p>
                                 <p className="text-[10px] text-[#618975]">{ROLE_LABELS[role]}</p>
@@ -167,7 +180,7 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                             <div className="size-10 rounded-full border-2 border-primary overflow-hidden bg-gray-100 flex items-center justify-center text-gray-400">
                                 <Users className="w-6 h-6" />
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

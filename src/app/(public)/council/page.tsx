@@ -35,15 +35,15 @@ export default async function CouncilPage() {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                                 <div className="relative bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                                     <Link href={`/members/${chair.id}`} className="flex flex-col md:flex-row items-stretch w-full hover:bg-gray-50 transition-colors">
-                                        <div className="w-full md:w-2/5 aspect-[4/5] bg-gray-50 flex items-center justify-center border-l md:border-l-0 md:border-b border-[#e5e7eb] overflow-hidden">
+                                        <div className="w-full md:w-2/5 h-56 md:h-auto md:aspect-[4/5] bg-gray-50 flex items-center justify-center border-b md:border-b-0 border-[#e5e7eb] overflow-hidden">
                                             {chair.photoUrl ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={chair.photoUrl} alt={chair.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <User className="w-32 h-32 text-gray-300" />
+                                                <User className="w-24 h-24 md:w-32 md:h-32 text-gray-300" />
                                             )}
                                         </div>
-                                        <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
+                                        <div className="w-full md:w-3/5 p-6 md:p-12 flex flex-col justify-center">
                                             <span className="inline-block self-start bg-primary/10 text-primary-dark px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4 border border-primary/20">
                                                 {chair.role}
                                             </span>
@@ -78,16 +78,16 @@ export default async function CouncilPage() {
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {members.map((member) => (
-                                    <Link key={member.id} href={`/members/${member.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                        <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors overflow-hidden">
+                                    <Link key={member.id} href={`/members/${member.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex sm:block items-center">
+                                        <div className="size-20 m-3 sm:m-0 shrink-0 rounded-full sm:rounded-none sm:size-auto sm:w-full sm:aspect-[3/4] bg-gray-50 flex items-center justify-center sm:border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors overflow-hidden">
                                             {member.photoUrl ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <User className="w-24 h-24 text-gray-300" />
+                                                <User className="w-10 h-10 sm:w-24 sm:h-24 text-gray-300" />
                                             )}
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-3 sm:p-5 min-w-0">
                                             <span className="text-primary text-xs font-bold tracking-widest">{member.role}</span>
                                             <h4 className="text-lg font-bold mt-1 text-gray-900">{member.name}</h4>
                                             {member.location && (
