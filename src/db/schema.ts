@@ -73,7 +73,10 @@ export const members = pgTable(
         branch: text("branch"),
         generationLabel: text("generation_label"), // e.g. "الجيل الثالث"
         siblingOrder: integer("sibling_order"),
-        councilRole: text("council_role"), // e.g. "رئيس المجلس"
+        councilRole: text("council_role"), // e.g. "رئيس المجلس"; set = shown on the council page
+        councilOrder: integer("council_order"), // 1 = chair, then display order
+        councilSince: text("council_since"), // e.g. "١٤٤٠ هـ"
+        councilStatement: text("council_statement"), // quote shown for the chair
         bio: text("bio"),
         interests: text("interests").array().default(sql`'{}'::text[]`).notNull(),
         isPublic: integer("is_public").default(1).notNull(), // 1 = shown on public pages

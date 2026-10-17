@@ -160,7 +160,7 @@ export default function NewsDetailsPage({ params }: { params: Promise<{ slug: st
                             <span className="font-display text-lg font-bold text-white">منصة العائلة</span>
                         </div>
                         <div className="flex gap-6 text-sm font-medium">
-                            <a className="hover:text-white transition-colors" href="/#contact">اتصل بنا</a>
+                            <Link className="hover:text-white transition-colors" href="/#contact">اتصل بنا</Link>
                         </div>
                     </div>
                     <div className="text-center md:text-right">

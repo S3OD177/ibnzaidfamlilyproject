@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { Mail, MapPin, Download, Eye, Users, FileText, User } from "lucide-react";
+import { MapPin, Download, Eye, Users, FileText, User } from "lucide-react";
+import { getCouncilMembers } from "@/lib/data/members";
 
-export default function CouncilPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CouncilPage() {
+    // Ordered by council_order; the first (the chair) gets the large card.
+    const [chair, ...members] = await getCouncilMembers();
+
     return (
         <div className="bg-[#fcfdfa] min-h-screen flex flex-col font-body text-[#111812]" style={{
             backgroundImage: "radial-gradient(#e5e7eb 0.5px, transparent 0.5px)",
@@ -22,44 +28,40 @@ export default function CouncilPage() {
                         </p>
                     </div>
 
-                    {/* President Section */}
-                    <section className="mb-20">
-                        <div className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                            <div className="relative bg-white rounded-xl shadow-xl overflow-hidden border border-[#D4AF37]/30">
-                                {/* Link wrapper for the whole card */}
-                                <Link href="/members/1" className="flex flex-col md:flex-row items-stretch w-full hover:bg-gray-50 transition-colors">
-                                    {/* Portrait Placeholder - Generic Male */}
-                                    <div className="w-full md:w-2/5 aspect-[4/5] bg-gray-50 flex items-center justify-center border-l md:border-l-0 md:border-b border-[#e5e7eb]">
-                                        <User className="w-32 h-32 text-gray-300" />
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
-                                        <span className="inline-block self-start bg-primary/10 text-primary-dark px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-primary/20">
-                                            رئيس المجلس
-                                        </span>
-                                        <h2 className="text-3xl font-bold text-gray-900 mb-2 font-naskh leading-snug">
-                                            الشيخ عبد العزيز بن فهد
-                                        </h2>
-                                        <p className="text-[#D4AF37] font-medium mb-6">فترة الولاية: ٢٠٢٢ - الحالي</p>
-                                        <div className="relative italic text-gray-700 mb-8 leading-relaxed text-lg font-naskh border-r-4 border-[#D4AF37] pr-6">
-                                            "نعتز بجمعتنا ونسعى لرفعة العائلة وتلاحمها في ظل قيمنا الأصيلة، إن هذا المجلس هو المظلة التي تجمع شتات الأفكار لتصيغ منها مستقبلاً مشرقاً لأجيالنا القادمة."
+                    {chair && (
+                        <section className="mb-20">
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                                <div className="relative bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+                                    <Link href={`/members/${chair.id}`} className="flex flex-col md:flex-row items-stretch w-full hover:bg-gray-50 transition-colors">
+                                        <div className="w-full md:w-2/5 aspect-[4/5] bg-gray-50 flex items-center justify-center border-l md:border-l-0 md:border-b border-[#e5e7eb] overflow-hidden">
+                                            {chair.photoUrl ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={chair.photoUrl} alt={chair.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User className="w-32 h-32 text-gray-300" />
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <button className="flex items-center gap-2 bg-[#111812] text-white px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 active:scale-95">
-                                                <Mail className="w-5 h-5" />
-                                                <span>رسالة رئيس المجلس</span>
-                                            </button>
-                                            <button className="flex items-center gap-2 border border-gray-300 px-6 py-3 rounded-lg font-bold hover:bg-gray-50 transition-all text-gray-700">
+                                        <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
+                                            <span className="inline-block self-start bg-primary/10 text-primary-dark px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4 border border-primary/20">
+                                                {chair.role}
+                                            </span>
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-2 font-naskh leading-snug">{chair.name}</h2>
+                                            {chair.since && <p className="text-[#D4AF37] font-medium mb-6">فترة الولاية: {chair.since} - الحالي</p>}
+                                            {chair.statement && (
+                                                <div className="relative italic text-gray-700 mb-8 leading-relaxed text-lg font-naskh border-r-4 border-[#D4AF37] pr-6">
+                                                    &quot;{chair.statement}&quot;
+                                                </div>
+                                            )}
+                                            <span className="inline-flex self-start items-center gap-2 bg-[#111812] text-white px-6 py-3 rounded-lg font-bold">
                                                 <span>السيرة الذاتية</span>
-                                            </button>
+                                            </span>
                                         </div>
-                                    </div>
-                                </Link>
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    )}
 
                     {/* Council Members Grid */}
                     <section className="mb-20">
@@ -70,97 +72,34 @@ export default function CouncilPage() {
                             </h3>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {/* Member 1: Vice President */}
-                            <Link href="/members/2" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-primary text-xs font-bold uppercase tracking-widest">نائب رئيس المجلس</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">سعادة الأستاذ منصور</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>المنطقة الوسطى (الرياض)</span>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            {/* Member 2: Treasurer */}
-                            <Link href="/members/3" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-primary text-xs font-bold uppercase tracking-widest">أمين الصندوق</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">المهندس خالد</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>المنطقة الغربية (جدة)</span>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            {/* Member 3: Secretary */}
-                            <Link href="/members/4" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-primary text-xs font-bold uppercase tracking-widest">أمين السر العام</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الدكتور محمد</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>المنطقة الشرقية (الدمام)</span>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            {/* Member 4: Rep */}
-                            <Link href="/members/5" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع الشمال</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ فهد</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>منطقة حائل</span>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            {/* Member 5: Rep */}
-                            <Link href="/members/6" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع الجنوب</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الشيخ سلطان</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>منطقة عسير (أبها)</span>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            {/* Member 6: Rep */}
-                            <Link href="/members/7" className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-                                <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors">
-                                    <User className="w-24 h-24 text-gray-300" />
-                                </div>
-                                <div className="p-5">
-                                    <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع القصيم</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ إبراهيم</h4>
-                                    <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>منطقة القصيم (بريدة)</span>
-                                    </div>
-                                </div>
-                            </Link>
-                        </div>
+                        {members.length === 0 ? (
+                            <p className="text-gray-500 text-center py-10">لم تتم إضافة أعضاء المجلس بعد.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {members.map((member) => (
+                                    <Link key={member.id} href={`/members/${member.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+                                        <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors overflow-hidden">
+                                            {member.photoUrl ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User className="w-24 h-24 text-gray-300" />
+                                            )}
+                                        </div>
+                                        <div className="p-5">
+                                            <span className="text-primary text-xs font-bold tracking-widest">{member.role}</span>
+                                            <h4 className="text-lg font-bold mt-1 text-gray-900">{member.name}</h4>
+                                            {member.location && (
+                                                <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span>{member.location}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     {/* Council Charter Section */}
@@ -199,7 +138,7 @@ export default function CouncilPage() {
                             <span className="font-display text-lg font-bold text-white">منصة العائلة</span>
                         </div>
                         <div className="flex gap-6 text-sm font-medium">
-                            <a className="hover:text-white transition-colors" href="/#contact">اتصل بنا</a>
+                            <Link className="hover:text-white transition-colors" href="/#contact">اتصل بنا</Link>
                         </div>
                     </div>
                     <div className="text-center md:text-right">

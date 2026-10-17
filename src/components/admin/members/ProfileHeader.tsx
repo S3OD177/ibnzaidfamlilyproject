@@ -53,7 +53,7 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                                 <span className="flex items-center gap-1">
                                     <MapPin className="w-3.5 h-3.5" />
-                                    {member.location || 'الرياض، السعودية'}
+                                    {member.location || '---'}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <Calendar className="w-3.5 h-3.5" />

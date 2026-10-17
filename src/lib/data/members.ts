@@ -1,0 +1,198 @@
+import "server-only";
+import { asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { getDb, schema } from "@/db";
+import { rowToNodeData } from "@/lib/data/tree";
+import type { Member } from "@/types/member";
+
+type MemberRow = typeof schema.members.$inferSelect;
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isMemberId(id: string): boolean {
+    return UUID.test(id);
+}
+
+/** "1380 هـ" / "15/3/1985 م"; only the year when day and month are unknown. */
+export function formatMemberDate(year: number | null, month: number | null, day: number | null, calendar: string | null) {
+    if (!year) return null;
+    const suffix = calendar === "gregorian" ? "م" : "هـ";
+    return day && month ? `${day}/${month}/${year} ${suffix}` : `${year} ${suffix}`;
+}
+
+export interface RelativeRef {
+    id: string;
+    name: string;
+    gender: "male" | "female";
+}
+
+export interface MemberProfile {
+    id: string;
+    name: string;
+    gender: "male" | "female";
+    status: MemberRow["status"];
+    photoUrl: string | null;
+    branch: string | null;
+    generation: string | null;
+    birth: string | null;
+    death: string | null;
+    location: string | null;
+    occupation: string | null;
+    education: string | null;
+    bio: string[];
+    mobile: string | null;
+    email: string | null;
+    councilRole: string | null;
+    councilSince: string | null;
+    father: RelativeRef | null;
+    mother: RelativeRef | null;
+    spouses: string[];
+    children: RelativeRef[];
+}
+
+const toRef = (row: Pick<MemberRow, "id" | "fullName" | "gender">): RelativeRef => ({
+    id: row.id,
+    name: row.fullName,
+    gender: row.gender,
+});
+
+/**
+ * One member with parents, spouses and children. Returns null for unknown ids and,
+ * unless includePrivate is set, for members hidden from the public site.
+ */
+export async function getMemberProfile(id: string, { includePrivate = false } = {}): Promise<MemberProfile | null> {
+    if (!isMemberId(id)) return null;
+    const db = getDb();
+    const [row] = await db.select().from(schema.members).where(eq(schema.members.id, id));
+    if (!row || (!includePrivate && row.isPublic !== 1)) return null;
+
+    const [parentLinks, childLinks, marriageRows] = await Promise.all([
+        db.select({ id: schema.relationships.parentId }).from(schema.relationships).where(eq(schema.relationships.childId, id)),
+        db.select({ id: schema.relationships.childId }).from(schema.relationships).where(eq(schema.relationships.parentId, id)),
+        db.select().from(schema.marriages).where(eq(schema.marriages.memberId, id)),
+    ]);
+
+    const relativeIds = [
+        ...parentLinks.map((l) => l.id),
+        ...childLinks.map((l) => l.id),
+        ...marriageRows.map((m) => m.spouseId).filter((s): s is string => Boolean(s)),
+    ];
+    const relatives = relativeIds.length
+        ? await db
+              .select({
+                  id: schema.members.id,
+                  fullName: schema.members.fullName,
+                  gender: schema.members.gender,
+                  birthYear: schema.members.birthYear,
+              })
+              .from(schema.members)
+              .where(inArray(schema.members.id, relativeIds))
+        : [];
+    const byId = new Map(relatives.map((r) => [r.id, r]));
+
+    const parents = parentLinks.map((l) => byId.get(l.id)).filter((r) => r !== undefined);
+    const children = childLinks
+        .map((l) => byId.get(l.id))
+        .filter((r) => r !== undefined)
+        .sort((a, b) => (a.birthYear ?? 9999) - (b.birthYear ?? 9999));
+
+    const father = parents.find((p) => p.gender === "male");
+    const mother = parents.find((p) => p.gender === "female");
+
+    return {
+        id: row.id,
+        name: row.fullName,
+        gender: row.gender,
+        status: row.status,
+        photoUrl: row.photoUrl,
+        branch: row.branch,
+        generation: row.generationLabel,
+        birth: formatMemberDate(row.birthYear, row.birthMonth, row.birthDay, row.birthCalendar),
+        death: row.status === "deceased" ? formatMemberDate(row.deathYear, row.deathMonth, row.deathDay, row.deathCalendar) : null,
+        location: row.location,
+        occupation: row.occupation,
+        education: row.education,
+        bio: (row.bio ?? "").split("\n").map((p) => p.trim()).filter(Boolean),
+        mobile: row.mobile,
+        email: row.email,
+        councilRole: row.councilRole,
+        councilSince: row.councilSince,
+        father: father ? toRef(father) : null,
+        mother: mother ? toRef(mother) : null,
+        spouses: marriageRows
+            .map((m) => (m.spouseId ? byId.get(m.spouseId)?.fullName : m.spouseName))
+            .filter((n): n is string => Boolean(n)),
+        children: children.map(toRef),
+    };
+}
+
+export interface CouncilMember {
+    id: string;
+    name: string;
+    role: string;
+    location: string | null;
+    since: string | null;
+    statement: string | null;
+    photoUrl: string | null;
+}
+
+export async function getCouncilMembers(): Promise<CouncilMember[]> {
+    const rows = await getDb()
+        .select()
+        .from(schema.members)
+        .where(isNotNull(schema.members.councilRole))
+        .orderBy(asc(schema.members.councilOrder), asc(schema.members.fullName));
+    return rows
+        .filter((row) => row.isPublic === 1)
+        .map((row) => ({
+            id: row.id,
+            name: row.fullName,
+            role: row.councilRole!,
+            location: row.location,
+            since: row.councilSince,
+            statement: row.councilStatement,
+            photoUrl: row.photoUrl,
+        }));
+}
+
+/** Full member record for the portal (includes non-public members), with parents, siblings and children. */
+export async function getPortalMember(id: string): Promise<(Member & { createdAt: Date; updatedAt: Date }) | null> {
+    if (!isMemberId(id)) return null;
+    const db = getDb();
+    const [row] = await db.select().from(schema.members).where(eq(schema.members.id, id));
+    if (!row) return null;
+
+    const parentLinks = await db
+        .select({ id: schema.relationships.parentId })
+        .from(schema.relationships)
+        .where(eq(schema.relationships.childId, id));
+    const parentIds = parentLinks.map((l) => l.id);
+    const [childLinks, siblingLinks] = await Promise.all([
+        db.select({ id: schema.relationships.childId }).from(schema.relationships).where(eq(schema.relationships.parentId, id)),
+        parentIds.length
+            ? db.select({ id: schema.relationships.childId }).from(schema.relationships).where(inArray(schema.relationships.parentId, parentIds))
+            : Promise.resolve([] as { id: string }[]),
+    ]);
+
+    const siblingIds = [...new Set(siblingLinks.map((l) => l.id))].filter((s) => s !== id);
+    const allIds = [...new Set([...parentIds, ...childLinks.map((l) => l.id), ...siblingIds])];
+    const relatives = allIds.length
+        ? await db
+              .select({ id: schema.members.id, fullName: schema.members.fullName, gender: schema.members.gender })
+              .from(schema.members)
+              .where(inArray(schema.members.id, allIds))
+        : [];
+    const byId = new Map(relatives.map((r) => [r.id, { id: r.id, label: r.fullName, gender: r.gender }]));
+    const pick = (ids: string[]) => ids.map((i) => byId.get(i)).filter((r) => r !== undefined);
+
+    return {
+        ...rowToNodeData(row),
+        id: row.id,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        relatives: {
+            parents: pick(parentIds),
+            siblings: pick(siblingIds),
+            children: pick(childLinks.map((l) => l.id)),
+        },
+    };
+}

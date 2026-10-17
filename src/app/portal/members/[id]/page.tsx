@@ -1,55 +1,64 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
+import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight, UserX } from "lucide-react";
 import ProfileHeader from "@/components/admin/members/ProfileHeader";
 import FamilyConnections from "@/components/admin/members/FamilyConnections";
-import { Member, defaultMember } from "@/types/member";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { getPortalMember } from "@/lib/data/members";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
-// Only for dev demo - normally fetched by ID
-const mockMember: Member = {
-    ...(defaultMember as Member),
-    id: '1',
-    label: 'الجد المؤسس',
-    gender: 'male',
-    status: 'deceased',
-    photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200',
-    birthDate: { day: '1', month: '1', year: '1300', type: 'Hijri' },
-    deathDate: { day: '1', month: '1', year: '1380', type: 'Hijri' },
-    occupation: 'مؤسس العائلة',
-    location: 'الرياض',
-    bio: 'مؤسس العائلة والجد الأكبر، عرف عنه الحكمة والكرم.',
-    relatives: {
-        parents: [],
-        siblings: [],
-        children: [
-            { id: '2', label: 'عبدالله', gender: 'male' },
-            { id: '3', label: 'محمد', gender: 'male' },
-            { id: '7', label: 'علي', gender: 'male' }
-        ]
+export const dynamic = "force-dynamic";
+
+function formatDate(date: Date) {
+    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" }).format(date);
+}
+
+export default async function MemberProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const role = await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
+    const backLink = role === "admin"
+        ? { href: "/portal/admin/tree", label: "العودة لشجرة العائلة" }
+        : { href: "/", label: "العودة للرئيسية" };
+
+    // Accounts are not linked to a tree member yet (comes with real user accounts).
+    if (id === "me") {
+        return (
+            <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4" dir="rtl">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+                    <div className="size-14 mx-auto mb-4 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <UserX className="w-7 h-7" />
+                    </div>
+                    <h1 className="text-xl font-bold text-[#111814] mb-2">حسابك غير مرتبط بالشجرة بعد</h1>
+                    <p className="text-sm text-gray-500 mb-6">
+                        سيتم ربط حسابك بملفك في شجرة العائلة من قبل الإدارة. يمكنك تصفح الموقع حتى ذلك الحين.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <Link href="/" className="bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors">
+                            العودة للرئيسية
+                        </Link>
+                        <form action="/api/auth/logout" method="post">
+                            <button type="submit" className="w-full text-sm font-bold text-red-600 hover:underline cursor-pointer">
+                                تسجيل الخروج
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
     }
-};
 
-export default function MemberProfilePage() {
-    const params = useParams();
-    const [member, setMember] = useState<Member>(mockMember);
-
-    useEffect(() => {
-        // In a real app, fetch member by params.id here
-        console.log('Fetching member:', params.id);
-        // setMember(fetchedMember);
-    }, [params.id]);
+    const member = await getPortalMember(id);
+    if (!member) notFound();
 
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20" dir="rtl">
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Breadcrumb / Back */}
                 <div className="mb-6">
-                    <Link href="/portal/admin/tree" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#111814] transition-colors font-bold text-sm">
+                    <Link href={backLink.href} className="inline-flex items-center gap-2 text-gray-500 hover:text-[#111814] transition-colors font-bold text-sm">
                         <ArrowRight className="w-4 h-4" />
-                        العودة لشجرة العائلة
+                        {backLink.label}
                     </Link>
                 </div>
 
@@ -61,8 +70,8 @@ export default function MemberProfilePage() {
                         {/* Bio / History */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                             <h3 className="text-lg font-bold text-[#111814] mb-4">السيرة الذاتية</h3>
-                            <p className="text-gray-600 leading-relaxed text-sm">
-                                {member.bio || 'لا توجد سيرة ذاتية مسجلة.'}
+                            <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
+                                {member.bio || "لا توجد سيرة ذاتية مسجلة."}
                             </p>
                         </div>
                     </div>
@@ -77,15 +86,11 @@ export default function MemberProfilePage() {
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">تاريخ الإضافة</span>
-                                    <span className="font-medium text-[#111814]">1445/01/01</span>
+                                    <span className="font-medium text-[#111814]">{formatDate(member.createdAt)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">آخر تعديل</span>
-                                    <span className="font-medium text-[#111814]">1445/06/15</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">بواسطة</span>
-                                    <span className="font-medium text-[#111814]">Admin</span>
+                                    <span className="font-medium text-[#111814]">{formatDate(member.updatedAt)}</span>
                                 </div>
                             </div>
                         </div>

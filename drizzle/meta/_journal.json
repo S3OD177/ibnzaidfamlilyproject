@@ -15,6 +15,20 @@
       "when": 1792258764279,
       "tag": "0001_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792261030856,
+      "tag": "0002_council_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792261031300,
+      "tag": "0003_council_seed",
+      "breakpoints": true
     }
   ]
 }
