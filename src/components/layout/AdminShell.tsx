@@ -9,6 +9,7 @@ import {
     Users,
     FileText,
     Gavel,
+    Landmark,
     Settings,
     LogOut,
     Search,
@@ -46,6 +47,7 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
         { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: pendingRequests > 0 ? String(pendingRequests) : undefined, adminOnly: true },
         { name: "شجرة العائلة", icon: Users, href: "/portal/admin/tree" },
         { name: "إدارة الوثائق", icon: FileText, href: "/portal/admin/documents" },
+        { name: "مجلس العائلة", icon: Landmark, href: "/portal/admin/council" },
         { name: "قرارات المجلس", icon: Gavel, href: "/portal/admin/decisions" },
 
         { name: "إدارة المستخدمين", icon: Shield, href: "/portal/admin/users", adminOnly: true },

@@ -8,6 +8,7 @@ import Timeline from '@/components/timeline/Timeline';
 import { generateTimelineEvents } from '@/lib/timeline/timelineUtils';
 
 import { Member, defaultMember } from '@/types/member';
+import SpousesEditor, { type MemberOption } from './SpousesEditor';
 
 interface MemberModalProps {
     isOpen: boolean;
@@ -17,9 +18,11 @@ interface MemberModalProps {
     onDelete: () => void;
     onViewInTree?: () => void;
     initialTab?: 'info' | 'add' | 'edit';
+    memberId?: string | null;
+    memberOptions?: MemberOption[];
 }
 
-export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, onViewInTree, initialTab = 'info' }: MemberModalProps) {
+export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, onViewInTree, initialTab = 'info', memberId = null, memberOptions = [] }: MemberModalProps) {
     const [activeTab, setActiveTab] = useState<'info' | 'add' | 'edit' | 'timeline'>(initialTab as any);
     const [newMembers, setNewMembers] = useState<any[]>([{ label: '', gender: 'male', status: 'unknown' }]); // Initial new member form
 
@@ -313,9 +316,11 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                             {/* Spouses Card */}
                             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2 min-h-[100px]">
                                 <h3 className="text-xs font-bold text-[#111814]">الأزواج</h3>
-                                <div className="flex items-center justify-center h-full pt-4">
-                                    <span className="text-xs text-gray-300 font-bold">لا يوجد أزواج</span>
-                                </div>
+                                {memberId ? (
+                                    <SpousesEditor memberId={memberId} options={memberOptions} readOnly />
+                                ) : (
+                                    <p className="text-xs text-gray-300 font-bold text-center pt-4">لا يوجد أزواج</p>
+                                )}
                             </div>
                         </div>
                     )}
@@ -521,9 +526,11 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                             {/* Spouses */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
                                 <h3 className="text-xs font-bold text-gray-700 mb-1">الأزواج</h3>
-                                <button className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">
-                                    إضافة زوج / زوجة
-                                </button>
+                                {memberId ? (
+                                    <SpousesEditor memberId={memberId} options={memberOptions} />
+                                ) : (
+                                    <p className="text-xs text-gray-400">احفظ الفرد أولاً لإضافة الأزواج.</p>
+                                )}
                             </div>
 
                             {/* Additional Data */}

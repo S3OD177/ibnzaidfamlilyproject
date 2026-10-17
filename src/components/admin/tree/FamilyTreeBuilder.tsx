@@ -144,6 +144,11 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         }, 500);
     };
     const { setCenter, fitView } = useReactFlow();
+    // People the spouse picker can choose from, by name.
+    const memberOptions = useMemo(
+        () => nodes.map((n) => ({ id: n.id, label: String(n.data.label ?? '') })).sort((a, b) => a.label.localeCompare(b.label, 'ar')),
+        [nodes],
+    );
 
     const nodeTypes = useMemo(() => ({ familyMember: FamilyNode }), []);
 
@@ -392,6 +397,8 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                 onDelete={handleDeleteNode}
                 onViewInTree={handleViewInTree}
                 initialTab={modalTab}
+                memberId={selectedNode?.id ?? null}
+                memberOptions={memberOptions}
             />
 
             {/* Relationship Analysis Modal */}

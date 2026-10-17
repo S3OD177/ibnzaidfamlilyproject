@@ -1,7 +1,7 @@
 "use server";
 
 import { ActionError, safeAction, type ActionResult } from "@/lib/action-result";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireRole } from "@/lib/auth/current";
 import { nodeDataToRow, rowToNodeData, type TreeNodeData } from "@/lib/data/tree";
@@ -99,5 +99,90 @@ export async function unlinkMembers(parentId: string, childId: string): Promise<
         await getDb()
             .delete(schema.relationships)
             .where(and(eq(schema.relationships.parentId, parentId), eq(schema.relationships.childId, childId)));
+    });
+}
+
+export interface SpouseEntry {
+    marriageId: string;
+    spouseId: string | null;
+    name: string;
+    marriageYear: number | null;
+}
+
+/** Spouses of a member, whichever side of the marriage row the member is on. */
+export async function listSpouses(memberId: string): Promise<ActionResult<SpouseEntry[]>> {
+    return safeAction(async () => {
+        await requireStaff();
+        assertId(memberId);
+        const db = getDb();
+        const rows = await db
+            .select()
+            .from(schema.marriages)
+            .where(or(eq(schema.marriages.memberId, memberId), eq(schema.marriages.spouseId, memberId)));
+        const otherIds = rows
+            .map((r) => (r.memberId === memberId ? r.spouseId : r.memberId))
+            .filter((id): id is string => Boolean(id));
+        const names = otherIds.length
+            ? await db
+                  .select({ id: schema.members.id, name: schema.members.fullName })
+                  .from(schema.members)
+                  .where(inArray(schema.members.id, otherIds))
+            : [];
+        const byId = new Map(names.map((n) => [n.id, n.name]));
+        return rows.map((r) => {
+            const otherId = r.memberId === memberId ? r.spouseId : r.memberId;
+            return {
+                marriageId: r.id,
+                spouseId: otherId,
+                name: (otherId && byId.get(otherId)) || r.spouseName || "—",
+                marriageYear: r.marriageYear,
+            };
+        });
+    });
+}
+
+/** Adds a spouse: another tree member (spouseId) or a name from outside the family. */
+export async function addSpouse(
+    memberId: string,
+    input: { spouseId: string | null; spouseName: string; marriageYear: string },
+): Promise<ActionResult<void>> {
+    return safeAction(async () => {
+        await requireStaff();
+        assertId(memberId);
+        const spouseId = input.spouseId || null;
+        if (spouseId) assertId(spouseId);
+        if (spouseId === memberId) throw new ActionError("لا يمكن تزويج الفرد بنفسه");
+        const spouseName = typeof input.spouseName === "string" ? input.spouseName.trim().slice(0, 200) : "";
+        if (!spouseId && !spouseName) throw new ActionError("اختر فرداً من الشجرة أو اكتب الاسم");
+        const year = input.marriageYear ? Number(input.marriageYear) : null;
+        if (year !== null && (!Number.isInteger(year) || year < 1000 || year > 3000)) throw new ActionError("سنة الزواج غير صالحة");
+
+        const db = getDb();
+        if (spouseId) {
+            const [existing] = await db
+                .select({ id: schema.marriages.id })
+                .from(schema.marriages)
+                .where(
+                    or(
+                        and(eq(schema.marriages.memberId, memberId), eq(schema.marriages.spouseId, spouseId)),
+                        and(eq(schema.marriages.memberId, spouseId), eq(schema.marriages.spouseId, memberId)),
+                    ),
+                );
+            if (existing) throw new ActionError("الزواج مسجل مسبقاً");
+        }
+        await db.insert(schema.marriages).values({
+            memberId,
+            spouseId,
+            spouseName: spouseId ? null : spouseName,
+            marriageYear: year,
+        });
+    });
+}
+
+export async function removeSpouse(marriageId: string): Promise<ActionResult<void>> {
+    return safeAction(async () => {
+        await requireStaff();
+        assertId(marriageId);
+        await getDb().delete(schema.marriages).where(eq(schema.marriages.id, marriageId));
     });
 }

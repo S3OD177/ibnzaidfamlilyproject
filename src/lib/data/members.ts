@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { asc, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { rowToNodeData } from "@/lib/data/tree";
 import type { Member } from "@/types/member";
@@ -68,13 +68,14 @@ export async function getMemberProfile(id: string, { includePrivate = false } = 
     const [parentLinks, childLinks, marriageRows] = await Promise.all([
         db.select({ id: schema.relationships.parentId }).from(schema.relationships).where(eq(schema.relationships.childId, id)),
         db.select({ id: schema.relationships.childId }).from(schema.relationships).where(eq(schema.relationships.parentId, id)),
-        db.select().from(schema.marriages).where(eq(schema.marriages.memberId, id)),
+        db.select().from(schema.marriages).where(or(eq(schema.marriages.memberId, id), eq(schema.marriages.spouseId, id))),
     ]);
 
     const relativeIds = [
         ...parentLinks.map((l) => l.id),
         ...childLinks.map((l) => l.id),
-        ...marriageRows.map((m) => m.spouseId).filter((s): s is string => Boolean(s)),
+        // The other person in each marriage, whichever column this member is in.
+        ...marriageRows.map((m) => (m.memberId === id ? m.spouseId : m.memberId)).filter((s): s is string => Boolean(s)),
     ];
     const relatives = relativeIds.length
         ? await db
@@ -119,7 +120,10 @@ export async function getMemberProfile(id: string, { includePrivate = false } = 
         father: father ? toRef(father) : null,
         mother: mother ? toRef(mother) : null,
         spouses: marriageRows
-            .map((m) => (m.spouseId ? byId.get(m.spouseId)?.fullName : m.spouseName))
+            .map((m) => {
+                const otherId = m.memberId === id ? m.spouseId : m.memberId;
+                return otherId ? byId.get(otherId)?.fullName : m.spouseName;
+            })
             .filter((n): n is string => Boolean(n)),
         children: children.map(toRef),
     };
@@ -195,4 +199,32 @@ export async function getPortalMember(id: string): Promise<(Member & { createdAt
             children: pick(childLinks.map((l) => l.id)),
         },
     };
+}
+
+export interface CouncilAdminRow {
+    id: string;
+    name: string;
+    role: string;
+    order: number | null;
+    since: string | null;
+    statement: string | null;
+    location: string | null;
+}
+
+/** Every council member (public or not), in display order, for the admin page. */
+export async function listCouncilForAdmin(): Promise<CouncilAdminRow[]> {
+    const rows = await getDb()
+        .select()
+        .from(schema.members)
+        .where(isNotNull(schema.members.councilRole))
+        .orderBy(asc(schema.members.councilOrder), asc(schema.members.fullName));
+    return rows.map((r) => ({
+        id: r.id,
+        name: r.fullName,
+        role: r.councilRole!,
+        order: r.councilOrder,
+        since: r.councilSince,
+        statement: r.councilStatement,
+        location: r.location,
+    }));
 }
