@@ -199,9 +199,7 @@ export default function CouncilPage() {
                             <span className="font-display text-lg font-bold text-white">منصة العائلة</span>
                         </div>
                         <div className="flex gap-6 text-sm font-medium">
-                            <a className="hover:text-white transition-colors" href="#">سياسة الخصوصية</a>
-                            <a className="hover:text-white transition-colors" href="#">شروط الاستخدام</a>
-                            <a className="hover:text-white transition-colors" href="#">اتصل بنا</a>
+                            <a className="hover:text-white transition-colors" href="/#contact">اتصل بنا</a>
                         </div>
                     </div>
                     <div className="text-center md:text-right">

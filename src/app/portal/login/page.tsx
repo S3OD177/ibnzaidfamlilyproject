@@ -2,20 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Users, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+
+// Only allow same-site paths as the post-login destination.
+function safeNext(): string {
+    const next = new URLSearchParams(window.location.search).get("next");
+    return next && next.startsWith("/") && !next.startsWith("//") ? next : "/portal/admin";
+}
 
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate login
-        setTimeout(() => {
+        setError(null);
+        const form = new FormData(e.currentTarget);
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: form.get("username"), password: form.get("password") }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                setError(data?.error ?? "تعذر تسجيل الدخول، حاول مرة أخرى");
+                return;
+            }
+            router.replace(safeNext());
+            router.refresh();
+        } catch {
+            setError("تعذر الاتصال بالخادم، حاول مرة أخرى");
+        } finally {
             setIsLoading(false);
-            alert("تم تسجيل الدخول بنجاح (محاكاة)");
-        }, 1500);
+        }
     };
 
     return (
@@ -38,10 +62,16 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                {error}
+                            </div>
+                        )}
+
                         {/* Username Field */}
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-[#111813] select-none" htmlFor="username">
-                                رقم الهوية / رقم الجوال
+                                اسم المستخدم
                             </label>
                             <div className="relative">
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -49,9 +79,11 @@ export default function LoginPage() {
                                 </div>
                                 <input
                                     id="username"
+                                    name="username"
                                     type="text"
+                                    autoComplete="username"
                                     className="w-full pr-12 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#111813] font-medium"
-                                    placeholder="أدخل رقم الهوية أو الجوال"
+                                    placeholder="أدخل اسم المستخدم"
                                     required
                                 />
                             </div>
@@ -63,7 +95,7 @@ export default function LoginPage() {
                                 <label className="text-sm font-bold text-[#111813] select-none" htmlFor="password">
                                     كلمة المرور
                                 </label>
-                                <Link href="#" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
+                                <Link href="/#contact" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
                                     نسيت كلمة المرور؟
                                 </Link>
                             </div>
@@ -73,7 +105,9 @@ export default function LoginPage() {
                                 </div>
                                 <input
                                     id="password"
+                                    name="password"
                                     type={showPassword ? "text" : "password"}
+                                    autoComplete="current-password"
                                     className="w-full pr-12 pl-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#111813] font-medium"
                                     placeholder="••••••••"
                                     required
@@ -110,7 +144,7 @@ export default function LoginPage() {
                 <div className="bg-gray-50 border-t border-gray-100 p-6 text-center">
                     <p className="text-sm text-gray-500">
                         لست عضواً بعد؟{" "}
-                        <Link href="#" className="font-bold text-[#111813] hover:text-primary transition-colors">
+                        <Link href="/#contact" className="font-bold text-[#111813] hover:text-primary transition-colors">
                             تواصل مع الإدارة
                         </Link>
                     </p>
@@ -122,16 +156,6 @@ export default function LoginPage() {
                 <ArrowRight className="w-4 h-4 rtl:rotate-180" />
                 <span>العودة للرئيسية</span>
             </Link>
-
-            {/* TEMPORARY: Dev Links */}
-            <div className="mt-8 flex gap-4">
-                <Link href="/portal/admin" className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 hover:bg-red-200">
-                    [TEMP] Admin Portal
-                </Link>
-                <Link href="/portal/member" className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 hover:bg-blue-200">
-                    [TEMP] Member Portal
-                </Link>
-            </div>
 
         </div>
     );

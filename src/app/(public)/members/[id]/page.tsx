@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
     User,
     MapPin,
@@ -117,7 +118,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
     const member = MEMBERS_DB[id];
 
     if (!member) {
-        return <div>Member not found</div>
+        notFound();
     }
 
     const profileImage = member.image;

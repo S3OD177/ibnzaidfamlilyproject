@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { Twitter, Mail, ExternalLink, MessageCircle } from "lucide-react";
+import { Twitter, Mail, ExternalLink } from "lucide-react";
 
 export function SocialHub() {
     return (
-        <section className="bg-[#f0f4f2] py-20 border-t border-[#e5e7eb]">
+        <section id="contact" className="bg-[#f0f4f2] py-20 border-t border-[#e5e7eb] scroll-mt-20">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
 
@@ -36,25 +36,10 @@ export function SocialHub() {
                                 <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#D4AF37] rtl:rotate-180" />
                             </Link>
 
-                            {/* WhatsApp Button */}
-                            <Link
-                                href="#"
-                                className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-[#25D366] hover:shadow-md transition-all duration-300"
-                            >
-                                <div className="size-12 rounded-xl bg-[#25D366] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                                    <MessageCircle className="w-6 h-6" fill="currentColor" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-[#111813] text-lg">واتساب</p>
-                                    <p className="text-sm text-gray-500 font-naskh">تواصل مع إدارة المجلس</p>
-                                </div>
-                                <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#25D366] rtl:rotate-180" />
-                            </Link>
-
                             {/* Email Button */}
                             <Link
                                 href="mailto:H.ibnzaid@gmail.com"
-                                className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-primary hover:shadow-md transition-all duration-300 sm:col-span-2"
+                                className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-primary hover:shadow-md transition-all duration-300"
                             >
                                 <div className="size-12 rounded-xl bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                                     <Mail className="w-6 h-6" />

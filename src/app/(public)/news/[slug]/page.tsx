@@ -107,7 +107,7 @@ export default function NewsDetailsPage({ params }: { params: Promise<{ slug: st
                             </div>
                             <div className="flex flex-col gap-6">
                                 {/* Item 1 */}
-                                <Link className="group flex gap-4 items-start" href="#">
+                                <Link className="group flex gap-4 items-start" href="/news">
                                     <div className="size-20 shrink-0 rounded-lg bg-gray-100 overflow-hidden relative"></div>
                                     <div className="flex flex-col pt-0.5">
                                         <span className="text-xs text-primary font-medium mb-1">إنجازات علمية</span>
@@ -118,7 +118,7 @@ export default function NewsDetailsPage({ params }: { params: Promise<{ slug: st
                                     </div>
                                 </Link>
                                 {/* Item 2 */}
-                                <Link className="group flex gap-4 items-start" href="#">
+                                <Link className="group flex gap-4 items-start" href="/news">
                                     <div className="size-20 shrink-0 rounded-lg bg-gray-100 overflow-hidden relative"></div>
                                     <div className="flex flex-col pt-0.5">
                                         <span className="text-xs text-primary font-medium mb-1">أفراحنا</span>
@@ -160,9 +160,7 @@ export default function NewsDetailsPage({ params }: { params: Promise<{ slug: st
                             <span className="font-display text-lg font-bold text-white">منصة العائلة</span>
                         </div>
                         <div className="flex gap-6 text-sm font-medium">
-                            <a className="hover:text-white transition-colors" href="#">سياسة الخصوصية</a>
-                            <a className="hover:text-white transition-colors" href="#">شروط الاستخدام</a>
-                            <a className="hover:text-white transition-colors" href="#">اتصل بنا</a>
+                            <a className="hover:text-white transition-colors" href="/#contact">اتصل بنا</a>
                         </div>
                     </div>
                     <div className="text-center md:text-right">

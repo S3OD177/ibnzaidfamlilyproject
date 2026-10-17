@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import { toCanvas } from 'html-to-image';
 import jsPDF from 'jspdf';
 
 export interface ExportOptions {
@@ -6,6 +6,30 @@ export interface ExportOptions {
   quality?: number;
   scale?: number;
 }
+
+/**
+ * Render the tree element to a canvas, with React Flow controls hidden.
+ * html-to-image renders through the browser, so Tailwind 4's oklch colors work
+ * (html2canvas could not parse them).
+ */
+const captureTree = async (element: HTMLElement, scale: number): Promise<HTMLCanvasElement> => {
+  const controls = element.querySelectorAll<HTMLElement>('.react-flow__controls, .react-flow__minimap, .react-flow__panel');
+  controls.forEach((control) => {
+    control.style.display = 'none';
+  });
+
+  try {
+    return await toCanvas(element, {
+      backgroundColor: '#ffffff',
+      pixelRatio: scale,
+      cacheBust: true,
+    });
+  } finally {
+    controls.forEach((control) => {
+      control.style.display = '';
+    });
+  }
+};
 
 /**
  * Export the family tree as PNG image
@@ -17,37 +41,17 @@ export const exportAsPNG = async (
   const { filename = 'family-tree', quality = 1, scale = 2 } = options;
 
   try {
-    // Hide controls and minimap before capture
-    const controls = element.querySelectorAll('.react-flow__controls, .react-flow__minimap, .react-flow__panel');
-    controls.forEach((control) => {
-      (control as HTMLElement).style.display = 'none';
-    });
-
-    // Capture the canvas
-    const canvas = await html2canvas(element, {
-      backgroundColor: '#ffffff',
-      scale: scale,
-      logging: false,
-      useCORS: true,
-      allowTaint: true,
-    });
-
-    // Show controls again
-    controls.forEach((control) => {
-      (control as HTMLElement).style.display = '';
-    });
+    const canvas = await captureTree(element, scale);
 
     // Convert to blob and download
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = `${filename}.png`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/png', quality);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png', quality));
+    if (!blob) throw new Error('Canvas produced no image');
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${filename}.png`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting as PNG:', error);
     throw new Error('فشل في تصدير الشجرة كصورة PNG');
@@ -64,25 +68,7 @@ export const exportAsPDF = async (
   const { filename = 'family-tree', scale = 2 } = options;
 
   try {
-    // Hide controls and minimap before capture
-    const controls = element.querySelectorAll('.react-flow__controls, .react-flow__minimap, .react-flow__panel');
-    controls.forEach((control) => {
-      (control as HTMLElement).style.display = 'none';
-    });
-
-    // Capture the canvas
-    const canvas = await html2canvas(element, {
-      backgroundColor: '#ffffff',
-      scale: scale,
-      logging: false,
-      useCORS: true,
-      allowTaint: true,
-    });
-
-    // Show controls again
-    controls.forEach((control) => {
-      (control as HTMLElement).style.display = '';
-    });
+    const canvas = await captureTree(element, scale);
 
     // Get canvas dimensions
     const imgWidth = canvas.width;

@@ -28,7 +28,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link rel="stylesheet" href={fontsHref} />
+        {/* crossOrigin lets the tree export read and embed these fonts */}
+        <link rel="stylesheet" href={fontsHref} crossOrigin="anonymous" />
       </head>
       <body
         style={fontVariables}
