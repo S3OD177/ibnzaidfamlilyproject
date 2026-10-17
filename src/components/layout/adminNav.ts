@@ -1,6 +1,7 @@
 import {
     BarChart3,
     Calendar,
+    FilePen,
     FileText,
     Gavel,
     History,
@@ -21,8 +22,8 @@ export interface AdminTab {
     href: string;
     icon: LucideIcon;
     adminOnly?: boolean;
-    /** Shows the pending join requests count. */
-    badge?: "pending";
+    /** Shows a pending count: join requests or members' change requests. */
+    badge?: "joins" | "changes";
 }
 
 export interface AdminSection {
@@ -69,7 +70,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         name: "الأعضاء والحسابات",
         icon: UsersRound,
         tabs: [
-            { name: "طلبات العضوية", href: "/portal/admin/approvals", icon: UserPlus, adminOnly: true, badge: "pending" },
+            { name: "طلبات العضوية", href: "/portal/admin/approvals", icon: UserPlus, adminOnly: true, badge: "joins" },
+            { name: "طلبات التعديل", href: "/portal/admin/change-requests", icon: FilePen, badge: "changes" },
             { name: "الحسابات", href: "/portal/admin/users", icon: Shield, adminOnly: true },
         ],
     },

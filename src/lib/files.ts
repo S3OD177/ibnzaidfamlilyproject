@@ -99,6 +99,10 @@ export async function deleteOrphanFiles({ force = false } = {}): Promise<number>
               select 1 from decisions d where d.body like '%/files/' || f.id::text || '%'
           )
           and not exists (
+              select 1 from member_change_requests r
+              where r.status = 'pending' and r.changes::text like '%/files/' || f.id::text || '%'
+          )
+          and not exists (
               select 1 from settings s where s.value::text like '%/files/' || f.id::text || '%'
           )
         returning f.id

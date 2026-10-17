@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, UserX } from "lucide-react";
+import { ArrowRight, PencilLine, UserX } from "lucide-react";
 import ProfileHeader from "@/components/admin/members/ProfileHeader";
 import FamilyConnections from "@/components/admin/members/FamilyConnections";
 import { getPortalMember } from "@/lib/data/members";
@@ -59,11 +59,20 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
         <div>
             <div className="max-w-5xl mx-auto">
                 {/* Breadcrumb / Back */}
-                <div className="mb-6">
+                <div className="mb-6 flex items-center justify-between gap-3">
                     <Link href={backLink.href} className="inline-flex items-center gap-2 text-gray-500 hover:text-[#111814] transition-colors font-bold text-sm">
                         <ArrowRight className="w-4 h-4" />
                         {backLink.label}
                     </Link>
+                    {session.memberId === member.id && (
+                        <Link
+                            href="/portal/profile/edit"
+                            className="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-primary-dark"
+                        >
+                            <PencilLine className="w-4 h-4" />
+                            تحديث بياناتي
+                        </Link>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

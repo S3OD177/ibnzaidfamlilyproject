@@ -79,9 +79,14 @@ export default async function MemberHomePage() {
                         <p className="text-white/75 text-sm">أهلاً بك</p>
                         <h1 className="text-2xl font-black truncate">{member?.label ?? session.displayName}</h1>
                         {member ? (
-                            <p className="text-white/75 text-sm mt-1 truncate">
-                                {[member.role, member.branch && `فرع ${member.branch}`, member.location].filter(Boolean).join(" · ") || "عضو في شجرة العائلة"}
-                            </p>
+                            <>
+                                <p className="text-white/75 text-sm mt-1 truncate">
+                                    {[member.role, member.branch && `فرع ${member.branch}`, member.location].filter(Boolean).join(" · ") || "عضو في شجرة العائلة"}
+                                </p>
+                                <Link href="/portal/profile/edit" className="inline-block text-sm font-bold underline underline-offset-4 mt-2 hover:text-white/80">
+                                    تحديث بياناتي
+                                </Link>
+                            </>
                         ) : (
                             <p className="text-white/75 text-sm mt-1">حسابك غير مرتبط بملف في الشجرة بعد، وستربطه الإدارة قريباً.</p>
                         )}

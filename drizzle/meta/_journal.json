@@ -36,6 +36,13 @@
       "when": 1792270416407,
       "tag": "0004_files_documents_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792276357387,
+      "tag": "0005_member_change_requests",
+      "breakpoints": true
     }
   ]
 }

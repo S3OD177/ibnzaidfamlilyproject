@@ -41,7 +41,9 @@ export async function getSession(): Promise<CurrentUser | null> {
     }
     if (isDemoLoginEnabled() && (token.userId === DEMO_IDS.admin || token.userId === DEMO_IDS.member)) {
         const role: Role = token.userId === DEMO_IDS.admin ? "admin" : "member";
-        return { userId: token.userId, role, displayName: role === "admin" ? "مدير تجريبي" : "عضو تجريبي", memberId: null, isDbUser: false };
+        // DEMO_MEMBER_ID links the demo member to a tree person, so "my profile" can be tried out.
+        const demoMemberId = role === "member" && UUID.test(process.env.DEMO_MEMBER_ID ?? "") ? process.env.DEMO_MEMBER_ID! : null;
+        return { userId: token.userId, role, displayName: role === "admin" ? "مدير تجريبي" : "عضو تجريبي", memberId: demoMemberId, isDbUser: false };
     }
     return null;
 }

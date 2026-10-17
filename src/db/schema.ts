@@ -277,6 +277,31 @@ export const membershipRequests = pgTable(
     (t) => [index("membership_requests_status_idx").on(t.status, t.createdAt)],
 );
 
+// A member asking to change their own tree record; staff approve or reject it.
+// "changes" holds only the fields that differ, as { column: newValue }.
+export const memberChangeRequests = pgTable(
+    "member_change_requests",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        memberId: uuid("member_id")
+            .notNull()
+            .references(() => members.id, { onDelete: "cascade" }),
+        requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
+        requesterName: text("requester_name").notNull(),
+        changes: jsonb("changes").$type<Record<string, unknown>>().notNull(),
+        note: text("note"),
+        status: requestStatusEnum("status").notNull().default("pending"),
+        reviewNote: text("review_note"),
+        reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+        reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+        ...timestamps,
+    },
+    (t) => [
+        index("member_change_requests_status_idx").on(t.status, t.createdAt),
+        index("member_change_requests_member_idx").on(t.memberId, t.createdAt),
+    ],
+);
+
 export const settings = pgTable("settings", {
     key: text("key").primaryKey(),
     value: jsonb("value").notNull(),

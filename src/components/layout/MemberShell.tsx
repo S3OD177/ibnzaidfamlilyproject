@@ -25,7 +25,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
     const pathname = usePathname();
 
     const activeHref = (() => {
-        if (pathname === "/portal/members/me" || (memberId && pathname === `/portal/members/${memberId}`)) return "/portal/members/me";
+        if (pathname === "/portal/members/me" || pathname.startsWith("/portal/profile") || (memberId && pathname === `/portal/members/${memberId}`)) return "/portal/members/me";
         if (pathname.startsWith("/portal/members/")) return "/portal/directory";
         return NAV.find((item) => item.href !== "/portal" && pathname.startsWith(item.href))?.href ?? (pathname === "/portal" ? "/portal" : null);
     })();

@@ -11,18 +11,25 @@ const ROLE_LABELS = { admin: "مدير النظام", editor: "محرر", member
 interface AdminShellProps {
     children: React.ReactNode;
     pendingRequests?: number;
+    pendingChanges?: number;
     role: keyof typeof ROLE_LABELS;
     displayName: string;
     siteName: string;
 }
 
-export default function AdminShell({ children, pendingRequests = 0, role, displayName, siteName }: AdminShellProps) {
+export default function AdminShell({ children, pendingRequests = 0, pendingChanges = 0, role, displayName, siteName }: AdminShellProps) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const sections = sectionsFor(role);
     const active = findActive(sections, pathname);
-    const pendingBadge = pendingRequests > 0 ? String(pendingRequests) : undefined;
+    const counts = { joins: pendingRequests, changes: pendingChanges };
+    const badgeFor = (kinds: ("joins" | "changes" | undefined)[]) => {
+        const n = kinds.reduce((sum, k) => sum + (k ? counts[k] : 0), 0);
+        return n > 0 ? String(n) : undefined;
+    };
+    const totalPending = pendingRequests + pendingChanges;
+    const bellHref = pendingRequests > 0 || (role === "admin" && pendingChanges === 0) ? "/portal/admin/approvals" : "/portal/admin/change-requests";
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#f6f8f7] font-display text-[#111814]">
@@ -57,7 +64,7 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                     {sections.map((section) => {
                         const Icon = section.icon;
                         const isActive = active?.section.name === section.name;
-                        const badge = section.tabs.some((t) => t.badge === "pending") ? pendingBadge : undefined;
+                        const badge = badgeFor(section.tabs.map((t) => t.badge));
 
                         return (
                             <Link
@@ -133,20 +140,16 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {/* Join requests are the only notifications for now (admins only). */}
-                        {role === "admin" && (
-                            <>
-                                <Link
-                                    href="/portal/admin/approvals"
-                                    className="p-2 text-[#618975] hover:bg-[#f0f4f2] rounded-full relative"
-                                    aria-label={pendingRequests > 0 ? `${pendingRequests} طلبات انضمام جديدة` : "طلبات الانضمام"}
-                                >
-                                    <Bell className="w-5 h-5" />
-                                    {pendingRequests > 0 && <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>}
-                                </Link>
-                                <div className="h-8 w-px bg-[#f0f4f2]"></div>
-                            </>
-                        )}
+                        {/* Notifications: pending join requests (admins) and members' change requests. */}
+                        <Link
+                            href={bellHref}
+                            className="p-2 text-[#618975] hover:bg-[#f0f4f2] rounded-full relative"
+                            aria-label={totalPending > 0 ? `${totalPending} طلبات بانتظار المراجعة` : "الطلبات"}
+                        >
+                            <Bell className="w-5 h-5" />
+                            {totalPending > 0 && <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>}
+                        </Link>
+                        <div className="h-8 w-px bg-[#f0f4f2]"></div>
                         <Link href="/portal/account" className="flex items-center gap-3" aria-label="حسابي">
                             <div className="text-left hidden sm:block">
                                 <p className="text-sm font-bold text-[#111814] leading-none">{displayName}</p>
@@ -179,8 +182,8 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                                         >
                                             <Icon className="w-4 h-4" />
                                             {tab.name}
-                                            {tab.badge === "pending" && pendingBadge && (
-                                                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingBadge}</span>
+                                            {badgeFor([tab.badge]) && (
+                                                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{badgeFor([tab.badge])}</span>
                                             )}
                                         </Link>
                                     );
