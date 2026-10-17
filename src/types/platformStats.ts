@@ -16,22 +16,3 @@ export interface PlatformStats {
         version: string;
     };
 }
-
-export const mockPlatformStats: PlatformStats = {
-    users: {
-        total: 1250,
-        active: 890,
-        pending: 12
-    },
-    content: {
-        newsUrl: 45,
-        documents: 128,
-        events: 12
-    },
-
-    system: {
-        status: 'Operational',
-        lastBackup: '2024-01-30 02:00 AM',
-        version: 'v2.1.0'
-    }
-};

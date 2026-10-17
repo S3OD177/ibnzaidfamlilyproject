@@ -1,85 +1,99 @@
-"use client";
-
+import Link from "next/link";
 import {
     Users,
     FileText,
-    Clock,
+    UserPlus,
     PlusSquare,
     Gavel,
     UploadCloud,
-    UserPlus,
-    CheckCircle,
-    Image as ImageIcon
+    Newspaper,
+    CalendarDays,
 } from "lucide-react";
+import { getFamilyStats, getPendingRequests, getPlatformStats, getRecentActivity } from "@/lib/data/stats";
 
-export default function AdminDashboard() {
+export const dynamic = "force-dynamic";
+
+const nf = new Intl.NumberFormat("ar-SA");
+const timeAgo = (date: Date) => {
+    const rtf = new Intl.RelativeTimeFormat("ar", { numeric: "auto" });
+    const minutes = Math.round((date.getTime() - Date.now()) / 60000);
+    if (Math.abs(minutes) < 60) return rtf.format(minutes, "minute");
+    const hours = Math.round(minutes / 60);
+    if (Math.abs(hours) < 24) return rtf.format(hours, "hour");
+    return rtf.format(Math.round(hours / 24), "day");
+};
+
+const ACTIVITY_STYLE = {
+    member: { icon: Users, className: "bg-gray-100 text-gray-500" },
+    news: { icon: Newspaper, className: "bg-primary/10 text-primary" },
+    event: { icon: CalendarDays, className: "bg-blue-100 text-blue-600" },
+} as const;
+
+export default async function AdminDashboard() {
+    const [family, platform, activity, requests] = await Promise.all([
+        getFamilyStats(),
+        getPlatformStats(),
+        getRecentActivity(6),
+        getPendingRequests(3),
+    ]);
+
+    const statCards = [
+        { label: "إجمالي أفراد العائلة", value: family.totalMembers, icon: Users, className: "bg-primary/10 text-primary", href: "/portal/admin/tree" },
+        { label: "الأخبار المنشورة", value: platform.content.newsUrl, icon: FileText, className: "bg-blue-100 text-blue-600", href: "/portal/admin/news" },
+        { label: "طلبات عضوية قيد الانتظار", value: platform.users.pending, icon: UserPlus, className: "bg-amber-100 text-amber-600", href: "/portal/admin/approvals" },
+    ];
+
+    const quickActions = [
+        { label: "نشر خبر جديد", icon: PlusSquare, href: "/portal/admin/news/new", primary: true },
+        { label: "إضافة قرار مجلس", icon: Gavel, href: "/portal/admin/decisions" },
+        { label: "رفع ميثاق العائلة", icon: UploadCloud, href: "/portal/admin/documents" },
+        { label: "إدارة المستخدمين", icon: UserPlus, href: "/portal/admin/users" },
+    ];
+
     return (
         <div className="max-w-7xl mx-auto space-y-8 font-display">
             {/* Page Heading */}
             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-black text-[#111814] tracking-tight">لوحة التحكم العامة</h2>
-                    <p className="text-[#618975] mt-1">مرحباً بك مجدداً. إليك نظرة سريعة على نشاط العائلة اليوم.</p>
+                    <p className="text-[#618975] mt-1">مرحباً بك مجدداً. إليك نظرة سريعة على نشاط العائلة.</p>
                 </div>
                 <div className="text-sm text-[#618975] font-medium bg-white px-4 py-2 rounded-lg border border-[#dbe6e0]">
-                    {new Date().toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {new Date().toLocaleDateString("ar-SA", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                 </div>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-primary/10 rounded-lg text-primary">
-                            <Users className="w-6 h-6" />
+                {statCards.map((card) => (
+                    <Link key={card.label} href={card.href} className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className={`p-3 rounded-lg ${card.className}`}>
+                                <card.icon className="w-6 h-6" />
+                            </div>
                         </div>
-                        <span className="text-primary text-xs font-bold bg-primary/5 px-2 py-1 rounded">+١٢٪</span>
-                    </div>
-                    <p className="text-[#618975] text-sm font-medium">إجمالي أفراد العائلة</p>
-                    <p className="text-3xl font-bold text-[#111814] mt-1">١,٢٤٠</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
-                            <FileText className="w-6 h-6" />
-                        </div>
-                        <span className="text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded">+٢٪</span>
-                    </div>
-                    <p className="text-[#618975] text-sm font-medium">الأخبار المنشورة</p>
-                    <p className="text-3xl font-bold text-[#111814] mt-1">٨٦</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-amber-100 rounded-lg text-amber-600">
-                            <Clock className="w-6 h-6" />
-                        </div>
-                        <span className="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded">-٥٪</span>
-                    </div>
-                    <p className="text-[#618975] text-sm font-medium">وثائق قيد الانتظار</p>
-                    <p className="text-3xl font-bold text-[#111814] mt-1">٧</p>
-                </div>
+                        <p className="text-[#618975] text-sm font-medium">{card.label}</p>
+                        <p className="text-3xl font-bold text-[#111814] mt-1">{nf.format(card.value)}</p>
+                    </Link>
+                ))}
             </div>
 
             {/* Quick Actions Section */}
             <div>
                 <h3 className="text-xl font-bold text-[#111814] mb-4">إجراءات سريعة</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <button className="flex items-center gap-3 p-4 bg-primary text-white rounded-xl shadow-md hover:bg-primary/90 transition-all group active:scale-95">
-                        <PlusSquare className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        <span className="font-bold">نشر خبر جديد</span>
-                    </button>
-                    <button className="flex items-center gap-3 p-4 bg-white text-[#111814] border border-[#dbe6e0] rounded-xl hover:bg-gray-50 transition-all active:scale-95">
-                        <Gavel className="w-6 h-6 text-primary" />
-                        <span className="font-bold">إضافة قرار مجلس</span>
-                    </button>
-                    <button className="flex items-center gap-3 p-4 bg-white text-[#111814] border border-[#dbe6e0] rounded-xl hover:bg-gray-50 transition-all active:scale-95">
-                        <UploadCloud className="w-6 h-6 text-primary" />
-                        <span className="font-bold">رفع ميثاق العائلة</span>
-                    </button>
-                    <button className="flex items-center gap-3 p-4 bg-white text-[#111814] border border-[#dbe6e0] rounded-xl hover:bg-gray-50 transition-all active:scale-95">
-                        <UserPlus className="w-6 h-6 text-primary" />
-                        <span className="font-bold">دعوة عضو جديد</span>
-                    </button>
+                    {quickActions.map((action) => (
+                        <Link
+                            key={action.label}
+                            href={action.href}
+                            className={action.primary
+                                ? "flex items-center gap-3 p-4 bg-primary text-white rounded-xl shadow-md hover:bg-primary/90 transition-all group active:scale-95"
+                                : "flex items-center gap-3 p-4 bg-white text-[#111814] border border-[#dbe6e0] rounded-xl hover:bg-gray-50 transition-all active:scale-95"}
+                        >
+                            <action.icon className={`w-6 h-6 ${action.primary ? "group-hover:scale-110 transition-transform" : "text-primary"}`} />
+                            <span className="font-bold">{action.label}</span>
+                        </Link>
+                    ))}
                 </div>
             </div>
 
@@ -87,33 +101,30 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Activity (2/3 width) */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-[#111814]">النشاط الأخير</h3>
-                        <button className="text-sm text-primary font-bold hover:underline">عرض السجل الكامل</button>
-                    </div>
+                    <h3 className="text-xl font-bold text-[#111814]">النشاط الأخير</h3>
                     <div className="bg-white border border-[#dbe6e0] rounded-xl overflow-hidden shadow-sm">
-                        <div className="divide-y divide-[#f0f4f2]">
-                            {[
-                                { user: "المدير خالد", action: 'قام بتحديث بيانات فرع "آل فلان" في شجرة العائلة.', time: "منذ ١٠ دقائق", icon: Users, color: "gray" },
-                                { user: "النظام", action: 'نُشر قرار المجلس رقم ٤٢ المتعلق بصندوق التكافل العائلي.', time: "منذ ساعتين", icon: CheckCircle, color: "primary" },
-                                { user: "سارة عبدالله", action: 'تم تفعيل حساب العضوية.', time: "منذ ٤ ساعات", icon: UserPlus, color: "gray" },
-                                { user: "أحمد", action: 'أضاف ٥ صور جديدة لألبوم "اجتماع العيد ٢٠٢٣".', time: "يوم أمس", icon: ImageIcon, color: "blue" },
-                            ].map((activity, i) => (
-                                <div key={i} className="p-4 flex gap-4 items-center hover:bg-gray-50 transition-colors">
-                                    <div className={`size-10 rounded-full flex items-center justify-center ${activity.color === "primary" ? "bg-primary/10 text-primary" :
-                                            activity.color === "blue" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
-                                        }`}>
-                                        <activity.icon className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-[#111814]">
-                                            <span className="font-bold">{activity.user}</span> {activity.action.replace(activity.user, "")}
-                                        </p>
-                                        <p className="text-[10px] text-[#618975] mt-0.5">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        {activity.length === 0 ? (
+                            <p className="p-6 text-sm text-gray-400 text-center">لا يوجد نشاط بعد.</p>
+                        ) : (
+                            <div className="divide-y divide-[#f0f4f2]">
+                                {activity.map((item, i) => {
+                                    const style = ACTIVITY_STYLE[item.kind];
+                                    return (
+                                        <Link key={i} href={item.href} className="p-4 flex gap-4 items-center hover:bg-gray-50 transition-colors">
+                                            <div className={`size-10 rounded-full flex items-center justify-center ${style.className}`}>
+                                                <style.icon className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-[#111814] truncate">
+                                                    <span className="font-bold">{item.title}</span> — {item.detail}
+                                                </p>
+                                                <p className="text-[10px] text-[#618975] mt-0.5">{timeAgo(item.at)}</p>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -121,28 +132,27 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-bold text-[#111814]">طلبات انضمام</h3>
-                        <span className="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded-full">١٢ طلب</span>
+                        <span className="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded-full">{nf.format(platform.users.pending)} طلب</span>
                     </div>
                     <div className="bg-white border border-[#dbe6e0] rounded-xl p-4 space-y-4 shadow-sm">
-                        {[
-                            { name: "محمد بن خالد الفلاني", branch: "فرع الرياض • الفرع الخامس", time: "منذ يومين" },
-                            { name: "نورة بنت سالم السالم", branch: "فرع الدمام • فرع الأحفاد", time: "منذ ٣ أيام" },
-                        ].map((req, i) => (
-                            <div key={i} className="p-3 bg-[#f6f8f7] rounded-lg border border-[#f0f4f2] space-y-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-bold text-sm text-[#111814] leading-tight">{req.name}</p>
-                                        <p className="text-[10px] text-[#618975]">{req.branch}</p>
+                        {requests.length === 0 ? (
+                            <p className="text-sm text-gray-400 text-center py-4">لا توجد طلبات انضمام جديدة.</p>
+                        ) : (
+                            requests.map((req) => (
+                                <div key={req.id} className="p-3 bg-[#f6f8f7] rounded-lg border border-[#f0f4f2]">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-bold text-sm text-[#111814] leading-tight">{req.fullName}</p>
+                                            {req.branch && <p className="text-[10px] text-[#618975]">{req.branch}</p>}
+                                        </div>
+                                        <span className="text-[9px] text-[#618975] font-medium">{timeAgo(req.createdAt)}</span>
                                     </div>
-                                    <span className="text-[9px] text-[#618975] font-medium italic">{req.time}</span>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button className="flex-1 bg-primary text-white text-[10px] font-bold py-1.5 rounded-md hover:bg-primary/90 transition-colors">اعتماد</button>
-                                    <button className="flex-1 bg-white border border-gray-200 text-gray-500 text-[10px] font-bold py-1.5 rounded-md hover:bg-gray-50 transition-colors">رفض</button>
-                                </div>
-                            </div>
-                        ))}
-                        <button className="w-full text-center text-xs font-bold text-[#618975] py-2 hover:text-primary transition-colors">عرض كافة الطلبات (١٢)</button>
+                            ))
+                        )}
+                        <Link href="/portal/admin/approvals" className="block w-full text-center text-xs font-bold text-[#618975] py-2 hover:text-primary transition-colors">
+                            عرض كافة الطلبات
+                        </Link>
                     </div>
                 </div>
             </div>

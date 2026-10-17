@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({ children, pendingRequests = 0 }: { children: React.ReactNode; pendingRequests?: number }) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -33,7 +33,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         { name: "إدارة الأخبار", icon: Newspaper, href: "/portal/admin/news" },
         { name: "التقويم العائلي", icon: Calendar, href: "/portal/admin/calendar" },
         { name: "السجل التاريخي", icon: History, href: "/portal/admin/timeline" },
-        { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: "12" },
+        { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: pendingRequests > 0 ? String(pendingRequests) : undefined },
         { name: "شجرة العائلة", icon: Users, href: "/portal/admin/tree" },
         { name: "إدارة الوثائق", icon: FileText, href: "/portal/admin/documents" },
         { name: "قرارات المجلس", icon: Gavel, href: "/portal/admin/decisions" },
