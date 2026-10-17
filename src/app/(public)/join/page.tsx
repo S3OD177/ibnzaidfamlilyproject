@@ -4,7 +4,7 @@ import { UserPlus } from "lucide-react";
 import JoinForm from "@/components/join/JoinForm";
 
 export const metadata: Metadata = {
-    title: "طلب انضمام | منصة العائلة",
+    title: "طلب انضمام",
 };
 
 export default function JoinPage() {

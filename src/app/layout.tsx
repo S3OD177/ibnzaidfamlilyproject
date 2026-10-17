@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { getSiteSettings } from "@/lib/settings";
 
 // Loaded via a stylesheet link instead of next/font/google: the build server
 // receives Google font URLs that next/font cannot parse, which fails the build.
@@ -12,10 +13,13 @@ const fontVariables = {
   "--font-naskh": "'Noto Naskh Arabic'",
 } as React.CSSProperties;
 
-export const metadata: Metadata = {
-  title: "منصة العائلة - Family Portal",
-  description: "منصة أخبار العائلة والبوابة الخاصة",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteSettings();
+  return {
+    title: { default: site.siteName, template: `%s | ${site.siteName}` },
+    description: site.tagline,
+  };
+}
 
 export default function RootLayout({
   children,

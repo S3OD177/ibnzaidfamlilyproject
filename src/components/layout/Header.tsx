@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Users } from "lucide-react";
 
-export function Header() {
+export function Header({ siteName }: { siteName: string }) {
     const pathname = usePathname();
 
     const isActive = (path: string) => {
@@ -30,7 +30,7 @@ export function Header() {
                         <Users className="w-8 h-8" />
                     </div>
                     <h2 className="text-[#111813] text-xl font-bold leading-tight tracking-[-0.015em] font-display">
-                        منصة العائلة
+                        {siteName}
                     </h2>
                 </Link>
 

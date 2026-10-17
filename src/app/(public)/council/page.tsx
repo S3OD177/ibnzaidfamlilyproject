@@ -133,29 +133,6 @@ export default async function CouncilPage() {
                 </div>
             </main >
 
-            <footer className="bg-[#102210] text-white/80 py-12 mt-auto">
-                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-8 mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="size-8 rounded bg-primary/20 flex items-center justify-center text-primary">
-                                <Users className="w-5 h-5" />
-                            </div>
-                            <span className="font-display text-lg font-bold text-white">منصة العائلة</span>
-                        </div>
-                        <div className="flex gap-6 text-sm font-medium">
-                            <Link className="hover:text-white transition-colors" href="/#contact">اتصل بنا</Link>
-                        </div>
-                    </div>
-                    <div className="text-center md:text-right">
-                        <p className="text-xs leading-relaxed text-white/60 mb-2 font-naskh">
-                            جميع الحقوق محفوظة لمنصة العائلة © 2024. المحتوى المنشور في هذه المنصة خاص بأفراد العائلة ومحمي بموجب حقوق النشر.
-                        </p>
-                        <p className="text-xs text-white/40 font-naskh">
-                            تم التطوير بواسطة الفريق التقني للأسرة - الإصدار 2.0
-                        </p>
-                    </div>
-                </div>
-            </footer>
         </div >
     );
 }

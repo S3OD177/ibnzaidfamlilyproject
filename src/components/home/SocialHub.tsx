@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { Twitter, Mail, ExternalLink } from "lucide-react";
+import { Twitter, Mail, ExternalLink, MessageCircle } from "lucide-react";
 
-export function SocialHub() {
+// Contact channels come from the site settings; a channel left empty is hidden.
+export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: string; xHandle: string; whatsapp: string }) {
     return (
         <section id="contact" className="bg-[#f0f4f2] py-20 border-t border-[#e5e7eb] scroll-mt-20">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
@@ -21,8 +22,9 @@ export function SocialHub() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {/* X (Twitter) Button */}
+                            {xHandle && (
                             <Link
-                                href="https://x.com/H_ibnzaid"
+                                href={`https://x.com/${xHandle}`}
                                 target="_blank"
                                 className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-[#D4AF37] hover:shadow-md transition-all duration-300"
                             >
@@ -35,10 +37,30 @@ export function SocialHub() {
                                 </div>
                                 <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#D4AF37] rtl:rotate-180" />
                             </Link>
+                            )}
+
+                            {/* WhatsApp Button */}
+                            {whatsapp && (
+                                <Link
+                                    href={`https://wa.me/${whatsapp}`}
+                                    target="_blank"
+                                    className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-[#25D366] hover:shadow-md transition-all duration-300"
+                                >
+                                    <div className="size-12 rounded-xl bg-[#25D366] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                                        <MessageCircle className="w-6 h-6" fill="currentColor" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-[#111813] text-lg">واتساب</p>
+                                        <p className="text-sm text-gray-500 font-naskh">تواصل مع إدارة المجلس</p>
+                                    </div>
+                                    <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#25D366] rtl:rotate-180" />
+                                </Link>
+                            )}
 
                             {/* Email Button */}
+                            {contactEmail && (
                             <Link
-                                href="mailto:H.ibnzaid@gmail.com"
+                                href={`mailto:${contactEmail}`}
                                 className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-primary hover:shadow-md transition-all duration-300"
                             >
                                 <div className="size-12 rounded-xl bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -50,10 +72,12 @@ export function SocialHub() {
                                 </div>
                                 <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-primary rtl:rotate-180" />
                             </Link>
+                            )}
                         </div>
                     </div>
 
                     {/* Right: Tweet Embed (Timeline) */}
+                    {xHandle && (
                     <div className="flex-1 order-1 lg:order-2">
                         <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm relative overflow-hidden h-full min-h-[500px]">
                             <div className="absolute top-0 right-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50"></div>
@@ -65,7 +89,7 @@ export function SocialHub() {
                                     data-height="500"
                                     data-dnt="true"
                                     data-theme="light"
-                                    href="https://twitter.com/H_ibnzaid?ref_src=twsrc%5Etfw"
+                                    href={`https://twitter.com/${xHandle}?ref_src=twsrc%5Etfw`}
                                 >
                                     جاري تحميل التغريدات...
                                 </a>
@@ -73,6 +97,7 @@ export function SocialHub() {
                             </div>
                         </div>
                     </div>
+                    )}
 
                 </div>
             </div>

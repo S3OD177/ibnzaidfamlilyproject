@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { History, Target, Heart, Users, ScrollText, Award, ArrowRight } from "lucide-react";
+import { getAboutContent } from "@/lib/settings";
 
 export const metadata = {
-    title: "عن العائلة | منصة العائلة",
+    title: "عن العائلة",
 };
 
-export default function AboutPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AboutPage() {
+    // Texts are edited from the admin settings page.
+    const about = await getAboutContent();
+    const history = about.historyText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+
     return (
         <div className="bg-[#f9f7f2] min-h-screen flex flex-col font-body text-[#111812]">
 
@@ -19,10 +26,10 @@ export default function AboutPage() {
                             <span>قصتنا ورؤيتنا</span>
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black text-[#111813] mb-6 font-display leading-tight">
-                            جذور راسخة.. ومستقبل مشرق
+                            {about.heroTitle}
                         </h1>
                         <p className="text-[#61896f] text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-naskh">
-                            نحن عائلة تفخر بتاريخها العريق وموروثها الثقافي، نسعى لتعزيز أواصر القربى وبناء جيل واعٍ متمسك بقيمه، مساهم في رفعة وطنه ومجتمعه.
+                            {about.heroText}
                         </p>
                     </div>
                 </section>
@@ -38,7 +45,7 @@ export default function AboutPage() {
                                 </div>
                                 <h3 className="text-2xl font-bold text-[#111813] mb-4 font-display">رسالتنا</h3>
                                 <p className="text-gray-600 leading-relaxed font-naskh">
-                                    توثيق الروابط الأسرية، ودعم أفراد العائلة تعليمياً واجتماعياً، والمساهمة الفاعلة في التنمية المجتمعية من خلال مبادرات نوعية ومستدامة.
+                                    {about.mission}
                                 </p>
                             </div>
 
@@ -51,7 +58,7 @@ export default function AboutPage() {
                                     </div>
                                     <h3 className="text-2xl font-bold text-[#111813] mb-4 font-display">رؤيتنا</h3>
                                     <p className="text-gray-600 leading-relaxed font-naskh">
-                                        أن نكون نموذجاً رائداً في العمل العائلي المؤسسي، محققين للتكافل الاجتماعي والتميز المعرفي والقيمي لأبنائنا وبناتنا.
+                                        {about.vision}
                                     </p>
                                 </div>
                             </div>
@@ -63,18 +70,12 @@ export default function AboutPage() {
                                 </div>
                                 <h3 className="text-2xl font-bold text-[#111813] mb-4 font-display">قيمنا</h3>
                                 <div className="space-y-3 font-naskh text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                        <span>التراحم والتواصل</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                        <span>الأصالة والمعاصرة</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                        <span>التميز والإبداع</span>
-                                    </div>
+                                    {about.values.map((value) => (
+                                        <div key={value} className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                            <span>{value}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -99,14 +100,14 @@ export default function AboutPage() {
                                     <span>لمحة تاريخية</span>
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-black text-[#111813] mb-6 font-display">
-                                    أكثر من ١٠٠ عام من العطاء
+                                    {about.historyTitle}
                                 </h2>
-                                <p className="text-gray-600 text-lg leading-loose font-naskh mb-8">
-                                    تعود جذور عائلتنا إلى نجد العذية، حيث نشأ الأجداد ووضعوا اللبنات الأولى لهذا الكيان المترابط. عبر العقود، ساهم أبناء العائلة في بناء الوطن في مختلف الميادين، متمسكين بهويتهم ومبادئهم.
-                                    <br /><br />
-                                    بدأ التنظيم المؤسسي للعائلة في عام ١٤٢٠هـ بتأسيس "صندوق العائلة" الذي كان النواة الأولى لكافة الأنشطة الاجتماعية والثقافية التي نراها اليوم.
-                                </p>
-                                <Link href="/portal/tree" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
+                                <div className="text-gray-600 text-lg leading-loose font-naskh mb-8 space-y-4">
+                                    {history.map((paragraph, i) => (
+                                        <p key={i}>{paragraph}</p>
+                                    ))}
+                                </div>
+                                <Link href="/portal/members/me" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
                                     <span>استكشف شجرة العائلة</span>
                                     <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                                 </Link>
@@ -120,9 +121,9 @@ export default function AboutPage() {
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50"></div>
                     <div className="relative z-10 max-w-2xl mx-auto px-4">
                         <Users className="w-12 h-12 mx-auto text-primary mb-6" />
-                        <h2 className="text-3xl md:text-4xl font-black font-display mb-6">انضم إلينا في مسيرة البناء</h2>
+                        <h2 className="text-3xl md:text-4xl font-black font-display mb-6">{about.ctaTitle}</h2>
                         <p className="text-white/70 text-lg mb-8 font-naskh">
-                            نسعد بمشاركة جميع أفراد العائلة في لجان المجلس ومبادراته المختلفة.
+                            {about.ctaText}
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link href="/council" className="w-full sm:w-auto bg-primary hover:bg-green-600 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2">
@@ -134,12 +135,6 @@ export default function AboutPage() {
                 </section>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-[#0a160a] text-white/80 py-12">
-                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="text-sm font-naskh">© 2024 منصة العائلة. جميع الحقوق محفوظة.</p>
-                </div>
-            </footer>
         </div>
     );
 }

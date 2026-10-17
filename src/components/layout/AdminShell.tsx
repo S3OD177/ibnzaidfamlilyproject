@@ -32,9 +32,10 @@ interface AdminShellProps {
     pendingRequests?: number;
     role: keyof typeof ROLE_LABELS;
     displayName: string;
+    siteName: string;
 }
 
-export default function AdminShell({ children, pendingRequests = 0, role, displayName }: AdminShellProps) {
+export default function AdminShell({ children, pendingRequests = 0, role, displayName, siteName }: AdminShellProps) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -75,7 +76,7 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                         <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold leading-tight">منصة العائلة</h1>
+                        <h1 className="text-lg font-bold leading-tight">{siteName}</h1>
                         <p className="text-[#618975] text-xs font-normal">بوابة الإدارة المركزية</p>
                     </div>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden mr-auto text-gray-400">
@@ -110,10 +111,12 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
 
                     <div className="mt-8 mb-2 px-4 text-[10px] uppercase tracking-widest text-[#618975] font-bold">النظام</div>
 
-                    <Link href="/portal/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
-                        <Settings className="w-5 h-5" />
-                        <span className="text-sm">إعدادات المنصة</span>
-                    </Link>
+                    {role === "admin" && (
+                        <Link href="/portal/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
+                            <Settings className="w-5 h-5" />
+                            <span className="text-sm">إعدادات المنصة</span>
+                        </Link>
+                    )}
                     <Link href="/portal/account" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
                         <KeyRound className="w-5 h-5" />
                         <span className="text-sm">حسابي وكلمة المرور</span>

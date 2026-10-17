@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, homeForRole, isStaff, verifySessionToken } from "@/lib/auth/session";
 
 // Admin-only sections inside the staff portal.
-const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals"];
+const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals", "/portal/admin/settings"];
 
 // Everything under /portal except the login page needs a session; /portal/admin needs
 // an admin or editor. Pages re-check the account in the database (lib/auth/current).

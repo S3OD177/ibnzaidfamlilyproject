@@ -13,7 +13,7 @@ function safeNext(fallback: string): string {
     return next && next.startsWith("/") && !next.startsWith("//") ? next : fallback;
 }
 
-export default function LoginForm({ demoAccounts }: { demoAccounts: DemoAccounts | null }) {
+export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: DemoAccounts | null; siteName: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export default function LoginForm({ demoAccounts }: { demoAccounts: DemoAccounts
                 <div className="size-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 border border-gray-100">
                     <Users className="w-8 h-8" />
                 </div>
-                <h1 className="text-2xl font-bold text-[#111813] font-display">منصة العائلة</h1>
+                <h1 className="text-2xl font-bold text-[#111813] font-display">{siteName}</h1>
             </Link>
 
             {/* Login Card */}
