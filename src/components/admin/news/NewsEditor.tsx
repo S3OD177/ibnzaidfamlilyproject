@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Send, Calendar, Eye, Info, Image as ImageIcon, ArrowRight } from "lucide-react";
 import ImageUpload from "@/components/admin/common/ImageUpload";
 import { saveNews } from "@/app/portal/admin/news/actions";
+import { unwrap } from "@/lib/action-result";
 
 export interface NewsEditorValues {
     id?: string;
@@ -30,7 +31,7 @@ export default function NewsEditor({ initial, categories }: { initial: NewsEdito
         setMessage(null);
         startTransition(async () => {
             try {
-                const saved = await saveNews({
+                const saved = await unwrap(saveNews({
                     id: values.id,
                     title: values.title,
                     excerpt: values.excerpt,
@@ -39,7 +40,7 @@ export default function NewsEditor({ initial, categories }: { initial: NewsEdito
                     coverUrl: values.coverUrl,
                     publish,
                     publishedAt: values.publishedAt,
-                });
+                }));
                 setValues((v) => ({ ...v, id: saved.id, slug: saved.slug, status: publish ? "published" : "draft" }));
                 const scheduled = publish && values.publishedAt !== null && values.publishedAt > new Date().toISOString().slice(0, 10);
                 setMessage({ type: "ok", text: scheduled ? "تمت جدولة الخبر" : publish ? "تم نشر الخبر" : "تم حفظ المسودة" });

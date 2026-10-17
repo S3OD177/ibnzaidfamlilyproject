@@ -10,6 +10,7 @@ import {
     CalendarDays,
 } from "lucide-react";
 import { getFamilyStats, getPendingRequests, getPlatformStats, getRecentActivity } from "@/lib/data/stats";
+import { getSession } from "@/lib/auth/current";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,8 @@ const ACTIVITY_STYLE = {
 } as const;
 
 export default async function AdminDashboard() {
+    // Editors see content stats; user management and join requests are for admins.
+    const isAdmin = (await getSession())?.role === "admin";
     const [family, platform, activity, requests] = await Promise.all([
         getFamilyStats(),
         getPlatformStats(),
@@ -40,15 +43,15 @@ export default async function AdminDashboard() {
     const statCards = [
         { label: "إجمالي أفراد العائلة", value: family.totalMembers, icon: Users, className: "bg-primary/10 text-primary", href: "/portal/admin/tree" },
         { label: "الأخبار المنشورة", value: platform.content.newsUrl, icon: FileText, className: "bg-blue-100 text-blue-600", href: "/portal/admin/news" },
-        { label: "طلبات عضوية قيد الانتظار", value: platform.users.pending, icon: UserPlus, className: "bg-amber-100 text-amber-600", href: "/portal/admin/approvals" },
-    ];
+        { label: "طلبات عضوية قيد الانتظار", value: platform.users.pending, icon: UserPlus, className: "bg-amber-100 text-amber-600", href: "/portal/admin/approvals", adminOnly: true },
+    ].filter((card) => isAdmin || !card.adminOnly);
 
     const quickActions = [
         { label: "نشر خبر جديد", icon: PlusSquare, href: "/portal/admin/news/new", primary: true },
         { label: "إضافة قرار مجلس", icon: Gavel, href: "/portal/admin/decisions" },
         { label: "رفع ميثاق العائلة", icon: UploadCloud, href: "/portal/admin/documents" },
-        { label: "إدارة المستخدمين", icon: UserPlus, href: "/portal/admin/users" },
-    ];
+        { label: "إدارة المستخدمين", icon: UserPlus, href: "/portal/admin/users", adminOnly: true },
+    ].filter((action) => isAdmin || !action.adminOnly);
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 font-display">
@@ -64,7 +67,7 @@ export default async function AdminDashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={`grid grid-cols-1 gap-6 ${isAdmin ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
                 {statCards.map((card) => (
                     <Link key={card.label} href={card.href} className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm flex flex-col hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-4">
@@ -129,6 +132,7 @@ export default async function AdminDashboard() {
                 </div>
 
                 {/* Pending Approvals (1/3 width) */}
+                {isAdmin && (
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-bold text-[#111814]">طلبات انضمام</h3>
@@ -155,6 +159,7 @@ export default async function AdminDashboard() {
                         </Link>
                     </div>
                 </div>
+                )}
             </div>
         </div>
     );

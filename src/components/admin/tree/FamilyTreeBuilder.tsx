@@ -28,6 +28,7 @@ import { addMembers, deleteMember, linkMembers, updateMember } from '@/app/porta
 import PrintDialog, { PrintOptions } from './PrintDialog';
 import { Printer } from 'lucide-react';
 import Link from 'next/link';
+import { unwrap } from '@/lib/action-result';
 
 const EDGE_STYLE = { strokeWidth: 2, stroke: '#cbd5e1' };
 
@@ -149,7 +150,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
     const onConnect = useCallback(
         async (params: Connection) => {
             if (!params.source || !params.target) return;
-            const link = await persist(() => linkMembers(params.source!, params.target!));
+            const link = await persist(() => unwrap(linkMembers(params.source!, params.target!)));
             if (!link) return;
             setEdges((eds) => addEdge({ ...params, id: link.id, type: 'smoothstep', style: EDGE_STYLE }, eds));
         },
@@ -200,7 +201,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
     const handleUpdateNode = useCallback(async (data: any, newMembers?: any[]) => {
         // 1. Save the selected member's edits (the add form passes newMembers and edits nothing)
         if (selectedNode && newMembers === undefined) {
-            const saved = await persist(() => updateMember(selectedNode.id, data));
+            const saved = await persist(() => unwrap(updateMember(selectedNode.id, data)));
             if (!saved) return;
             setNodes((nds) => nds.map((node) => (node.id === selectedNode.id ? { ...node, data: { ...node.data, ...saved } } : node)));
         }
@@ -210,7 +211,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
             .filter((member) => member?.label?.trim())
             .map((member) => ({ ...member, role: member.role ?? 'الجيل القادم' }));
         if (toAdd.length > 0) {
-            const created = await persist(() => addMembers(selectedNode?.id ?? null, toAdd));
+            const created = await persist(() => unwrap(addMembers(selectedNode?.id ?? null, toAdd)));
             if (!created) return;
             const addedNodes: Node[] = created.map((c) => ({ id: c.id, type: 'familyMember', position: { x: 0, y: 0 }, data: { ...c.data } }));
             const addedEdges: Edge[] = created
@@ -229,7 +230,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
 
     const handleDeleteNode = useCallback(async () => {
         if (!selectedNode) return;
-        const done = await persist(async () => { await deleteMember(selectedNode.id); return true; });
+        const done = await persist(async () => { await unwrap(deleteMember(selectedNode.id)); return true; });
         if (!done) return;
         setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
         setEdges((eds) => eds.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id));

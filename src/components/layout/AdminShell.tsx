@@ -19,11 +19,21 @@ import {
     Shield,
     BarChart3,
     History,
+    KeyRound,
     Calendar
 } from "lucide-react";
 import { useState } from "react";
 
-export default function AdminShell({ children, pendingRequests = 0 }: { children: React.ReactNode; pendingRequests?: number }) {
+const ROLE_LABELS = { admin: "مدير النظام", editor: "محرر", member: "عضو" } as const;
+
+interface AdminShellProps {
+    children: React.ReactNode;
+    pendingRequests?: number;
+    role: keyof typeof ROLE_LABELS;
+    displayName: string;
+}
+
+export default function AdminShell({ children, pendingRequests = 0, role, displayName }: AdminShellProps) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -33,14 +43,14 @@ export default function AdminShell({ children, pendingRequests = 0 }: { children
         { name: "إدارة الأخبار", icon: Newspaper, href: "/portal/admin/news" },
         { name: "التقويم العائلي", icon: Calendar, href: "/portal/admin/calendar" },
         { name: "السجل التاريخي", icon: History, href: "/portal/admin/timeline" },
-        { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: pendingRequests > 0 ? String(pendingRequests) : undefined },
+        { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: pendingRequests > 0 ? String(pendingRequests) : undefined, adminOnly: true },
         { name: "شجرة العائلة", icon: Users, href: "/portal/admin/tree" },
         { name: "إدارة الوثائق", icon: FileText, href: "/portal/admin/documents" },
         { name: "قرارات المجلس", icon: Gavel, href: "/portal/admin/decisions" },
 
-        { name: "إدارة المستخدمين", icon: Shield, href: "/portal/admin/users" },
+        { name: "إدارة المستخدمين", icon: Shield, href: "/portal/admin/users", adminOnly: true },
         { name: "الإحصائيات", icon: BarChart3, href: "/portal/admin/analytics" },
-    ];
+    ].filter((item) => !("adminOnly" in item && item.adminOnly) || role === "admin");
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#f6f8f7] font-display text-[#111814]">
@@ -102,6 +112,10 @@ export default function AdminShell({ children, pendingRequests = 0 }: { children
                         <Settings className="w-5 h-5" />
                         <span className="text-sm">إعدادات المنصة</span>
                     </Link>
+                    <Link href="/portal/account" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
+                        <KeyRound className="w-5 h-5" />
+                        <span className="text-sm">حسابي وكلمة المرور</span>
+                    </Link>
                 </nav>
 
                 <div className="p-4 border-t border-[#f0f4f2]">
@@ -142,8 +156,8 @@ export default function AdminShell({ children, pendingRequests = 0 }: { children
                         <div className="h-8 w-px bg-[#f0f4f2]"></div>
                         <div className="flex items-center gap-3">
                             <div className="text-left hidden sm:block">
-                                <p className="text-sm font-bold text-[#111814] leading-none">أحمد الفلاني</p>
-                                <p className="text-[10px] text-[#618975]">مشرف النظام</p>
+                                <p className="text-sm font-bold text-[#111814] leading-none">{displayName}</p>
+                                <p className="text-[10px] text-[#618975]">{ROLE_LABELS[role]}</p>
                             </div>
                             <div className="size-10 rounded-full border-2 border-primary overflow-hidden bg-gray-100 flex items-center justify-center text-gray-400">
                                 <Users className="w-6 h-6" />

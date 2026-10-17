@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { getMemberProfile } from "@/lib/data/members";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/current";
 import {
     User,
     MapPin,
@@ -27,8 +26,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
     if (!member) notFound();
 
     // Contact details are for signed-in family members only.
-    const cookieStore = await cookies();
-    const signedIn = Boolean(await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value));
+    const signedIn = Boolean(await getSession());
 
     const bgGradient = "from-primary/20 via-primary/5";
     const borderColor = "border-[#e8efe9]";

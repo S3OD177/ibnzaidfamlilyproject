@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE, homeForRole, verifySessionToken } from "@/lib/auth/session";
+import { SESSION_COOKIE, homeForRole, isStaff, verifySessionToken } from "@/lib/auth/session";
 
-// Everything under /portal except the login page needs a session;
-// /portal/admin additionally needs the admin role.
+// Admin-only sections inside the staff portal.
+const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals"];
+
+// Everything under /portal except the login page needs a session; /portal/admin needs
+// an admin or editor. Pages re-check the account in the database (lib/auth/current).
 export async function proxy(request: NextRequest) {
     const { pathname, search } = request.nextUrl;
     if (pathname === "/portal/login") return NextResponse.next();
 
-    const role = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+    const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
 
-    if (!role) {
+    if (!session) {
         const loginUrl = request.nextUrl.clone();
         loginUrl.pathname = "/portal/login";
         loginUrl.search = "";
@@ -18,9 +21,10 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    if (pathname.startsWith("/portal/admin") && role !== "admin") {
+    const needsAdmin = ADMIN_ONLY.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    if ((pathname.startsWith("/portal/admin") && !isStaff(session.role)) || (needsAdmin && session.role !== "admin")) {
         const homeUrl = request.nextUrl.clone();
-        homeUrl.pathname = homeForRole(role);
+        homeUrl.pathname = homeForRole(session.role);
         homeUrl.search = "";
         return NextResponse.redirect(homeUrl);
     }

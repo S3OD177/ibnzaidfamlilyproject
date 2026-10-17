@@ -8,6 +8,7 @@ import AddEventModal from '@/components/calendar/AddEventModal';
 import { CalendarEvent } from '@/types/calendar';
 import type { StoredEvent } from '@/lib/data/events';
 import { addEvent, deleteEvent } from '@/app/portal/admin/calendar/actions';
+import { unwrap } from '@/lib/action-result';
 
 // "YYYY-MM-DD" <-> local Date, so an event never shifts a day across time zones.
 const toLocalDate = (iso: string) => {
@@ -41,12 +42,12 @@ export default function CalendarView({ initialEvents }: { initialEvents: StoredE
         setError(null);
         startTransition(async () => {
             try {
-                const saved = await addEvent({
+                const saved = await unwrap(addEvent({
                     title: newEvent.title ?? '',
                     description: newEvent.description ?? '',
                     date: toIso(newEvent.date ?? selectedDate),
                     category: newEvent.category ?? 'general',
-                });
+                }));
                 setStored((prev) => [...prev, saved]);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'تعذر حفظ الحدث');
@@ -59,7 +60,7 @@ export default function CalendarView({ initialEvents }: { initialEvents: StoredE
         setError(null);
         startTransition(async () => {
             try {
-                await deleteEvent(event.id);
+                await unwrap(deleteEvent(event.id));
                 setStored((prev) => prev.filter((e) => e.id !== event.id));
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'تعذر الحذف');

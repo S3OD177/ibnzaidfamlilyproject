@@ -1,14 +1,22 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminShell from "@/components/layout/AdminShell";
-import { SESSION_COOKIE, homeForRole, verifySessionToken } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/current";
+import { homeForRole, isStaff } from "@/lib/auth/session";
 import { countPendingRequests } from "@/lib/data/stats";
 
-// Server-side guard in addition to proxy.ts, so admin pages never render without an admin session.
+// Server-side guard in addition to proxy.ts: admin pages render only for an active
+// admin or editor account (checked against the database on every request).
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-    const cookieStore = await cookies();
-    const role = await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
-    if (!role) redirect("/portal/login");
-    if (role !== "admin") redirect(homeForRole(role));
-    return <AdminShell pendingRequests={await countPendingRequests()}>{children}</AdminShell>;
+    const session = await getSession();
+    if (!session) redirect("/portal/login");
+    if (!isStaff(session.role)) redirect(homeForRole(session.role));
+    return (
+        <AdminShell
+            role={session.role}
+            displayName={session.displayName}
+            pendingRequests={session.role === "admin" ? await countPendingRequests() : 0}
+        >
+            {children}
+        </AdminShell>
+    );
 }

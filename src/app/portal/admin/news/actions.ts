@@ -1,14 +1,14 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { ActionError, safeAction, type ActionResult } from "@/lib/action-result";
 import { revalidatePath } from "next/cache";
 import { and, eq, ne } from "drizzle-orm";
 import { getDb, schema } from "@/db";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { requireRole } from "@/lib/auth/current";
 
-async function requireAdmin() {
-    const cookieStore = await cookies();
-    if ((await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value)) !== "admin") throw new Error("غير مصرح");
+// Admins and editors manage content; server actions re-check the account every call.
+async function requireStaff() {
+    await requireRole("admin", "editor");
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,56 +53,60 @@ async function uniqueSlug(base: string, excludeId?: string) {
     return `${base}-${Date.now()}`;
 }
 
-export async function saveNews(input: NewsInput): Promise<{ id: string; slug: string }> {
-    await requireAdmin();
-    const title = text(input.title, 200);
-    if (!title) throw new Error("العنوان مطلوب");
-    const category = text(input.category, 50);
-    if (!category) throw new Error("اختر التصنيف");
-    if (input.id && !UUID.test(input.id)) throw new Error("معرّف غير صالح");
+export async function saveNews(input: NewsInput): Promise<ActionResult<{ id: string; slug: string }>> {
+    return safeAction(async () => {
+        await requireStaff();
+        const title = text(input.title, 200);
+        if (!title) throw new ActionError("العنوان مطلوب");
+        const category = text(input.category, 50);
+        if (!category) throw new ActionError("اختر التصنيف");
+        if (input.id && !UUID.test(input.id)) throw new ActionError("معرّف غير صالح");
 
-    const cover = typeof input.coverUrl === "string" && input.coverUrl.length <= MAX_COVER ? input.coverUrl : null;
-    let publishedAt: Date | null = null;
-    if (input.publish) {
-        publishedAt = input.publishedAt && /^\d{4}-\d{2}-\d{2}$/.test(input.publishedAt) ? new Date(`${input.publishedAt}T06:00:00Z`) : new Date();
-    }
+        const cover = typeof input.coverUrl === "string" && input.coverUrl.length <= MAX_COVER ? input.coverUrl : null;
+        let publishedAt: Date | null = null;
+        if (input.publish) {
+            publishedAt = input.publishedAt && /^\d{4}-\d{2}-\d{2}$/.test(input.publishedAt) ? new Date(`${input.publishedAt}T06:00:00Z`) : new Date();
+        }
 
-    const values = {
-        title,
-        excerpt: text(input.excerpt, 600) || null,
-        content: text(input.content, 50_000) || null,
-        category,
-        coverUrl: cover,
-        status: input.publish ? ("published" as const) : ("draft" as const),
-        publishedAt,
-    };
+        const values = {
+            title,
+            excerpt: text(input.excerpt, 600) || null,
+            content: text(input.content, 50_000) || null,
+            category,
+            coverUrl: cover,
+            status: input.publish ? ("published" as const) : ("draft" as const),
+            publishedAt,
+        };
 
-    const db = getDb();
-    let row: { id: string; slug: string } | undefined;
-    if (input.id) {
-        // Keep the slug once set so shared links keep working.
-        [row] = await db
-            .update(schema.news)
-            .set(values)
-            .where(eq(schema.news.id, input.id))
-            .returning({ id: schema.news.id, slug: schema.news.slug });
-        if (!row) throw new Error("الخبر غير موجود");
-    } else {
-        const slug = await uniqueSlug(slugify(title));
-        [row] = await db.insert(schema.news).values({ ...values, slug }).returning({ id: schema.news.id, slug: schema.news.slug });
-    }
+        const db = getDb();
+        let row: { id: string; slug: string } | undefined;
+        if (input.id) {
+            // Keep the slug once set so shared links keep working.
+            [row] = await db
+                .update(schema.news)
+                .set(values)
+                .where(eq(schema.news.id, input.id))
+                .returning({ id: schema.news.id, slug: schema.news.slug });
+            if (!row) throw new ActionError("الخبر غير موجود");
+        } else {
+            const slug = await uniqueSlug(slugify(title));
+            [row] = await db.insert(schema.news).values({ ...values, slug }).returning({ id: schema.news.id, slug: schema.news.slug });
+        }
 
-    revalidatePath("/");
-    revalidatePath("/news");
-    revalidatePath("/portal/admin/news");
-    return row;
+        revalidatePath("/");
+        revalidatePath("/news");
+        revalidatePath("/portal/admin/news");
+        return row;
+    });
 }
 
-export async function deleteNews(id: string): Promise<void> {
-    await requireAdmin();
-    if (!UUID.test(id)) throw new Error("معرّف غير صالح");
-    await getDb().delete(schema.news).where(eq(schema.news.id, id));
-    revalidatePath("/");
-    revalidatePath("/news");
-    revalidatePath("/portal/admin/news");
+export async function deleteNews(id: string): Promise<ActionResult<void>> {
+    return safeAction(async () => {
+        await requireStaff();
+        if (!UUID.test(id)) throw new ActionError("معرّف غير صالح");
+        await getDb().delete(schema.news).where(eq(schema.news.id, id));
+        revalidatePath("/");
+        revalidatePath("/news");
+        revalidatePath("/portal/admin/news");
+    });
 }

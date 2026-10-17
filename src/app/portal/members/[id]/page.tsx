@@ -1,11 +1,11 @@
-import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, UserX } from "lucide-react";
 import ProfileHeader from "@/components/admin/members/ProfileHeader";
 import FamilyConnections from "@/components/admin/members/FamilyConnections";
 import { getPortalMember } from "@/lib/data/members";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/current";
+import { isStaff } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,14 @@ function formatDate(date: Date) {
 
 export default async function MemberProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const cookieStore = await cookies();
-    const role = await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
-    const backLink = role === "admin"
+    const session = await getSession();
+    if (!session) redirect(`/portal/login?next=/portal/members/${id}`);
+    const backLink = isStaff(session.role)
         ? { href: "/portal/admin/tree", label: "العودة لشجرة العائلة" }
         : { href: "/", label: "العودة للرئيسية" };
 
-    // Accounts are not linked to a tree member yet (comes with real user accounts).
+    // "me" opens the tree member linked to this account, when an admin has linked one.
+    if (id === "me" && session.memberId) redirect(`/portal/members/${session.memberId}`);
     if (id === "me") {
         return (
             <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4" dir="rtl">
@@ -36,6 +37,9 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                     <div className="flex flex-col gap-3">
                         <Link href="/" className="bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors">
                             العودة للرئيسية
+                        </Link>
+                        <Link href="/portal/account" className="text-sm font-bold text-primary hover:underline">
+                            حسابي وتغيير كلمة المرور
                         </Link>
                         <form action="/api/auth/logout" method="post">
                             <button type="submit" className="w-full text-sm font-bold text-red-600 hover:underline cursor-pointer">

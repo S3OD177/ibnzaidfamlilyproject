@@ -178,8 +178,8 @@ export default function LoginForm({ demoAccounts }: { demoAccounts: DemoAccounts
                 <div className="bg-gray-50 border-t border-gray-100 p-6 text-center">
                     <p className="text-sm text-gray-500">
                         لست عضواً بعد؟{" "}
-                        <Link href="/#contact" className="font-bold text-[#111813] hover:text-primary transition-colors">
-                            تواصل مع الإدارة
+                        <Link href="/join" className="font-bold text-[#111813] hover:text-primary transition-colors">
+                            اطلب الانضمام
                         </Link>
                     </p>
                 </div>

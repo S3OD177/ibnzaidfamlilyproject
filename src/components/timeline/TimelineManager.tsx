@@ -7,6 +7,7 @@ import { TIMELINE_TYPES } from "@/lib/calendar/categories";
 import type { StoredTimelineEvent } from "@/lib/data/events";
 import { addTimelineEvent, deleteTimelineEvent } from "@/app/portal/admin/calendar/actions";
 import type { TimelineEvent } from "@/types/timeline";
+import { unwrap } from "@/lib/action-result";
 
 const byYearDesc = (a: StoredTimelineEvent, b: StoredTimelineEvent) => b.year - a.year;
 
@@ -21,7 +22,7 @@ export default function TimelineManager({ initialEvents }: { initialEvents: Stor
         setError(null);
         startTransition(async () => {
             try {
-                const saved = await addTimelineEvent({ ...form, year: Number(form.year) });
+                const saved = await unwrap(addTimelineEvent({ ...form, year: Number(form.year) }));
                 setEvents((prev) => [...prev, saved].sort(byYearDesc));
                 setForm({ year: "", title: "", description: "", type: form.type });
             } catch (err) {
@@ -35,7 +36,7 @@ export default function TimelineManager({ initialEvents }: { initialEvents: Stor
         setError(null);
         startTransition(async () => {
             try {
-                await deleteTimelineEvent(event.id);
+                await unwrap(deleteTimelineEvent(event.id));
                 setEvents((prev) => prev.filter((ev) => ev.id !== event.id));
             } catch (err) {
                 setError(err instanceof Error ? err.message : "تعذر الحذف");

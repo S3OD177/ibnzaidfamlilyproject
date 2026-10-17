@@ -1,4 +1,5 @@
 import "server-only";
+import { ActionError } from "@/lib/action-result";
 import { asc } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { MemberDate } from "@/types/member";
@@ -114,7 +115,7 @@ function dateParts(value: unknown) {
 export function nodeDataToRow(input: unknown): Omit<MemberInsert, "id"> {
     const data = (input ?? {}) as Record<string, unknown>;
     const fullName = str(data.label, 200);
-    if (!fullName) throw new Error("الاسم مطلوب");
+    if (!fullName) throw new ActionError("الاسم مطلوب");
 
     const status = pick(data.status, ["alive", "deceased", "unknown"] as const) ?? "unknown";
     const birth = dateParts(data.birthDate);
