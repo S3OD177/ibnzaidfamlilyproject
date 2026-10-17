@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, CalendarCheck, Users } from "lucide-react";
+import { ArrowRight, Calendar, CalendarCheck, Landmark, UserPlus, Users } from "lucide-react";
 import { SocialHub } from "@/components/home/SocialHub";
 import { categoryColor, formatNewsDate, latestNews, type NewsRow } from "@/lib/data/news";
 import { getSiteSettings } from "@/lib/settings";
@@ -120,10 +120,11 @@ export default async function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 { title: "تحديث البيانات", icon: Users, href: "/portal/login", desc: "تحديث بياناتك وبيانات أسرتك في الشجرة" },
-                { title: "المناسبات", icon: CalendarCheck, href: "/events", desc: "جدول مناسبات واجتماعات العائلة القادمة" },
-                { title: "مكتبة الصور", icon: ArrowRight, href: "/gallery", desc: "أرشيف صور ووثائق العائلة التاريخية" },
-              ].map((service, idx) => (
-                <Link key={idx} href={service.href} className="group bg-white hover:bg-white p-8 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-100/50 flex flex-col items-start">
+                { title: "الفعاليات والمناسبات", icon: CalendarCheck, href: `/news?category=${encodeURIComponent("فعاليات")}`, desc: "أخبار فعاليات ومناسبات العائلة" },
+                { title: "مجلس العائلة", icon: Landmark, href: "/council", desc: "أعضاء المجلس وميثاق العائلة" },
+                { title: "طلب انضمام", icon: UserPlus, href: "/join", desc: "انضم إلى بوابة أفراد العائلة" },
+              ].map((service) => (
+                <Link key={service.title} href={service.href} className="group bg-white hover:bg-white p-8 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-100/50 flex flex-col items-start">
                   <div className="p-4 bg-primary/5 rounded-xl shadow-sm mb-6 group-hover:scale-110 transition-transform duration-300 text-primary">
                     <service.icon className="w-6 h-6" />
                   </div>

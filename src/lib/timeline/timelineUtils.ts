@@ -31,7 +31,7 @@ export const generateTimelineEvents = (members: Member[]): TimelineEvent[] => {
 
         // Child Birth Events (Parenting)
         if (member.relatives?.children) {
-            member.relatives.children.forEach((child: any) => {
+            member.relatives.children.forEach((child) => {
                 if (child.birthDate?.year) {
                     events.push({
                         id: `child-birth-${member.id}-${child.id}`,

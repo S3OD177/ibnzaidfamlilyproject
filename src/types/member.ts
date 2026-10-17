@@ -5,12 +5,27 @@ export interface MemberDate {
     type: 'Hijri' | 'Gregorian';
 }
 
+/** A relative shown on a member card, computed from the tree edges. */
+export interface RelativeRef {
+    id: string;
+    label: string;
+    gender: 'male' | 'female';
+    birthDate?: MemberDate;
+}
+
+export interface Relatives {
+    children: RelativeRef[];
+    siblings: RelativeRef[];
+    parents: RelativeRef[];
+}
+
 export interface Member {
     id?: string;
     label: string; // Full Name
     gender: 'male' | 'female';
     status: 'alive' | 'deceased' | 'unknown';
     photo?: string; // Base64
+    role?: string; // generation label in the tree
     wifeName?: string;
     isDeceased?: boolean; // Computed or explicit
 
@@ -56,11 +71,7 @@ export interface Member {
     interests?: string[];
 
     // Relatives (Tree Context - Dynamic)
-    relatives?: {
-        children: any[];
-        siblings: any[];
-        parents: any[];
-    };
+    relatives?: Relatives;
 }
 
 // Helper to get default empty member

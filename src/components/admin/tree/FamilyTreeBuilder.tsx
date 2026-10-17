@@ -23,11 +23,16 @@ import MemberModal from './MemberModal';
 import { Plus, RotateCcw } from 'lucide-react';
 import RelationshipAnalysisModal from './RelationshipAnalysisModal';
 import ExportControls from './ExportControls';
-import type { TreeData } from '@/lib/data/tree';
+import type { TreeData, TreeNodeData } from '@/lib/data/tree';
+import type { Member, RelativeRef, Relatives } from '@/types/member';
+
+function toRelative(node: Node): RelativeRef {
+    const data = node.data as unknown as TreeNodeData;
+    return { id: node.id, label: data.label, gender: data.gender, birthDate: data.birthDate };
+}
 import { addMembers, deleteMember, linkMembers, updateMember } from '@/app/portal/admin/tree/actions';
 import PrintDialog, { PrintOptions } from './PrintDialog';
 import { Printer } from 'lucide-react';
-import Link from 'next/link';
 import { unwrap } from '@/lib/action-result';
 
 const EDGE_STYLE = { strokeWidth: 2, stroke: '#cbd5e1' };
@@ -108,7 +113,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         }
     }, []);
     const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-    const [nodeRelatives, setNodeRelatives] = useState<any>(null); // Store calculated relatives
+    const [nodeRelatives, setNodeRelatives] = useState<Relatives | null>(null); // Store calculated relatives
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [modalTab, setModalTab] = useState<'info' | 'add' | 'edit'>('info');
     const [subtreeRootId, setSubtreeRootId] = useState<string | null>(null);
@@ -116,10 +121,8 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
     const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
 
     // Print State
-    const [printOptions, setPrintOptions] = useState<PrintOptions | null>(null);
 
     const handlePrint = (options: PrintOptions) => {
-        setPrintOptions(options);
 
         // Apply temporary classes for printing based on options
         const container = document.querySelector('.react-flow');
@@ -162,18 +165,18 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         [setEdges, persist],
     );
 
-    const getRelatives = useCallback((node: Node) => {
+    const getRelatives = useCallback((node: Node): Relatives => {
         const children = edges
             .filter(e => e.source === node.id)
             .map(e => nodes.find(n => n.id === e.target))
             .filter(n => n)
-            .map(n => ({ id: n!.id, label: n!.data.label, gender: n!.data.gender, birthDate: n!.data.birthDate }));
+            .map((n) => toRelative(n!));
 
         const parents = edges
             .filter(e => e.target === node.id)
             .map(e => nodes.find(n => n.id === e.source))
             .filter(n => n)
-            .map(n => ({ id: n!.id, label: n!.data.label, gender: n!.data.gender }));
+            .map((n) => toRelative(n!));
 
         const parentIds = edges.filter(e => e.target === node.id).map(e => e.source);
         const siblingIds = new Set<string>();
@@ -186,7 +189,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         const siblings = Array.from(siblingIds)
             .map(id => nodes.find(n => n.id === id))
             .filter(n => n)
-            .map(n => ({ id: n!.id, label: n!.data.label, gender: n!.data.gender }));
+            .map((n) => toRelative(n!));
 
         return { children, parents, siblings };
     }, [nodes, edges]);
@@ -203,7 +206,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         setNodeRelatives(null);
     }, []);
 
-    const handleUpdateNode = useCallback(async (data: any, newMembers?: any[]) => {
+    const handleUpdateNode = useCallback(async (data: Member, newMembers?: Partial<Member>[]) => {
         // 1. Save the selected member's edits (the add form passes newMembers and edits nothing)
         if (selectedNode && newMembers === undefined) {
             const saved = await persist(() => unwrap(updateMember(selectedNode.id, data)));
@@ -390,10 +393,12 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                 <Background gap={12} size={1} />
             </ReactFlow>
 
+            {isSidebarOpen && (
             <MemberModal
+                key={`${selectedNode?.id ?? 'new'}-${modalTab}`}
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
-                data={selectedNode ? { ...selectedNode.data, relatives: nodeRelatives } as any : null}
+                data={selectedNode ? { ...(selectedNode.data as unknown as Member), relatives: nodeRelatives ?? undefined } : null}
                 onSave={handleUpdateNode}
                 onDelete={handleDeleteNode}
                 onViewInTree={handleViewInTree}
@@ -401,14 +406,17 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                 memberId={selectedNode?.id ?? null}
                 memberOptions={memberOptions}
             />
+            )}
 
             {/* Relationship Analysis Modal */}
+            {isAnalysisOpen && (
             <RelationshipAnalysisModal
                 isOpen={isAnalysisOpen}
                 onClose={() => setIsAnalysisOpen(false)}
                 nodes={nodes}
                 edges={edges}
             />
+            )}
 
             <PrintDialog
                 isOpen={isPrintDialogOpen}

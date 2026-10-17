@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
 import { ActionError } from "@/lib/action-result";
-import { storeFile, type Visibility } from "@/lib/files";
+import { deleteOrphanFiles, storeFile, type Visibility } from "@/lib/files";
 
 // Upload for admins and editors: multipart form with "file" and optional "visibility".
 export async function POST(request: Request) {
@@ -22,6 +22,8 @@ export async function POST(request: Request) {
             visibility,
             uploadedBy: session.isDbUser ? session.userId : null,
         });
+        // Housekeeping rides on uploads, the only time new orphans can appear.
+        deleteOrphanFiles().catch((error) => console.error("[files] cleanup failed:", error));
         return NextResponse.json({ ...stored, name: file.name, mimeType: file.type });
     } catch (error) {
         const message = error instanceof ActionError ? error.message : "تعذر رفع الملف";

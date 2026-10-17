@@ -1,5 +1,6 @@
 import { toCanvas } from 'html-to-image';
 import jsPDF from 'jspdf';
+import type { Edge, Node } from '@xyflow/react';
 
 export interface ExportOptions {
   filename?: string;
@@ -106,8 +107,8 @@ export const exportAsPDF = async (
  * Export the family tree data as JSON
  */
 export const exportAsJSON = (
-  nodes: any[],
-  edges: any[],
+  nodes: Node[],
+  edges: Edge[],
   options: ExportOptions = {}
 ): void => {
   const { filename = 'family-tree-data' } = options;

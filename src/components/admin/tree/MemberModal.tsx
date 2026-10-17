@@ -1,7 +1,7 @@
 "use client";
 
 
-import { X, User, Trash2, Save, Calendar, MapPin, Heart, Plus, ChevronDown, Phone, Mail, Globe, Hash, Eye, MoreVertical, History } from "lucide-react";
+import { X, User, Trash2, Save, Plus, ChevronDown, Eye, MoreVertical, History } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import ImageUpload from '../common/ImageUpload';
 import Timeline from '@/components/timeline/Timeline';
@@ -13,8 +13,8 @@ import SpousesEditor, { type MemberOption } from './SpousesEditor';
 interface MemberModalProps {
     isOpen: boolean;
     onClose: () => void;
-    data: any;
-    onSave: (data: any, newMembers?: any[]) => void;
+    data: Member | null;
+    onSave: (data: Member, newMembers?: Partial<Member>[]) => void;
     onDelete: () => void;
     onViewInTree?: () => void;
     initialTab?: 'info' | 'add' | 'edit';
@@ -23,8 +23,8 @@ interface MemberModalProps {
 }
 
 export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, onViewInTree, initialTab = 'info', memberId = null, memberOptions = [] }: MemberModalProps) {
-    const [activeTab, setActiveTab] = useState<'info' | 'add' | 'edit' | 'timeline'>(initialTab as any);
-    const [newMembers, setNewMembers] = useState<any[]>([{ label: '', gender: 'male', status: 'unknown' }]); // Initial new member form
+    const [activeTab, setActiveTab] = useState<'info' | 'add' | 'edit' | 'timeline'>(initialTab);
+    const [newMembers, setNewMembers] = useState<Partial<Member>[]>([{ label: '', gender: 'male', status: 'unknown' }]); // Initial new member form
 
     const addNewMemberForm = () => {
         setNewMembers([...newMembers, { label: '', gender: 'male', status: 'unknown' }]);
@@ -34,19 +34,21 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
         setNewMembers(newMembers.filter((_, i) => i !== index));
     };
 
-    const updateNewMember = (index: number, field: string, value: any) => {
+    const updateNewMember = (index: number, field: keyof Member, value: Member[keyof Member]) => {
         const updated = [...newMembers];
         updated[index] = { ...updated[index], [field]: value };
         setNewMembers(updated);
     };
 
-    const [formData, setFormData] = useState<Member>({
+    // The builder mounts this modal fresh each time it opens, so state starts from props.
+    const [formData, setFormData] = useState<Member>(() => ({
         ...defaultMember,
         // Ensure required fields for UI are present even if partial
         birthDate: defaultMember.birthDate!,
         deathDate: defaultMember.deathDate!,
-        socialMedia: defaultMember.socialMedia!
-    } as Member);
+        socialMedia: defaultMember.socialMedia!,
+        ...(data ?? {}),
+    }) as Member);
 
     const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
     const optionsRef = useRef<HTMLDivElement>(null);
@@ -61,21 +63,6 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    // Sync activeTab with initialTab when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            setActiveTab(initialTab);
-        }
-    }, [isOpen, initialTab]);
-
-    useEffect(() => {
-        if (data) {
-            setFormData(prev => ({ ...prev, ...data }));
-            // Keep current tab or default to info if opening new
-            if (!isOpen) setActiveTab('info');
-        }
-    }, [data, isOpen]);
 
     if (!isOpen) return null;
 
@@ -269,8 +256,8 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                     <div className="space-y-2">
                                         <h4 className="text-[10px] font-bold text-gray-500">الإخوان</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {data?.relatives?.siblings?.filter((r: any) => r.gender === 'male').length > 0 ? (
-                                                data.relatives.siblings.filter((r: any) => r.gender === 'male').map((rel: any) => (
+                                            {(data?.relatives?.siblings.filter((r) => r.gender === 'male').length ?? 0) > 0 ? (
+                                                data!.relatives!.siblings.filter((r) => r.gender === 'male').map((rel) => (
                                                     <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
@@ -279,8 +266,8 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                     <div className="space-y-2">
                                         <h4 className="text-[10px] font-bold text-gray-500">الأخوات</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {data?.relatives?.siblings?.filter((r: any) => r.gender === 'female').length > 0 ? (
-                                                data.relatives.siblings.filter((r: any) => r.gender === 'female').map((rel: any) => (
+                                            {(data?.relatives?.siblings.filter((r) => r.gender === 'female').length ?? 0) > 0 ? (
+                                                data!.relatives!.siblings.filter((r) => r.gender === 'female').map((rel) => (
                                                     <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
@@ -293,8 +280,8 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                     <div className="space-y-2">
                                         <h4 className="text-[10px] font-bold text-gray-500">الأبناء</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {data?.relatives?.children?.filter((r: any) => r.gender === 'male').length > 0 ? (
-                                                data.relatives.children.filter((r: any) => r.gender === 'male').map((rel: any) => (
+                                            {(data?.relatives?.children.filter((r) => r.gender === 'male').length ?? 0) > 0 ? (
+                                                data!.relatives!.children.filter((r) => r.gender === 'male').map((rel) => (
                                                     <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
@@ -303,8 +290,8 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                     <div className="space-y-2">
                                         <h4 className="text-[10px] font-bold text-gray-500">البنات</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {data?.relatives?.children?.filter((r: any) => r.gender === 'female').length > 0 ? (
-                                                data.relatives.children.filter((r: any) => r.gender === 'female').map((rel: any) => (
+                                            {(data?.relatives?.children.filter((r) => r.gender === 'female').length ?? 0) > 0 ? (
+                                                data!.relatives!.children.filter((r) => r.gender === 'female').map((rel) => (
                                                     <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}

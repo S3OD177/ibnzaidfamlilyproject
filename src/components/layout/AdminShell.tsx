@@ -16,7 +16,6 @@ import {
     Bell,
     Menu,
     X,
-    MessageCircle,
     Shield,
     BarChart3,
     History,

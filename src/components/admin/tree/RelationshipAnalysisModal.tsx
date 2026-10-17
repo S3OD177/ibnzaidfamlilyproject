@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Heart, ArrowRightLeft, ShieldCheck, RotateCcw, Key } from 'lucide-react';
 import { Node, Edge } from '@xyflow/react';
+import type { TreeNodeData } from '@/lib/data/tree';
+
+function info(node: Node): TreeNodeData;
+function info(node: Node | undefined): TreeNodeData | undefined;
+function info(node: Node | undefined) {
+    return node?.data as unknown as TreeNodeData | undefined;
+}
 
 interface RelationshipAnalysisModalProps {
     isOpen: boolean;
@@ -18,26 +25,15 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
     const [search2, setSearch2] = useState('');
     const [showResults, setShowResults] = useState(false);
 
-    // Reset state when modal opens or closes
-    useEffect(() => {
-        if (!isOpen) {
-            setPerson1Id(null);
-            setPerson2Id(null);
-            setSearch1('');
-            setSearch2('');
-            setShowResults(false);
-        }
-    }, [isOpen]);
-
     const performSearch = (query: string) => {
         if (!query) return [];
         const q = query.toLowerCase();
         return nodes.filter(n => {
-            const data = n.data as any;
+            const data = info(n);
             return (
                 data.label?.toLowerCase().includes(q) ||
                 data.mobile?.includes(q) ||
-                data.serial?.includes(q)
+                data.serialNumber?.includes(q)
             );
         }).slice(0, 5);
     };
@@ -72,8 +68,8 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
         while (currentId && depth < 6) {
             const node = nodes.find(n => n.id === currentId);
             if (node) {
-                const label = (node.data as any).label;
-                const gender = (node.data as any).gender;
+                const label = info(node).label;
+                const gender = info(node).gender;
 
                 if (path.length === 0) {
                     path.push(label);
@@ -93,7 +89,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
     const person1FullName = useMemo(() => getFullLineageName(person1Id), [person1Id, nodes, edges]);
     const person2FullName = useMemo(() => getFullLineageName(person2Id), [person2Id, nodes, edges]);
 
-    const getRelationshipName = (d1: number, d2: number, gender1: string, gender2: string) => {
+    const getRelationshipName = (d1: number, d2: number, gender1: string) => {
         const isMale = gender1 === 'male';
 
         if (d1 === 0 && d2 === 0) return "نفس الشخص";
@@ -180,8 +176,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
 
         const relation = getRelationshipName(
             d1, d2,
-            (person1.data as any).gender,
-            (person2.data as any).gender
+            info(person1).gender
         );
 
         return {
@@ -197,7 +192,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
 
     if (!isOpen) return null;
 
-    const p1Gender = (person1?.data as any)?.gender;
+    const p1Gender = info(person1)?.gender;
     const pronoun = p1Gender === 'female' ? 'هي' : 'هو';
 
     return (
@@ -242,10 +237,10 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                                 <button
                                                     key={node.id}
                                                     className="w-full text-right px-4 py-3 hover:bg-primary/5 rounded-lg text-sm transition-all flex flex-col"
-                                                    onClick={() => { setPerson1Id(node.id); setSearch1((node.data as any).label); }}
+                                                    onClick={() => { setPerson1Id(node.id); setSearch1(info(node).label); }}
                                                 >
-                                                    <span className="font-bold text-gray-900">{(node.data as any).label}</span>
-                                                    <span className="text-[10px] text-gray-400 font-medium tracking-wide">رقم التوثيق: {(node.data as any).serial}</span>
+                                                    <span className="font-bold text-gray-900">{info(node).label}</span>
+                                                    <span className="text-[10px] text-gray-400 font-medium tracking-wide">رقم التوثيق: {info(node).serialNumber}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -254,11 +249,11 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                 {person1 && (
                                     <div className="flex items-center gap-4 px-4 py-4 bg-white rounded-xl border border-primary/20 shadow-sm animate-in zoom-in-95 duration-200">
                                         <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-lg shadow-primary/20">
-                                            {(person1.data as any).label[0]}
+                                            {info(person1).label[0]}
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-base font-bold text-gray-900 truncate">{person1FullName}</span>
-                                            <span className="text-[9px] text-primary/60 font-medium tracking-wider">{(person1.data as any).serial}</span>
+                                            <span className="text-[9px] text-primary/60 font-medium tracking-wider">{info(person1).serialNumber}</span>
                                         </div>
                                         <button
                                             onClick={() => { setPerson1Id(null); setSearch1(''); }}
@@ -299,10 +294,10 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                                 <button
                                                     key={node.id}
                                                     className="w-full text-right px-4 py-3 hover:bg-primary/5 rounded-lg text-sm transition-all flex flex-col"
-                                                    onClick={() => { setPerson2Id(node.id); setSearch2((node.data as any).label); }}
+                                                    onClick={() => { setPerson2Id(node.id); setSearch2(info(node).label); }}
                                                 >
-                                                    <span className="font-bold text-gray-900">{(node.data as any).label}</span>
-                                                    <span className="text-[10px] text-gray-400 font-medium tracking-wide">رقم التوثيق: {(node.data as any).serial}</span>
+                                                    <span className="font-bold text-gray-900">{info(node).label}</span>
+                                                    <span className="text-[10px] text-gray-400 font-medium tracking-wide">رقم التوثيق: {info(node).serialNumber}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -311,11 +306,11 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                 {person2 && (
                                     <div className="flex items-center gap-4 px-4 py-4 bg-white rounded-xl border border-primary/20 shadow-sm animate-in zoom-in-95 duration-200">
                                         <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-lg shadow-primary/20">
-                                            {(person2.data as any).label[0]}
+                                            {info(person2).label[0]}
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-base font-bold text-gray-900 truncate">{person2FullName}</span>
-                                            <span className="text-[9px] text-primary/60 font-medium tracking-wider">{(person2.data as any).serial}</span>
+                                            <span className="text-[9px] text-primary/60 font-medium tracking-wider">{info(person2).serialNumber}</span>
                                         </div>
                                         <button
                                             onClick={() => { setPerson2Id(null); setSearch2(''); }}
@@ -404,7 +399,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                     <div className="grid grid-cols-3 gap-3">
                                         <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 text-center">
                                             <p className="text-[9px] font-bold text-primary uppercase mb-1.5 tracking-wide">الجد المشترك</p>
-                                            <p className="text-sm font-bold text-primary truncate">{(nodes.find(n => n.id === analysisResult.commonAncestor)?.data as any)?.label}</p>
+                                            <p className="text-sm font-bold text-primary truncate">{info(nodes.find(n => n.id === analysisResult.commonAncestor))?.label}</p>
                                         </div>
                                         <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 text-center">
                                             <p className="text-[9px] font-bold text-primary uppercase mb-1.5 tracking-wide">عمق الطرف 1</p>
@@ -428,7 +423,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                                                 {i === 0 ? 'G' : i}
                                                             </div>
                                                             <span className={`text-xs font-medium truncate transition-all ${id === person1Id ? 'text-primary font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>
-                                                                {(nodes.find(n => n.id === id)?.data as any)?.label}
+                                                                {info(nodes.find(n => n.id === id))?.label}
                                                             </span>
                                                         </div>
                                                     ))}
@@ -443,7 +438,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                                                 {i === 0 ? 'G' : i}
                                                             </div>
                                                             <span className={`text-xs font-medium truncate transition-all ${id === person2Id ? 'text-primary font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>
-                                                                {(nodes.find(n => n.id === id)?.data as any)?.label}
+                                                                {info(nodes.find(n => n.id === id))?.label}
                                                             </span>
                                                         </div>
                                                     ))}

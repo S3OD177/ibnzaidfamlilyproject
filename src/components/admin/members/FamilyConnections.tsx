@@ -1,4 +1,4 @@
-import { Member } from '@/types/member';
+import { Member, RelativeRef } from '@/types/member';
 import Link from 'next/link';
 
 interface FamilyConnectionsProps {
@@ -6,7 +6,7 @@ interface FamilyConnectionsProps {
 }
 
 export default function FamilyConnections({ member }: FamilyConnectionsProps) {
-    const renderConnectionCard = (relative: any, role: string) => (
+    const renderConnectionCard = (relative: RelativeRef, role: string) => (
         <Link href={`/portal/members/${relative.id}`} key={relative.id} className="block group">
             <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-[#D4AF37] hover:shadow-md transition-all">
                 <div className="size-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">

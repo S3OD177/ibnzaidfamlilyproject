@@ -3,8 +3,11 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { User, Eye, Plus } from 'lucide-react';
+import type { TreeNodeData } from '@/lib/data/tree';
 
-export default memo(({ data, selected }: { data: any, selected?: boolean }) => {
+type FamilyNodeData = TreeNodeData & { onAddMember?: () => void; onViewDetails?: () => void };
+
+function FamilyNode({ data, selected }: { data: FamilyNodeData; selected?: boolean }) {
     const isFemale = data.gender === 'female';
     const isDeceased = data.status === 'deceased';
 
@@ -118,4 +121,6 @@ export default memo(({ data, selected }: { data: any, selected?: boolean }) => {
             />
         </div>
     );
-});
+}
+
+export default memo(FamilyNode);

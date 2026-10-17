@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, Calendar, Type, FileText, Users, PartyPopper, AlertCircle, Bookmark } from 'lucide-react';
+import { X, Calendar, Type, Users, PartyPopper, AlertCircle, Bookmark } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 
 const EVENT_CATEGORIES = [

@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { ActionError } from "@/lib/action-result";
 
@@ -65,6 +65,45 @@ export async function setFileVisibility(id: string, visibility: Visibility) {
 
 export async function deleteFile(id: string) {
     await getDb().delete(schema.files).where(eq(schema.files.id, id));
+}
+
+const ORPHAN_AGE = "24 hours";
+const CLEANUP_EVERY_MS = 60 * 60 * 1000;
+let lastCleanup = 0;
+
+/**
+ * Deletes uploaded files that nothing points to: picked in a form that was never saved,
+ * or replaced by a newer photo or cover. Recent files are kept, since a form may still
+ * be open with them. Runs at most once an hour per server; returns how many went.
+ */
+export async function deleteOrphanFiles({ force = false } = {}): Promise<number> {
+    if (!force && Date.now() - lastCleanup < CLEANUP_EVERY_MS) return 0;
+    lastCleanup = Date.now();
+    const rows = await getDb().execute(sql`
+        delete from files f
+        where f.created_at < now() - interval '${sql.raw(ORPHAN_AGE)}'
+          and not exists (select 1 from documents d where d.file_id = f.id)
+          and not exists (select 1 from decisions d where d.attachment_file_id = f.id)
+          and not exists (
+              select 1 from members m where m.photo_url = '/files/' || f.id::text
+          )
+          and not exists (
+              select 1 from news n
+              where n.cover_url = '/files/' || f.id::text
+                 or n.content like '%/files/' || f.id::text || '%'
+          )
+          and not exists (
+              select 1 from timeline_events t where t.image_url = '/files/' || f.id::text
+          )
+          and not exists (
+              select 1 from decisions d where d.body like '%/files/' || f.id::text || '%'
+          )
+          and not exists (
+              select 1 from settings s where s.value::text like '%/files/' || f.id::text || '%'
+          )
+        returning f.id
+    `);
+    return rows.length;
 }
 
 const DATA_URL = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/=]+)$/;

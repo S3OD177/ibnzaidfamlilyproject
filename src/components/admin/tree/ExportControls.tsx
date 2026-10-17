@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Download, FileImage, FileText, Database, Loader2, Check } from 'lucide-react';
 import { exportAsPNG, exportAsPDF, exportAsJSON, getReactFlowElement } from '@/lib/export/exportTree';
+import type { Edge, Node as FlowNode } from '@xyflow/react';
 
 interface ExportControlsProps {
-  nodes: any[];
-  edges: any[];
+  nodes: FlowNode[];
+  edges: Edge[];
 }
 
 export default function ExportControls({ nodes, edges }: ExportControlsProps) {
