@@ -2,27 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-    LayoutDashboard,
-    Newspaper,
-    UserPlus,
-    Users,
-    FileText,
-    Gavel,
-    Landmark,
-    Settings,
-    LogOut,
-    Search,
-    Bell,
-    Menu,
-    X,
-    Shield,
-    BarChart3,
-    History,
-    KeyRound,
-    Calendar
-} from "lucide-react";
+import { Settings, LogOut, Search, Bell, Menu, X, KeyRound, Users } from "lucide-react";
 import { useState } from "react";
+import { findActive, sectionsFor } from "./adminNav";
 
 const ROLE_LABELS = { admin: "مدير النظام", editor: "محرر", member: "عضو" } as const;
 
@@ -38,21 +20,9 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const menuItems = [
-        { name: "لوحة التحكم", icon: LayoutDashboard, href: "/portal/admin" },
-
-        { name: "إدارة الأخبار", icon: Newspaper, href: "/portal/admin/news" },
-        { name: "التقويم العائلي", icon: Calendar, href: "/portal/admin/calendar" },
-        { name: "السجل التاريخي", icon: History, href: "/portal/admin/timeline" },
-        { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: pendingRequests > 0 ? String(pendingRequests) : undefined, adminOnly: true },
-        { name: "شجرة العائلة", icon: Users, href: "/portal/admin/tree" },
-        { name: "إدارة الوثائق", icon: FileText, href: "/portal/admin/documents" },
-        { name: "مجلس العائلة", icon: Landmark, href: "/portal/admin/council" },
-        { name: "قرارات المجلس", icon: Gavel, href: "/portal/admin/decisions" },
-
-        { name: "إدارة المستخدمين", icon: Shield, href: "/portal/admin/users", adminOnly: true },
-        { name: "الإحصائيات", icon: BarChart3, href: "/portal/admin/analytics" },
-    ].filter((item) => !("adminOnly" in item && item.adminOnly) || role === "admin");
+    const sections = sectionsFor(role);
+    const active = findActive(sections, pathname);
+    const pendingBadge = pendingRequests > 0 ? String(pendingRequests) : undefined;
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#f6f8f7] font-display text-[#111814]">
@@ -84,24 +54,26 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                 </div>
 
                 <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-                    {menuItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                    {sections.map((section) => {
+                        const Icon = section.icon;
+                        const isActive = active?.section.name === section.name;
+                        const badge = section.tabs.some((t) => t.badge === "pending") ? pendingBadge : undefined;
 
                         return (
                             <Link
-                                key={item.href}
-                                href={item.href}
+                                key={section.name}
+                                href={section.tabs[0].href}
+                                onClick={() => setIsMobileMenuOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                     ? "bg-primary text-white font-medium"
                                     : "text-[#111814] hover:bg-[#f0f4f2]"
                                     }`}
                             >
                                 <Icon className="w-5 h-5" />
-                                <span className="text-sm">{item.name}</span>
-                                {item.badge && (
+                                <span className="text-sm">{section.name}</span>
+                                {badge && (
                                     <span className="mr-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                                        {item.badge}
+                                        {badge}
                                     </span>
                                 )}
                             </Link>
@@ -185,6 +157,33 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
 
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+                    {active && active.section.tabs.length > 1 && (
+                        <nav aria-label={active.section.name} className="-mx-4 lg:mx-0 px-4 lg:px-0 mb-6 overflow-x-auto">
+                            <div className="flex gap-1 border-b border-[#dbe6e0] min-w-max">
+                                {active.section.tabs.map((tab) => {
+                                    const Icon = tab.icon;
+                                    const selected = tab.href === active.tab.href;
+                                    return (
+                                        <Link
+                                            key={tab.href}
+                                            href={tab.href}
+                                            aria-current={selected ? "page" : undefined}
+                                            className={`flex items-center gap-2 px-4 py-2.5 -mb-px border-b-2 text-sm whitespace-nowrap transition-colors ${selected
+                                                ? "border-primary text-primary font-bold"
+                                                : "border-transparent text-[#618975] hover:text-[#111814] hover:border-[#dbe6e0]"
+                                                }`}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            {tab.name}
+                                            {tab.badge === "pending" && pendingBadge && (
+                                                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingBadge}</span>
+                                            )}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </nav>
+                    )}
                     {children}
                 </main>
             </div>
