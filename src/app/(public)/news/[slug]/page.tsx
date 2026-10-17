@@ -5,7 +5,7 @@ export const metadata = {
     title: "تفاصيل الخبر | منصة العائلة",
 };
 
-export default function NewsDetailsPage({ params }: { params: { slug: string } }) {
+export default function NewsDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
     // Mock data - normally fetched via slug
     const article = {
         title: "انطلاق فعاليات الملتقى السنوي الخامس عشر لأبناء الأسرة في مدينة الرياض",
