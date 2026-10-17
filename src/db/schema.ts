@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import {
+    boolean,
     check,
+    customType,
     date,
     index,
     integer,
@@ -24,6 +26,10 @@ export const userRoleEnum = pgEnum("user_role", ["admin", "editor", "member"]);
 export const userStatusEnum = pgEnum("user_status", ["active", "disabled"]);
 export const requestStatusEnum = pgEnum("request_status", ["pending", "approved", "rejected"]);
 export const timelineTypeEnum = pgEnum("timeline_type", ["birth", "death", "marriage", "achievement", "milestone"]);
+export const visibilityEnum = pgEnum("visibility", ["public", "members"]);
+export const decisionStateEnum = pgEnum("decision_state", ["active", "superseded", "cancelled"]);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
 const timestamps = {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -196,7 +202,9 @@ export const decisions = pgTable(
         hijriYear: integer("hijri_year"),
         keywords: text("keywords").array().default(sql`'{}'::text[]`).notNull(),
         status: publishStatusEnum("status").notNull().default("published"),
+        state: decisionStateEnum("state").notNull().default("active"),
         issuedAt: date("issued_at"),
+        attachmentFileId: uuid("attachment_file_id").references(() => files.id, { onDelete: "set null" }),
         ...timestamps,
     },
     (t) => [index("decisions_year_idx").on(t.hijriYear)],
@@ -210,8 +218,24 @@ export const documents = pgTable("documents", {
     fileName: text("file_name"),
     mimeType: text("mime_type"),
     sizeBytes: integer("size_bytes"),
+    fileId: uuid("file_id").references(() => files.id, { onDelete: "cascade" }),
+    visibility: visibilityEnum("visibility").notNull().default("members"),
+    isCharter: boolean("is_charter").notNull().default(false),
     uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
+});
+
+// Uploaded file contents, served at /files/<id>. Kept in Postgres until a storage
+// bucket is available; only lib/files.ts reads or writes this table.
+export const files = pgTable("files", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    data: bytea("data").notNull(),
+    visibility: visibilityEnum("visibility").notNull().default("members"),
+    uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamps.createdAt,
 });
 
 // ---------- Accounts ----------

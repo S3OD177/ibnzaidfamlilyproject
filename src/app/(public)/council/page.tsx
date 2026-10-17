@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { MapPin, Download, Eye, Users, FileText, User } from "lucide-react";
+import { MapPin, Eye, Users, FileText, User } from "lucide-react";
 import { getCouncilMembers } from "@/lib/data/members";
+import { getCharter } from "@/lib/data/documents";
 
 export const dynamic = "force-dynamic";
 
 export default async function CouncilPage() {
     // Ordered by council_order; the first (the chair) gets the large card.
-    const [chair, ...members] = await getCouncilMembers();
+    const [[chair, ...members], charter] = await Promise.all([getCouncilMembers(), getCharter()]);
 
     return (
         <div className="bg-[#fcfdfa] min-h-screen flex flex-col font-body text-[#111812]" style={{
@@ -112,16 +113,20 @@ export default async function CouncilPage() {
                                     يتضمن الميثاق الرسمي اللوائح والأنظمة التي تحكم عمل المجلس، وحقوق وواجبات كل فرد من أفراد العائلة، بالإضافة إلى آليات اتخاذ القرار والتمثيل الرسمي.
                                 </p>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <button className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 shadow-lg transition-transform active:scale-95">
-                                    <FileText className="w-5 h-5 rtl:scale-x-[-1]" />
-                                    <span>تحميل ميثاق العائلة (PDF)</span>
-                                </button>
-                                <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 backdrop-blur-sm border border-white/20 transition-all">
-                                    <Eye className="w-6 h-6" />
-                                    <span>قراءة عبر الإنترنت</span>
-                                </button>
-                            </div>
+                            {charter ? (
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <a href={`/files/${charter.fileId}?download`} className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 shadow-lg transition-transform active:scale-95">
+                                        <FileText className="w-5 h-5 rtl:scale-x-[-1]" />
+                                        <span>تحميل ميثاق العائلة</span>
+                                    </a>
+                                    <a href={`/files/${charter.fileId}`} target="_blank" className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 backdrop-blur-sm border border-white/20 transition-all">
+                                        <Eye className="w-6 h-6" />
+                                        <span>قراءة عبر الإنترنت</span>
+                                    </a>
+                                </div>
+                            ) : (
+                                <p className="text-gray-400 text-sm bg-white/5 border border-white/10 rounded-lg px-6 py-4">سيُنشر الميثاق هنا قريباً.</p>
+                            )}
                         </div>
                     </section>
 

@@ -5,10 +5,17 @@ import { and, eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireRole } from "@/lib/auth/current";
 import { nodeDataToRow, rowToNodeData, type TreeNodeData } from "@/lib/data/tree";
+import { persistImage } from "@/lib/files";
 
 // Admins and editors manage content; server actions re-check the account every call.
 async function requireStaff() {
-    await requireRole("admin", "editor");
+    return requireRole("admin", "editor");
+}
+
+// Stores a newly picked photo (data URL) as a public file and keeps only its /files/ URL.
+async function withStoredPhoto(data: unknown, uploadedBy: string | null) {
+    const record = (data ?? {}) as Record<string, unknown>;
+    return { ...record, photo: await persistImage(record.photo, uploadedBy) };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -18,11 +25,11 @@ function assertId(id: unknown): asserts id is string {
 
 export async function updateMember(id: string, data: unknown): Promise<ActionResult<TreeNodeData>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(id);
         const [row] = await getDb()
             .update(schema.members)
-            .set(nodeDataToRow(data))
+            .set(nodeDataToRow(await withStoredPhoto(data, me.isDbUser ? me.userId : null)))
             .where(eq(schema.members.id, id))
             .returning();
         if (!row) throw new ActionError("العضو غير موجود");
@@ -36,10 +43,11 @@ export async function addMembers(
     members: unknown[],
 ): Promise<ActionResult<{ id: string; data: TreeNodeData; parentId: string | null }[]>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         if (parentId !== null) assertId(parentId);
         if (!Array.isArray(members) || members.length === 0 || members.length > 50) throw new ActionError("قائمة أفراد غير صالحة");
-        const rows = members.map((member) => nodeDataToRow(member));
+        const uploadedBy = me.isDbUser ? me.userId : null;
+        const rows = await Promise.all(members.map(async (member) => nodeDataToRow(await withStoredPhoto(member, uploadedBy))));
 
         return getDb().transaction(async (tx) => {
             const inserted = await tx.insert(schema.members).values(rows).returning();

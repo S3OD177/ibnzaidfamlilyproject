@@ -5,14 +5,14 @@ import { revalidatePath } from "next/cache";
 import { and, eq, ne } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireRole } from "@/lib/auth/current";
+import { persistImage } from "@/lib/files";
 
 // Admins and editors manage content; server actions re-check the account every call.
 async function requireStaff() {
-    await requireRole("admin", "editor");
+    return requireRole("admin", "editor");
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MAX_COVER = 1_500_000; // base64 data URL; moves to CranL storage later
 
 export interface NewsInput {
     id?: string;
@@ -55,14 +55,15 @@ async function uniqueSlug(base: string, excludeId?: string) {
 
 export async function saveNews(input: NewsInput): Promise<ActionResult<{ id: string; slug: string }>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         const title = text(input.title, 200);
         if (!title) throw new ActionError("العنوان مطلوب");
         const category = text(input.category, 50);
         if (!category) throw new ActionError("اختر التصنيف");
         if (input.id && !UUID.test(input.id)) throw new ActionError("معرّف غير صالح");
 
-        const cover = typeof input.coverUrl === "string" && input.coverUrl.length <= MAX_COVER ? input.coverUrl : null;
+        // A newly picked image arrives as a data URL and is stored as a public file.
+        const cover = await persistImage(input.coverUrl, me.isDbUser ? me.userId : null);
         let publishedAt: Date | null = null;
         if (input.publish) {
             publishedAt = input.publishedAt && /^\d{4}-\d{2}-\d{2}$/.test(input.publishedAt) ? new Date(`${input.publishedAt}T06:00:00Z`) : new Date();

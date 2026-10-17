@@ -29,6 +29,13 @@
       "when": 1792261031300,
       "tag": "0003_council_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792270416407,
+      "tag": "0004_files_documents_decisions",
+      "breakpoints": true
     }
   ]
 }
