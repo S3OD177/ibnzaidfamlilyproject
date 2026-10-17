@@ -3,14 +3,15 @@
 import { CalendarEvent } from "@/types/calendar";
 import { format } from "date-fns";
 import { arSA } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, MapPin } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Trash2 } from "lucide-react";
 
 interface EventListProps {
     events: CalendarEvent[];
     selectedDate: Date;
+    onDelete?: (event: CalendarEvent) => void;
 }
 
-export default function EventList({ events, selectedDate }: EventListProps) {
+export default function EventList({ events, selectedDate, onDelete }: EventListProps) {
     // Filter events for selected date
     const dayEvents = events.filter(e =>
         e.date.toDateString() === selectedDate.toDateString()
@@ -42,9 +43,21 @@ export default function EventList({ events, selectedDate }: EventListProps) {
                         >
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-[#111814]">{event.title}</h4>
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${event.color || 'bg-gray-100 text-gray-600'}`}>
-                                    {event.type}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${event.color || 'bg-gray-100 text-gray-600'}`}>
+                                        {event.categoryLabel ?? 'حدث'}
+                                    </span>
+                                    {onDelete && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onDelete(event)}
+                                            aria-label={`حذف ${event.title}`}
+                                            className="p-1 text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {event.description && (
@@ -66,15 +79,15 @@ export default function EventList({ events, selectedDate }: EventListProps) {
                         {events
                             .filter(e => e.date > new Date() && e.date.getMonth() === new Date().getMonth())
                             .slice(0, 3)
-                            .map((event, idx) => (
-                                <div key={`upcoming-${idx}`} className="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
+                            .map((event) => (
+                                <div key={`upcoming-${event.id}`} className="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
                                     <div className="text-center bg-white p-2 rounded border border-gray-200 min-w-[50px]">
                                         <span className="block text-[10px] text-gray-400">{format(event.date, 'MMM', { locale: arSA })}</span>
                                         <span className="block text-lg font-bold text-[#111814] leading-none">{format(event.date, 'd')}</span>
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-[#111814] line-clamp-1">{event.title}</p>
-                                        <p className="text-[10px] text-gray-500">{event.type === 'birthday' ? 'عيد ميلاد' : 'مناسبات'}</p>
+                                        <p className="text-[10px] text-gray-500">{event.categoryLabel ?? 'حدث'}</p>
                                     </div>
                                 </div>
                             ))}

@@ -6,6 +6,8 @@ export interface CalendarEvent {
     memberId?: string;
     description?: string;
     color?: string; // Optional: for custom UI colors
+    category?: string; // e.g. 'meeting'
+    categoryLabel?: string; // e.g. 'اجتماع'
 }
 
 // Group events by day for easier rendering

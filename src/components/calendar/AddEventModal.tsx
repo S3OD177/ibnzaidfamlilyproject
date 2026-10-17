@@ -62,8 +62,9 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedDate }: 
         onAdd({
             title,
             description,
-            type: 'custom', // Keep generic type for now, distinction is visual via color
+            type: 'event',
             date: selectedDate,
+            category: selectedCategory.id,
             color: selectedCategory.color
         });
         // Reset and close

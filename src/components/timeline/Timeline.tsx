@@ -1,12 +1,13 @@
 import { TimelineEvent } from '@/types/timeline';
-import { Calendar, Baby, UserMinus, Star, Heart } from 'lucide-react';
+import { Calendar, Baby, UserMinus, Star, Heart, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface TimelineProps {
     events: TimelineEvent[];
+    onDelete?: (event: TimelineEvent) => void;
 }
 
-export default function Timeline({ events }: TimelineProps) {
+export default function Timeline({ events, onDelete }: TimelineProps) {
     if (!events || events.length === 0) {
         return (
             <div className="text-center py-12 text-gray-400">
@@ -35,7 +36,7 @@ export default function Timeline({ events }: TimelineProps) {
 
     return (
         <div className="relative border-r border-[#dbe6e0] mr-6 space-y-12">
-            {events.map((event, index) => (
+            {events.map((event) => (
                 <div key={event.id} className="relative pr-8">
                     {/* Timeline Dot */}
                     <div className="absolute top-0 -right-3 w-6 h-6 rounded-full bg-white border-4 border-[#D4AF37] shadow-sm z-10" />
@@ -49,10 +50,22 @@ export default function Timeline({ events }: TimelineProps) {
                                 </div>
                                 {event.title}
                             </h3>
-                            <span className="flex items-center gap-1 text-sm font-bold text-gray-500 bg-white/50 px-2 py-1 rounded-lg">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {event.year} هـ
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-1 text-sm font-bold text-gray-500 bg-white/50 px-2 py-1 rounded-lg">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    {event.year} هـ
+                                </span>
+                                {onDelete && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onDelete(event)}
+                                        aria-label={`حذف ${event.title}`}
+                                        className="p-1.5 text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {event.description && (

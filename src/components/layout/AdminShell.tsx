@@ -18,6 +18,7 @@ import {
     MessageCircle,
     Shield,
     BarChart3,
+    History,
     Calendar
 } from "lucide-react";
 import { useState } from "react";
@@ -31,6 +32,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
         { name: "إدارة الأخبار", icon: Newspaper, href: "/portal/admin/news" },
         { name: "التقويم العائلي", icon: Calendar, href: "/portal/admin/calendar" },
+        { name: "السجل التاريخي", icon: History, href: "/portal/admin/timeline" },
         { name: "طلبات العضوية", icon: UserPlus, href: "/portal/admin/approvals", badge: "12" },
         { name: "شجرة العائلة", icon: Users, href: "/portal/admin/tree" },
         { name: "إدارة الوثائق", icon: FileText, href: "/portal/admin/documents" },
