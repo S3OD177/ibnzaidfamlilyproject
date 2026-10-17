@@ -40,7 +40,7 @@ export default function CouncilPage() {
                                             رئيس المجلس
                                         </span>
                                         <h2 className="text-3xl font-bold text-gray-900 mb-2 font-naskh leading-snug">
-                                            الشيخ عبد العزيز بن فهد آل سعود
+                                            الشيخ عبد العزيز بن فهد
                                         </h2>
                                         <p className="text-[#D4AF37] font-medium mb-6">فترة الولاية: ٢٠٢٢ - الحالي</p>
                                         <div className="relative italic text-gray-700 mb-8 leading-relaxed text-lg font-naskh border-r-4 border-[#D4AF37] pr-6">
@@ -78,7 +78,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-primary text-xs font-bold uppercase tracking-widest">نائب رئيس المجلس</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">سعادة الأستاذ منصور آل سعود</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">سعادة الأستاذ منصور</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>المنطقة الوسطى (الرياض)</span>
@@ -93,7 +93,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-primary text-xs font-bold uppercase tracking-widest">أمين الصندوق</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">المهندس خالد الغامدي</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">المهندس خالد</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>المنطقة الغربية (جدة)</span>
@@ -108,7 +108,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-primary text-xs font-bold uppercase tracking-widest">أمين السر العام</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الدكتور محمد التميمي</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الدكتور محمد</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>المنطقة الشرقية (الدمام)</span>
@@ -123,7 +123,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع الشمال</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ فهد الشمري</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ فهد</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>منطقة حائل</span>
@@ -138,7 +138,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع الجنوب</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الشيخ سلطان القحطاني</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الشيخ سلطان</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>منطقة عسير (أبها)</span>
@@ -153,7 +153,7 @@ export default function CouncilPage() {
                                 </div>
                                 <div className="p-5">
                                     <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">ممثل فرع القصيم</span>
-                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ إبراهيم الهاشمي</h4>
+                                    <h4 className="text-lg font-bold mt-1 text-gray-900">الأستاذ إبراهيم</h4>
                                     <div className="flex items-center gap-2 mt-3 text-gray-500 text-sm">
                                         <MapPin className="w-4 h-4" />
                                         <span>منطقة القصيم (بريدة)</span>
