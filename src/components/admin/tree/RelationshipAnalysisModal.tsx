@@ -205,9 +205,9 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2.5">
                             <ShieldCheck className="w-6 h-6 text-primary" />
-                            <h2 className="text-xl font-bold text-gray-900">محلل الأنساب الحديث</h2>
+                            <h2 className="text-xl font-bold text-gray-900">صلة القرابة</h2>
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Enterprise Lineage Intelligence</p>
+                        <p className="text-xs text-gray-400">اختر فردين لمعرفة صلة القرابة بينهما</p>
                     </div>
                     <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-gray-100/50 hover:bg-gray-200 rounded-xl transition-all active:scale-95">
                         <X className="w-5 h-5 text-gray-500" />

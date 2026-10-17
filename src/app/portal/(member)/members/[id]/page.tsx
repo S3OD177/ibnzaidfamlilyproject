@@ -19,13 +19,13 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
     if (!session) redirect(`/portal/login?next=/portal/members/${id}`);
     const backLink = isStaff(session.role)
         ? { href: "/portal/admin/tree", label: "العودة لشجرة العائلة" }
-        : { href: "/", label: "العودة للرئيسية" };
+        : { href: "/portal/directory", label: "دليل الأعضاء" };
 
     // "me" opens the tree member linked to this account, when an admin has linked one.
     if (id === "me" && session.memberId) redirect(`/portal/members/${session.memberId}`);
     if (id === "me") {
         return (
-            <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4" dir="rtl">
+            <div className="flex items-center justify-center py-12">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
                     <div className="size-14 mx-auto mb-4 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                         <UserX className="w-7 h-7" />
@@ -35,8 +35,8 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                         سيتم ربط حسابك بملفك في شجرة العائلة من قبل الإدارة. يمكنك تصفح الموقع حتى ذلك الحين.
                     </p>
                     <div className="flex flex-col gap-3">
-                        <Link href="/" className="bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors">
-                            العودة للرئيسية
+                        <Link href="/portal" className="bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors">
+                            الرئيسية
                         </Link>
                         <Link href="/portal/account" className="text-sm font-bold text-primary hover:underline">
                             حسابي وتغيير كلمة المرور
@@ -56,8 +56,8 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
     if (!member) notFound();
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa] pb-20" dir="rtl">
-            <div className="max-w-5xl mx-auto px-4 py-8">
+        <div>
+            <div className="max-w-5xl mx-auto">
                 {/* Breadcrumb / Back */}
                 <div className="mb-6">
                     <Link href={backLink.href} className="inline-flex items-center gap-2 text-gray-500 hover:text-[#111814] transition-colors font-bold text-sm">

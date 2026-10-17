@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq, inArray, isNotNull, or } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, isNotNull, or } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { rowToNodeData } from "@/lib/data/tree";
 import type { Member } from "@/types/member";
@@ -227,4 +227,52 @@ export async function listCouncilForAdmin(): Promise<CouncilAdminRow[]> {
         statement: r.councilStatement,
         location: r.location,
     }));
+}
+
+export interface DirectoryEntry {
+    id: string;
+    name: string;
+    gender: "male" | "female";
+    status: "alive" | "deceased" | "unknown";
+    photo: string | null;
+    branch: string | null;
+    location: string | null;
+    generation: string | null;
+}
+
+/** Members' directory: search by name, nickname or serial number, filter by branch. */
+export async function listDirectory(filters: { q?: string; branch?: string }): Promise<DirectoryEntry[]> {
+    const q = filters.q?.trim().slice(0, 100);
+    const pattern = q ? `%${q.replace(/[%_\\]/g, (c) => `\\${c}`)}%` : null;
+    const conditions = [
+        pattern
+            ? or(ilike(schema.members.fullName, pattern), ilike(schema.members.nickname, pattern), eq(schema.members.serialNumber, q!))
+            : undefined,
+        filters.branch ? eq(schema.members.branch, filters.branch) : undefined,
+    ].filter((c) => c !== undefined);
+    return getDb()
+        .select({
+            id: schema.members.id,
+            name: schema.members.fullName,
+            gender: schema.members.gender,
+            status: schema.members.status,
+            photo: schema.members.photoUrl,
+            branch: schema.members.branch,
+            location: schema.members.location,
+            generation: schema.members.generationLabel,
+        })
+        .from(schema.members)
+        .where(conditions.length ? and(...conditions) : undefined)
+        .orderBy(asc(schema.members.fullName))
+        .limit(200);
+}
+
+/** Branch names in use, for the directory filter. */
+export async function listBranches(): Promise<string[]> {
+    const rows = await getDb()
+        .selectDistinct({ branch: schema.members.branch })
+        .from(schema.members)
+        .where(isNotNull(schema.members.branch))
+        .orderBy(asc(schema.members.branch));
+    return rows.map((r) => r.branch!).filter(Boolean);
 }

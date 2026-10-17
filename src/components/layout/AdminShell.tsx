@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, LogOut, Search, Bell, Menu, X, KeyRound, Users } from "lucide-react";
+import { Settings, LogOut, Search, Bell, Menu, X, KeyRound, Users, Home } from "lucide-react";
 import { useState } from "react";
 import { findActive, sectionsFor } from "./adminNav";
 
@@ -88,6 +88,10 @@ export default function AdminShell({ children, pendingRequests = 0, role, displa
                             <span className="text-sm">إعدادات المنصة</span>
                         </Link>
                     )}
+                    <Link href="/portal" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
+                        <Home className="w-5 h-5" />
+                        <span className="text-sm">بوابة الأعضاء</span>
+                    </Link>
                     <Link href="/portal/account" className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#111814] hover:bg-[#f0f4f2] transition-colors">
                         <KeyRound className="w-5 h-5" />
                         <span className="text-sm">حسابي وكلمة المرور</span>

@@ -37,7 +37,7 @@ export function isStaff(role: Role | null | undefined): boolean {
 }
 
 export function homeForRole(role: Role): string {
-    return isStaff(role) ? "/portal/admin" : "/portal/members/me";
+    return isStaff(role) ? "/portal/admin" : "/portal";
 }
 
 const encoder = new TextEncoder();

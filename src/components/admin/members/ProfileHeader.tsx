@@ -17,13 +17,13 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
                 <div className="absolute inset-0 opacity-10 bg-[url('/patterns/islamic.png')]"></div>
             </div>
 
-            <div className="px-8 pb-8">
-                <div className="flex justify-between items-start">
+            <div className="px-5 sm:px-8 pb-8">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     {/* Avatar & Basic Info */}
-                    <div className="flex gap-6 -mt-12 relative z-10">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6 -mt-12 relative z-10">
                         {/* Avatar */}
                         <div className={`
-                            w-32 h-32 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-gray-100 relative
+                            w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-gray-100 relative
                             ${isDeceased ? 'grayscale' : ''}
                         `}>
                             {member.photo ? (
@@ -41,31 +41,38 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
                         </div>
 
                         {/* Name & Status */}
-                        <div className="mt-14 space-y-1">
-                            <h1 className="text-2xl font-bold text-[#111814] flex items-center gap-2">
+                        <div className="sm:mt-14 space-y-1 text-center sm:text-right">
+                            <h1 className="text-2xl font-bold text-[#111814] flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                 {member.label}
                                 {isDeceased && (
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full border border-gray-200">
-                                        متوفى
+                                        {member.gender === "female" ? "متوفاة" : "متوفى"}
                                     </span>
                                 )}
                             </h1>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                                <span className="flex items-center gap-1">
-                                    <MapPin className="w-3.5 h-3.5" />
-                                    {member.location || '---'}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    {member.birthDate?.year || '---'}
-                                    {isDeceased && ` - ${member.deathDate?.year || '---'}`}
-                                </span>
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-sm text-gray-500">
+                                {member.role && <span>{member.role}</span>}
+                                {member.location && (
+                                    <span className="flex items-center gap-1">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        {member.location}
+                                    </span>
+                                )}
+                                {(member.birthDate?.year || (isDeceased && member.deathDate?.year)) && (
+                                    <span className="flex items-center gap-1">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {member.birthDate?.year || '؟'}
+                                        {isDeceased && ` - ${member.deathDate?.year || '؟'}`}{' '}
+                                        {member.birthDate?.type === 'Gregorian' ? 'م' : 'هـ'}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="mt-4">
+                    {onEdit && (
+                    <div className="sm:mt-4 flex justify-center">
                         <button
                             onClick={onEdit}
                             className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold transition-colors border border-gray-200"
@@ -74,10 +81,11 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
                             تعديل الملف
                         </button>
                     </div>
+                    )}
                 </div>
 
                 {/* Additional Details Grid */}
-                <div className="grid grid-cols-3 gap-6 mt-8 pt-8 border-t border-gray-50">
+                <div className="grid grid-cols-3 gap-3 sm:gap-6 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-50">
                     <div className="space-y-1">
                         <label className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                             <Briefcase className="w-3.5 h-3.5" />

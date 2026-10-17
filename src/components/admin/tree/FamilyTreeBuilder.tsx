@@ -17,7 +17,7 @@ import {
     useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import dagre from 'dagre';
+import { EDGE_STYLE, NODE_HEIGHT, NODE_WIDTH, getLayoutedElements, toFlow } from '@/lib/tree/layout';
 import FamilyNode from './FamilyNode';
 import MemberModal from './MemberModal';
 import { Plus, RotateCcw } from 'lucide-react';
@@ -34,62 +34,6 @@ import { addMembers, deleteMember, linkMembers, updateMember } from '@/app/porta
 import PrintDialog, { PrintOptions } from './PrintDialog';
 import { Printer } from 'lucide-react';
 import { unwrap } from '@/lib/action-result';
-
-const EDGE_STYLE = { strokeWidth: 2, stroke: '#cbd5e1' };
-
-function toFlow(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
-    return {
-        nodes: tree.nodes.map((n) => ({ id: n.id, type: 'familyMember', position: { x: 0, y: 0 }, data: { ...n.data } })),
-        edges: tree.edges.map((e) => ({ id: e.id, source: e.source, target: e.target, type: 'smoothstep', style: EDGE_STYLE })),
-    };
-}
-
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-const nodeWidth = 180;
-const nodeHeight = 80;
-
-const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
-    const isHorizontal = direction === 'LR';
-
-    // Clear the graph before layout
-    dagreGraph.setGraph({
-        rankdir: direction,
-        nodesep: 120, // Horizontal spacing between siblings
-        ranksep: 180, // Vertical spacing between generations
-        ranker: 'tight-tree', // Best for hierarchical tree layouts
-        align: undefined, // Let dagre handle alignment automatically for balance
-        marginx: 80,
-        marginy: 80,
-        edgesep: 50 // Spacing between edges
-    });
-
-    nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-    });
-
-    edges.forEach((edge) => {
-        dagreGraph.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(dagreGraph);
-
-    const newNodes = nodes.map((node) => {
-        const nodeWithPosition = dagreGraph.node(node.id);
-        return {
-            ...node,
-            targetPosition: isHorizontal ? Position.Left : Position.Top,
-            sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-            position: {
-                x: nodeWithPosition.x - nodeWidth / 2,
-                y: nodeWithPosition.y - nodeHeight / 2,
-            },
-        };
-    });
-
-    return { nodes: newNodes, edges };
-};
 
 const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
     const initial = useMemo(() => {
@@ -248,10 +192,6 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
 
 
     const onLayout = useCallback(() => {
-        // Clear previous graph state
-        dagreGraph.setGraph({});
-        dagreGraph.nodes().forEach(n => dagreGraph.removeNode(n));
-
         const { nodes: newNodes, edges: newEdges } = getLayoutedElements(
             nodes,
             edges
@@ -269,8 +209,8 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
         // Small delay to allow filter to apply before centering
         setTimeout(() => {
             setCenter(
-                selectedNode.position.x + nodeWidth / 2,
-                selectedNode.position.y + nodeHeight / 2,
+                selectedNode.position.x + NODE_WIDTH / 2,
+                selectedNode.position.y + NODE_HEIGHT / 2,
                 { zoom: 1.5, duration: 800 }
             );
         }, 50);

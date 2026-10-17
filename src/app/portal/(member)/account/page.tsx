@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, UserCircle } from "lucide-react";
+import { UserCircle } from "lucide-react";
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 import { getSession } from "@/lib/auth/current";
-import { homeForRole } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +12,8 @@ export default async function AccountPage() {
     if (!session) redirect("/portal/login?next=/portal/account");
 
     return (
-        <div className="min-h-screen bg-[#f8faf9] py-12 px-4 font-body" dir="rtl">
+        <div className="font-body">
             <div className="max-w-md mx-auto space-y-6">
-                <Link href={homeForRole(session.role)} className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#111813]">
-                    <ArrowRight className="w-4 h-4" />
-                    العودة
-                </Link>
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-6">
                     <div className="flex items-center gap-3">
                         <UserCircle className="w-10 h-10 text-primary" />

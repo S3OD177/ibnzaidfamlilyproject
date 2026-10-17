@@ -79,7 +79,7 @@ function FamilyNode({ data, selected }: { data: FamilyNodeData; selected?: boole
                 </div>
 
                 {/* Expanded Sections (Visible only when selected) */}
-                {selected && (
+                {selected && data.onAddMember && (
                     <div className="w-full flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 pt-1">
                         {/* Color Indicators */}
                         <div className="flex justify-center gap-1.5 w-full">

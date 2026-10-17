@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { KeyRound } from "lucide-react";
-import { changePassword } from "@/app/portal/account/actions";
+import { changePassword } from "@/app/portal/(member)/account/actions";
 import { unwrap } from "@/lib/action-result";
 
 const inputClass = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary outline-none text-[#111813]";

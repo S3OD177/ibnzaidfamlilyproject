@@ -107,7 +107,7 @@ export default async function AboutPage() {
                                         <p key={i}>{paragraph}</p>
                                     ))}
                                 </div>
-                                <Link href="/portal/members/me" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
+                                <Link href="/portal/tree" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
                                     <span>استكشف شجرة العائلة</span>
                                     <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                                 </Link>

@@ -175,3 +175,30 @@ export async function getTreeData(): Promise<TreeData> {
         edges: links.map((link) => ({ id: link.id, source: link.parentId, target: link.childId })),
     };
 }
+
+/** What a member sees on a tree card; contact details stay on the profile page. */
+export type TreeViewNodeData = Pick<TreeNodeData, "label" | "gender" | "status" | "serialNumber" | "photo" | "role">;
+
+export interface TreeViewData {
+    nodes: { id: string; data: TreeViewNodeData }[];
+    edges: { id: string; source: string; target: string }[];
+}
+
+/** The whole tree for the members' read-only view. */
+export async function getTreeView(): Promise<TreeViewData> {
+    const { nodes, edges } = await getTreeData();
+    return {
+        nodes: nodes.map(({ id, data }) => ({
+            id,
+            data: {
+                label: data.label,
+                gender: data.gender,
+                status: data.status,
+                serialNumber: data.serialNumber,
+                photo: data.photo,
+                role: data.role,
+            },
+        })),
+        edges,
+    };
+}
