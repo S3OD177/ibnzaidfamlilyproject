@@ -68,8 +68,8 @@ export const defaultMember: Partial<Member> = {
     label: '',
     gender: 'male',
     status: 'alive',
-    birthDate: { day: '1', month: '1', year: '1400', type: 'Hijri' },
-    deathDate: { day: '1', month: '1', year: '1400', type: 'Hijri' },
+    birthDate: { day: '', month: '', year: '', type: 'Hijri' },
+    deathDate: { day: '', month: '', year: '', type: 'Hijri' },
     socialMedia: {},
     interests: []
 };

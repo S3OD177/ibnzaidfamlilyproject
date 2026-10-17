@@ -1,9 +1,12 @@
-"use client";
-
 import FamilyTreeBuilder from "@/components/admin/tree/FamilyTreeBuilder";
+import { getTreeData } from "@/lib/data/tree";
 import { Users, Info } from "lucide-react";
 
-export default function TreeEditorPage() {
+export const dynamic = "force-dynamic";
+
+export default async function TreeEditorPage() {
+    const tree = await getTreeData();
+
     return (
         <div className="flex flex-col h-[calc(100vh-65px)] font-display bg-[#f6f8f6]">
 
@@ -24,7 +27,7 @@ export default function TreeEditorPage() {
 
             {/* Tree Area */}
             <div className="flex-1 w-full relative">
-                <FamilyTreeBuilder />
+                <FamilyTreeBuilder initialTree={tree} />
             </div>
         </div>
     );

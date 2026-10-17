@@ -1,5 +1,5 @@
 // Builds the drizzle/0001_seed.sql migration from the sample data that used to be hard-coded in the UI
-// (tree members + links from FamilyTreeBuilder, news from the public news page).
+// (tree members + links from scripts/sample-tree.js, news from the public news page).
 // Usage: node scripts/build-seed.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -16,8 +16,8 @@ function extractArray(file, name) {
 const q = (v) => (v === null || v === undefined ? "NULL" : `'${String(v).replace(/'/g, "''")}'`);
 const n = (v) => (v === null || v === undefined || v === "" ? "NULL" : String(Number(v)));
 
-const nodes = extractArray("src/components/admin/tree/FamilyTreeBuilder.tsx", "initialNodes");
-const edges = extractArray("src/components/admin/tree/FamilyTreeBuilder.tsx", "initialEdges");
+const nodes = extractArray("scripts/sample-tree.js", "initialNodes");
+const edges = extractArray("scripts/sample-tree.js", "initialEdges");
 const newsItems = extractArray("src/app/(public)/news/page.tsx", "NEWS_ITEMS");
 
 const serialById = new Map(nodes.map((node) => [node.id, node.data.serial]));
