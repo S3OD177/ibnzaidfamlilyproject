@@ -1,24 +1,16 @@
 import type { Metadata } from "next";
-import { Cairo, Newsreader, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
 
-const cairo = Cairo({
-  subsets: ["arabic"],
-  variable: "--font-cairo",
-  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
-});
+// Loaded via a stylesheet link instead of next/font/google: the build server
+// receives Google font URLs that next/font cannot parse, which fails the build.
+const fontsHref =
+  "https://fonts.googleapis.com/css2?family=Cairo:wght@200..900&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Noto+Naskh+Arabic:wght@400..700&display=swap";
 
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-newsreader",
-  style: ["normal", "italic"],
-});
-
-const notoNaskh = Noto_Naskh_Arabic({
-  subsets: ["arabic"],
-  variable: "--font-naskh",
-  weight: ["400", "500", "600", "700"],
-});
+const fontVariables = {
+  "--font-cairo": "'Cairo'",
+  "--font-newsreader": "'Newsreader'",
+  "--font-naskh": "'Noto Naskh Arabic'",
+} as React.CSSProperties;
 
 export const metadata: Metadata = {
   title: "منصة العائلة - Family Portal",
@@ -32,8 +24,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link rel="stylesheet" href={fontsHref} />
+      </head>
       <body
-        className={`${cairo.variable} ${newsreader.variable} ${notoNaskh.variable} font-sans antialiased bg-slate-50 text-slate-900`}
+        style={fontVariables}
+        className="font-sans antialiased bg-slate-50 text-slate-900"
       >
         {children}
       </body>
