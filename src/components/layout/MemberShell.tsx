@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, LayoutDashboard, LogOut, Network, PartyPopper, UserCircle, Users } from "lucide-react";
+import { BarChart3, Home, PiggyBank, Images, LayoutDashboard, LogOut, Network, PartyPopper, UserCircle, Users, Vote } from "lucide-react";
 import { Emblem } from "@/components/heritage/Ornament";
 
 interface MemberShellProps {
@@ -20,6 +20,9 @@ const NAV = [
     { name: "الأعضاء", href: "/portal/directory", icon: Users },
     { name: "الأفراح", href: "/portal/occasions", icon: PartyPopper },
     { name: "الصور", href: "/portal/albums", icon: Images, desktopOnly: true },
+    { name: "التصويت", href: "/portal/polls", icon: Vote, desktopOnly: true },
+    { name: "الإحصائيات", href: "/portal/stats", icon: BarChart3, desktopOnly: true },
+    { name: "الصندوق", href: "/portal/fund", icon: PiggyBank, desktopOnly: true },
     { name: "ملفي", href: "/portal/members/me", icon: UserCircle },
 ];
 
@@ -42,13 +45,13 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                         <span className="font-heritage font-bold text-xl text-primary truncate">{siteName}</span>
                     </Link>
 
-                    <nav className="hidden md:flex items-center gap-1" aria-label="بوابة الأعضاء">
+                    <nav className="hidden xl:flex items-center gap-0.5" aria-label="بوابة الأعضاء">
                         {NAV.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 aria-current={activeHref === item.href ? "page" : undefined}
-                                className={`px-3 py-2 rounded-lg text-sm transition-colors ${activeHref === item.href
+                                className={`px-2.5 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${activeHref === item.href
                                     ? "bg-primary/15 text-primary font-bold"
                                     : "text-white/75 hover:text-white hover:bg-white/5"
                                     }`}
@@ -78,7 +81,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                                 <UserCircle className="w-5 h-5" />
                             </span>
                         </Link>
-                        <form action="/api/auth/logout" method="post" className="hidden md:block">
+                        <form action="/api/auth/logout" method="post" className="hidden xl:block">
                             <button type="submit" className="p-2 rounded-lg text-red-300 hover:bg-white/5 cursor-pointer" aria-label="تسجيل الخروج" title="تسجيل الخروج">
                                 <LogOut className="w-5 h-5" />
                             </button>
@@ -87,10 +90,10 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-28 md:pb-12">{children}</main>
+            <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-28 xl:pb-12">{children}</main>
 
             <nav
-                className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-deep border-t border-primary/20 pb-[env(safe-area-inset-bottom)]"
+                className="xl:hidden fixed bottom-0 inset-x-0 z-30 bg-deep border-t border-primary/20 pb-[env(safe-area-inset-bottom)]"
                 aria-label="بوابة الأعضاء"
             >
                 <div className="grid grid-cols-5">

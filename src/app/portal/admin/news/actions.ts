@@ -6,6 +6,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireRole } from "@/lib/auth/current";
 import { persistImage } from "@/lib/files";
+import { notifyMembers } from "@/lib/notify";
 
 // Admins and editors manage content; server actions re-check the account every call.
 async function requireStaff() {
@@ -81,7 +82,10 @@ export async function saveNews(input: NewsInput): Promise<ActionResult<{ id: str
 
         const db = getDb();
         let row: { id: string; slug: string } | undefined;
+        let wasPublished = false;
         if (input.id) {
+            const [previous] = await db.select({ status: schema.news.status }).from(schema.news).where(eq(schema.news.id, input.id));
+            wasPublished = previous?.status === "published";
             // Keep the slug once set so shared links keep working.
             [row] = await db
                 .update(schema.news)
@@ -97,6 +101,9 @@ export async function saveNews(input: NewsInput): Promise<ActionResult<{ id: str
         revalidatePath("/");
         revalidatePath("/news");
         revalidatePath("/portal/admin/news");
+        if (input.publish && !wasPublished) {
+            await notifyMembers({ heading: "خبر جديد", title, text: values.excerpt, path: `/news/${row.slug}` });
+        }
         return row;
     });
 }

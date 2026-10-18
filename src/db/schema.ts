@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
     boolean,
+    numeric,
     check,
     customType,
     date,
@@ -28,6 +29,8 @@ export const requestStatusEnum = pgEnum("request_status", ["pending", "approved"
 export const timelineTypeEnum = pgEnum("timeline_type", ["birth", "death", "marriage", "achievement", "milestone"]);
 export const visibilityEnum = pgEnum("visibility", ["public", "members"]);
 export const decisionStateEnum = pgEnum("decision_state", ["active", "superseded", "cancelled"]);
+export const fundKindEnum = pgEnum("fund_kind", ["income", "expense"]);
+export const pollResultsEnum = pgEnum("poll_results", ["always", "after_vote", "after_close"]);
 export const occasionTypeEnum = pgEnum("occasion_type", ["wedding", "birth", "graduation", "achievement", "other"]);
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
@@ -255,6 +258,8 @@ export const users = pgTable(
         status: userStatusEnum("status").notNull().default("active"),
         memberId: uuid("member_id").references(() => members.id, { onDelete: "set null" }),
         lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+        // Email when news, happy news or a poll is published (see lib/notify.ts).
+        notifyEmail: boolean("notify_email").notNull().default(true),
         ...timestamps,
     },
     (t) => [
@@ -351,6 +356,73 @@ export const albumPhotos = pgTable(
         createdAt: timestamps.createdAt,
     },
     (t) => [index("album_photos_album_idx").on(t.albumId, t.createdAt)],
+);
+
+// Polls for council and family decisions. Each signed-in person has one ballot per
+// poll (one or several options) and may change it until the poll closes.
+export const polls = pgTable("polls", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    question: text("question").notNull(),
+    description: text("description"),
+    multiple: boolean("multiple").notNull().default(false),
+    anonymous: boolean("anonymous").notNull().default(true),
+    results: pollResultsEnum("results").notNull().default("after_vote"),
+    closesAt: timestamp("closes_at", { withTimezone: true }),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+});
+
+export const pollOptions = pgTable(
+    "poll_options",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        pollId: uuid("poll_id")
+            .notNull()
+            .references(() => polls.id, { onDelete: "cascade" }),
+        label: text("label").notNull(),
+        sortOrder: integer("sort_order").notNull().default(0),
+    },
+    (t) => [index("poll_options_poll_idx").on(t.pollId, t.sortOrder)],
+);
+
+export const pollVotes = pgTable(
+    "poll_votes",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        pollId: uuid("poll_id")
+            .notNull()
+            .references(() => polls.id, { onDelete: "cascade" }),
+        optionId: uuid("option_id")
+            .notNull()
+            .references(() => pollOptions.id, { onDelete: "cascade" }),
+        // Account id, or a demo/env user id kept as text.
+        voterKey: text("voter_key").notNull(),
+        voterName: text("voter_name").notNull(),
+        createdAt: timestamps.createdAt,
+    },
+    (t) => [uniqueIndex("poll_votes_voter_option_key").on(t.pollId, t.voterKey, t.optionId), index("poll_votes_poll_idx").on(t.pollId)],
+);
+
+// Family fund ledger: records only (no payments). Members see it once an admin turns
+// it on (settings key "fund"); "party" is the payer or beneficiary, hidden from members
+// when partyHidden is set.
+export const fundEntries = pgTable(
+    "fund_entries",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        kind: fundKindEnum("kind").notNull(),
+        amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+        entryDate: date("entry_date").notNull(),
+        category: text("category").notNull(),
+        description: text("description"),
+        party: text("party"),
+        partyHidden: boolean("party_hidden").notNull().default(false),
+        receiptFileId: uuid("receipt_file_id").references(() => files.id, { onDelete: "set null" }),
+        createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+        ...timestamps,
+    },
+    (t) => [index("fund_entries_date_idx").on(t.entryDate), check("fund_entries_amount_check", sql`${t.amount} > 0`)],
 );
 
 // A member asking to change their own tree record; staff approve or reject it.

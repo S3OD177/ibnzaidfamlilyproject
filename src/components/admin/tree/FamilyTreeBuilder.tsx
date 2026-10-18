@@ -274,6 +274,14 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                 </button>
 
                 <ExportControls nodes={nodes} edges={edges} />
+                <a
+                    href="/portal/poster"
+                    target="_blank"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-primary/30 transition-all shadow-sm"
+                >
+                    <Printer className="w-4 h-4" />
+                    <span>ملصق للطباعة</span>
+                </a>
                 <button
                     onClick={() => {
                         setSelectedNode(null);

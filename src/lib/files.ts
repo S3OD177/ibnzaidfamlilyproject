@@ -98,6 +98,7 @@ export async function deleteOrphanFiles({ force = false } = {}): Promise<number>
           and not exists (
               select 1 from decisions d where d.body like '%/files/' || f.id::text || '%'
           )
+          and not exists (select 1 from fund_entries e where e.receipt_file_id = f.id)
           and not exists (select 1 from album_photos p where p.file_id = f.id)
           and not exists (select 1 from albums a where a.cover_file_id = f.id)
           and not exists (select 1 from occasions o where o.photo_url = '/files/' || f.id::text)

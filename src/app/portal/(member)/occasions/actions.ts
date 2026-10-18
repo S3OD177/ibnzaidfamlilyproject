@@ -8,6 +8,7 @@ import { getSession, requireRole } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
 import { setFileVisibility, storeFile } from "@/lib/files";
 import { OCCASION_TYPES, type OccasionType } from "@/lib/occasions";
+import { notifyMembers } from "@/lib/notify";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATA_URL = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/;
@@ -79,6 +80,7 @@ export async function submitOccasion(input: OccasionInput): Promise<ActionResult
             submitterName: session.displayName,
         });
         refresh();
+        if (staff) await notifyMembers({ heading: `أفراح العائلة: ${OCCASION_TYPES[input.type as OccasionType].label}`, title, text: message, path: "/portal/occasions" });
         return { published: staff };
     });
 }
@@ -120,9 +122,12 @@ export async function reviewOccasion(id: string, decision: "approved" | "rejecte
             .update(schema.occasions)
             .set({ status: decision, visibility, reviewedAt: new Date() })
             .where(and(eq(schema.occasions.id, id), eq(schema.occasions.status, "pending")))
-            .returning({ photoUrl: schema.occasions.photoUrl });
+            .returning({ photoUrl: schema.occasions.photoUrl, title: schema.occasions.title, type: schema.occasions.type, message: schema.occasions.message });
         if (!row) throw new ActionError("الطلب غير موجود أو تمت مراجعته");
-        if (decision === "approved") await syncPhoto(row.photoUrl, visibility);
+        if (decision === "approved") {
+            await syncPhoto(row.photoUrl, visibility);
+            await notifyMembers({ heading: `أفراح العائلة: ${OCCASION_TYPES[row.type].label}`, title: row.title, text: row.message, path: "/portal/occasions" });
+        }
         refresh();
     });
 }

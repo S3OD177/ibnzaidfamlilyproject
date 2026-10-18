@@ -9,6 +9,7 @@ import { unwrap } from "@/lib/action-result";
 import { formatHijri } from "@/lib/dates";
 import { OCCASION_TYPES, type OccasionView } from "@/lib/occasions";
 import { toast } from "@/components/ui/feedback";
+import WhatsAppShare from "@/components/common/WhatsAppShare";
 
 const SHOWN_NAMES = 4;
 
@@ -137,6 +138,7 @@ export default function OccasionCard({
                                 </button>
                             </div>
                         ))}
+                    <WhatsAppShare text={`${type.label}: ${occasion.title}`} path={occasion.visibility === "public" ? "/" : "/portal/occasions"} />
                     {actions}
                 </div>
             </div>

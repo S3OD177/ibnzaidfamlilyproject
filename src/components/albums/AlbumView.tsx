@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import PhotoGallery from "./PhotoGallery";
+import WhatsAppShare from "@/components/common/WhatsAppShare";
 import { formatHijri } from "@/lib/dates";
 import type { AlbumPhoto, AlbumSummary } from "@/lib/data/albums";
 
@@ -24,6 +25,7 @@ export default function AlbumView({ album, backHref }: { album: AlbumSummary & {
                     <span>{album.photos.length} صورة</span>
                 </p>
                 {album.description && <p className="text-gray-600 mt-3 leading-relaxed font-naskh max-w-3xl">{album.description}</p>}
+                <WhatsAppShare text={`ألبوم صور: ${album.title}`} className="mt-3" />
             </div>
             <PhotoGallery photos={album.photos} />
         </div>

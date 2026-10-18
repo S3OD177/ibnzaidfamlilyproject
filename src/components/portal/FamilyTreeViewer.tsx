@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Background, Controls, ReactFlow, ReactFlowProvider, useReactFlow, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Crosshair, Search, Users, X } from "lucide-react";
+import { Crosshair, Printer, Search, Users, X } from "lucide-react";
 import FamilyNode from "@/components/admin/tree/FamilyNode";
 import RelationshipAnalysisModal from "@/components/admin/tree/RelationshipAnalysisModal";
 import type { TreeViewData, TreeViewNodeData } from "@/lib/data/tree";
@@ -51,7 +51,7 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
     const isMine = myMemberId !== null && nodes.some((n) => n.id === myMemberId);
 
     return (
-        <div className="relative h-[calc(100dvh-16rem)] md:h-[calc(100dvh-12rem)] min-h-[420px] bg-white rounded-2xl border border-line overflow-hidden">
+        <div className="relative h-[calc(100dvh-16rem)] xl:h-[calc(100dvh-12rem)] min-h-[420px] bg-white rounded-2xl border border-line overflow-hidden">
             <div className="absolute top-3 inset-x-3 z-10 flex flex-wrap gap-2 items-start">
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -95,11 +95,19 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                 <button
                     type="button"
                     onClick={() => setIsAnalysisOpen(true)}
-                    className="flex items-center gap-1.5 bg-primary text-white rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm hover:bg-primary-dark"
+                    className="flex items-center gap-1.5 bg-primary text-deep rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm hover:bg-primary-light"
                 >
                     <Users className="w-4 h-4" />
                     ما صلة القرابة؟
                 </button>
+                <a
+                    href={selectedId ? `/portal/poster?root=${selectedId}` : "/portal/poster"}
+                    className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm hover:border-primary"
+                    title={selectedId ? "طباعة فرع الفرد المحدد" : "طباعة الشجرة كاملة"}
+                >
+                    <Printer className="w-4 h-4 text-primary-dark" />
+                    طباعة
+                </a>
                 {selectedId && (
                     <button
                         type="button"

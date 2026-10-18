@@ -64,6 +64,27 @@
       "when": 1792348094702,
       "tag": "0008_albums",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792350760079,
+      "tag": "0009_polls",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792351024464,
+      "tag": "0010_notify_email",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792351121765,
+      "tag": "0011_fund",
+      "breakpoints": true
     }
   ]
 }

@@ -10,10 +10,12 @@ import {
     LayoutDashboard,
     Newspaper,
     PartyPopper,
+    PiggyBank,
     Shield,
     UserPlus,
     Users,
     UsersRound,
+    Vote,
     type LucideIcon,
 } from "lucide-react";
 
@@ -68,6 +70,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
             { name: "أعضاء المجلس", href: "/portal/admin/council", icon: Landmark },
             { name: "القرارات", href: "/portal/admin/decisions", icon: Gavel },
             { name: "الوثائق", href: "/portal/admin/documents", icon: FileText },
+            { name: "التصويت", href: "/portal/admin/polls", icon: Vote },
+            { name: "الصندوق", href: "/portal/admin/fund", icon: PiggyBank, adminOnly: true },
         ],
     },
     {

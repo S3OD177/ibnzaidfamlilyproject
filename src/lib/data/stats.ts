@@ -3,6 +3,7 @@ import { count, desc, eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { FamilyStats } from "@/lib/stats/familyStats";
 import type { PlatformStats } from "@/types/platformStats";
+import { canSee, readPrivacy, type Viewer } from "@/lib/privacy";
 
 const currentHijriYear = () =>
     Number(new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", { year: "numeric" }).format(new Date()).replace(/\D/g, ""));
@@ -178,4 +179,87 @@ export async function getPendingRequests(limit = 3) {
         .where(eq(schema.membershipRequests.status, "pending"))
         .orderBy(desc(schema.membershipRequests.createdAt))
         .limit(limit);
+}
+
+export interface MemberStats {
+    total: number;
+    living: number;
+    deceased: number;
+    males: number;
+    females: number;
+    generations: { name: string; value: number }[];
+    branches: { name: string; value: number }[];
+    cities: { name: string; value: number }[];
+    ageGroups: { name: string; value: number }[];
+    topMaleNames: { name: string; count: number }[];
+    topFemaleNames: { name: string; count: number }[];
+    /** People left out of the city and age figures because they keep those private. */
+    hiddenCity: number;
+    hiddenAge: number;
+}
+
+const tally = (values: (string | null)[], limit = 12) => {
+    const counts = new Map<string, number>();
+    for (const v of values) {
+        const key = v?.trim();
+        if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return [...counts.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, limit);
+};
+
+/**
+ * Family figures for the members' statistics page. City and age only count people who
+ * let family members see those details (see lib/privacy.ts).
+ */
+export async function getMemberStats(): Promise<MemberStats> {
+    const rows = await getDb()
+        .select({
+            fullName: schema.members.fullName,
+            gender: schema.members.gender,
+            status: schema.members.status,
+            birthYear: schema.members.birthYear,
+            birthCalendar: schema.members.birthCalendar,
+            generation: schema.members.generationLabel,
+            branch: schema.members.branch,
+            location: schema.members.location,
+            privacy: schema.members.privacy,
+        })
+        .from(schema.members);
+
+    const member: Viewer = { kind: "member", memberId: null };
+    const cityVisible = rows.filter((r) => canSee(readPrivacy(r.privacy).location, member, ""));
+    const ageVisible = rows.filter((r) => canSee(readPrivacy(r.privacy).birthDate, member, ""));
+
+    const hijriNow = currentHijriYear();
+    const gregorianNow = new Date().getFullYear();
+    const ageGroups = [
+        { name: "حتى 18 سنة", value: 0 },
+        { name: "19 - 35", value: 0 },
+        { name: "36 - 60", value: 0 },
+        { name: "أكثر من 60", value: 0 },
+    ];
+    for (const m of ageVisible) {
+        if (m.status !== "alive" || !m.birthYear) continue;
+        const age = (m.birthCalendar === "gregorian" ? gregorianNow : hijriNow) - m.birthYear;
+        if (age < 0 || age > 130) continue;
+        ageGroups[age <= 18 ? 0 : age <= 35 ? 1 : age <= 60 ? 2 : 3].value++;
+    }
+
+    const males = rows.filter((r) => r.gender === "male");
+    const females = rows.filter((r) => r.gender === "female");
+    return {
+        total: rows.length,
+        living: rows.filter((r) => r.status === "alive").length,
+        deceased: rows.filter((r) => r.status === "deceased").length,
+        males: males.length,
+        females: females.length,
+        generations: tally(rows.map((r) => r.generation), 20),
+        branches: tally(rows.map((r) => r.branch)),
+        cities: tally(cityVisible.map((r) => r.location)),
+        ageGroups,
+        topMaleNames: topNames(males.map((m) => m.fullName)),
+        topFemaleNames: topNames(females.map((m) => m.fullName)),
+        hiddenCity: rows.length - cityVisible.length,
+        hiddenAge: rows.length - ageVisible.length,
+    };
 }

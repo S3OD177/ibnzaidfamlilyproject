@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import { UserCircle } from "lucide-react";
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
+import NotifyToggle from "@/components/auth/NotifyToggle";
+import { eq } from "drizzle-orm";
+import { getDb, schema } from "@/db";
+import { emailEnabled } from "@/lib/notify";
 import { getSession } from "@/lib/auth/current";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +14,9 @@ const ROLE_LABELS = { admin: "مدير النظام", editor: "محرر", member
 export default async function AccountPage() {
     const session = await getSession();
     if (!session) redirect("/portal/login?next=/portal/account");
+    const [account] = session.isDbUser
+        ? await getDb().select({ email: schema.users.email, notifyEmail: schema.users.notifyEmail }).from(schema.users).where(eq(schema.users.id, session.userId))
+        : [];
 
     return (
         <div className="font-body">
@@ -22,6 +29,7 @@ export default async function AccountPage() {
                             <p className="text-sm text-gray-500">{ROLE_LABELS[session.role]}</p>
                         </div>
                     </div>
+                    {account && <NotifyToggle initial={account.notifyEmail} email={account.email} sending={emailEnabled()} />}
                     {session.isDbUser ? (
                         <ChangePasswordForm />
                     ) : (

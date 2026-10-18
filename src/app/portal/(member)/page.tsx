@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, ChevronLeft, Images, PartyPopper, FileText, Gavel, Network, Newspaper, Paperclip, UserCircle, Users } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronLeft, Images, PartyPopper, Vote, FileText, Gavel, Network, Newspaper, Paperclip, UserCircle, Users } from "lucide-react";
 import { getSession } from "@/lib/auth/current";
 import { getPortalMember } from "@/lib/data/members";
 import { latestNews, formatNewsDate } from "@/lib/data/news";
@@ -12,6 +12,9 @@ import { listOccasions } from "@/lib/data/occasions";
 import OccasionCard from "@/components/occasions/OccasionCard";
 import AlbumGrid from "@/components/albums/AlbumGrid";
 import { listAlbums } from "@/lib/data/albums";
+import { listPolls } from "@/lib/data/polls";
+import PollCard from "@/components/polls/PollCard";
+import { isStaff } from "@/lib/auth/session";
 import { formatDateBoth, formatWeekday } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +55,7 @@ export default async function MemberHomePage() {
     if (!session) redirect("/portal/login");
 
     const today = new Date().toISOString().slice(0, 10);
-    const [member, news, events, decisions, documents, occasions, albums] = await Promise.all([
+    const [member, news, events, decisions, documents, occasions, albums, openPolls] = await Promise.all([
         session.memberId ? getPortalMember(session.memberId, { kind: "member", memberId: session.memberId }) : Promise.resolve(null),
         latestNews(3),
         listEvents(),
@@ -60,6 +63,7 @@ export default async function MemberHomePage() {
         listDocuments({}),
         listOccasions({ limit: 2, viewerKey: session.userId }),
         listAlbums({ limit: 3 }),
+        listPolls({ viewerKey: session.userId, staff: isStaff(session.role), onlyOpen: true, limit: 10 }),
     ]);
     const upcoming = events.filter((e) => e.date >= today).slice(0, 4);
     const files = documents.filter((d) => d.fileId);
@@ -100,6 +104,9 @@ export default async function MemberHomePage() {
                         { href: "/portal/members/me", label: "ملفي", icon: UserCircle },
                         { href: "/portal/tree", label: "الشجرة", icon: Network },
                         { href: "/portal/directory", label: "الأعضاء", icon: Users },
+                        { href: "/portal/polls", label: "التصويت", icon: Vote },
+                        { href: "/portal/albums", label: "الصور", icon: Images },
+                        { href: "/portal/stats", label: "الإحصائيات", icon: BarChart3 },
                     ].map(({ href, label, icon: Icon }) => (
                         <Link
                             key={href}
@@ -112,6 +119,24 @@ export default async function MemberHomePage() {
                     ))}
                 </div>
             </section>
+
+            {openPolls.length > 0 && (
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-heritage text-2xl font-bold text-deep flex items-center gap-2">
+                            <Vote className="w-5 h-5 text-primary-dark" />
+                            تصويت مفتوح
+                        </h2>
+                        <Link href="/portal/polls" className="text-sm font-bold text-primary-dark flex items-center gap-1 hover:gap-2 transition-all">
+                            كل التصويتات
+                            <ChevronLeft className="w-4 h-4" />
+                        </Link>
+                    </div>
+                    {openPolls.slice(0, 2).map((p) => (
+                        <PollCard key={p.id} poll={p} />
+                    ))}
+                </section>
+            )}
 
             {occasions.length > 0 && (
                 <section className="space-y-4">

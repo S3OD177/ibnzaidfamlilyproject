@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import WhatsAppShare from "@/components/common/WhatsAppShare";
 import { notFound } from "next/navigation";
 import { formatNewsDate, getPublishedNewsBySlug, latestNews, toParagraphs } from "@/lib/data/news";
 import { Calendar, User, ChevronLeft } from "lucide-react";
@@ -61,6 +62,7 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                                 <span className="px-3 py-1 bg-sand/70 text-deep rounded-full text-xs font-bold">
                                     {article.category}
                                 </span>
+                                <WhatsAppShare text={article.title} />
                             </div>
                         </div>
 

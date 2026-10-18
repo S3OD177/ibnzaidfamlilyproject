@@ -23,3 +23,12 @@ export async function changePassword(input: { current: string; next: string }): 
         await db.update(schema.users).set({ passwordHash: await hashPassword(input.next) }).where(eq(schema.users.id, user.id));
     });
 }
+
+/** Turns the signed-in account's email notifications on or off. */
+export async function setEmailNotifications(enabled: boolean): Promise<ActionResult<void>> {
+    return safeAction(async () => {
+        const session = await getSession();
+        if (!session?.isDbUser) throw new ActionError("الإشعارات متاحة للحسابات المسجلة فقط");
+        await getDb().update(schema.users).set({ notifyEmail: Boolean(enabled) }).where(eq(schema.users.id, session.userId));
+    });
+}
