@@ -4,6 +4,7 @@ import { PageHero, SectionHeading } from "@/components/heritage/PageHero";
 import { Star8 } from "@/components/heritage/Ornament";
 import { categoryColor, formatNewsDate, latestNews, type NewsRow } from "@/lib/data/news";
 import { getCouncilMembers } from "@/lib/data/members";
+import { getViewer } from "@/lib/auth/current";
 import { getCharter } from "@/lib/data/documents";
 import { getAboutContent, getSiteSettings } from "@/lib/settings";
 
@@ -14,7 +15,7 @@ export default async function Home() {
     latestNews(4),
     getSiteSettings(),
     getAboutContent(),
-    getCouncilMembers(),
+    getViewer().then(getCouncilMembers),
     getCharter(),
   ]);
   const [featured, ...rest] = news;

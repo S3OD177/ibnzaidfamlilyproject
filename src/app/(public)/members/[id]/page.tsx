@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMemberProfile } from "@/lib/data/members";
 import ShareButton from "@/components/common/ShareButton";
-import { getSession } from "@/lib/auth/current";
+import { getSession, getViewer } from "@/lib/auth/current";
 import {
     User,
     MapPin,
@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MemberProfile({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const member = await getMemberProfile(id);
+    const member = await getMemberProfile(id, await getViewer());
     if (!member) notFound();
 
     // Contact details are for signed-in family members only.

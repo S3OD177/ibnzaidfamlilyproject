@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, PencilLine, UserX } from "lucide-react";
+import { ArrowRight, PencilLine, ShieldCheck, UserX } from "lucide-react";
 import ProfileHeader from "@/components/admin/members/ProfileHeader";
 import FamilyConnections from "@/components/admin/members/FamilyConnections";
 import { getPortalMember } from "@/lib/data/members";
@@ -53,7 +53,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
         );
     }
 
-    const member = await getPortalMember(id);
+    const member = await getPortalMember(id, isStaff(session.role) ? { kind: "staff" } : { kind: "member", memberId: session.memberId });
     if (!member) notFound();
 
     return (
@@ -65,15 +65,26 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                         <ArrowRight className="w-4 h-4" />
                         {backLink.label}
                     </Link>
-                    {session.memberId === member.id && (
-                        <Link
-                            href="/portal/profile/edit"
-                            className="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-primary-dark"
-                        >
-                            <PencilLine className="w-4 h-4" />
-                            تحديث بياناتي
-                        </Link>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                        {(session.memberId === member.id || isStaff(session.role)) && (
+                            <Link
+                                href={session.memberId === member.id ? "/portal/profile/privacy" : `/portal/profile/privacy?member=${member.id}`}
+                                className="inline-flex items-center gap-2 bg-white border border-sand text-deep font-bold text-sm rounded-xl px-4 py-2.5 hover:border-primary"
+                            >
+                                <ShieldCheck className="w-4 h-4 text-primary-dark" />
+                                الخصوصية
+                            </Link>
+                        )}
+                        {session.memberId === member.id && (
+                            <Link
+                                href="/portal/profile/edit"
+                                className="inline-flex items-center gap-2 bg-primary text-deep font-bold text-sm rounded-xl px-4 py-2.5 hover:bg-primary-light"
+                            >
+                                <PencilLine className="w-4 h-4" />
+                                تحديث بياناتي
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

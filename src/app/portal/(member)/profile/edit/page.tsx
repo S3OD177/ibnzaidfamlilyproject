@@ -43,7 +43,8 @@ export default async function EditMyProfilePage() {
             <div>
                 <h1 className="text-2xl font-black">تحديث بياناتي</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    عدّل ما تريد ثم أرسل الطلب، وتظهر التعديلات في ملفك بعد أن تعتمدها الإدارة. الاسم والنسب وتواريخ الميلاد تعدّلها الإدارة فقط.
+                    عدّل ما تريد ثم أرسل الطلب، وتظهر التعديلات في ملفك بعد أن تعتمدها الإدارة. الاسم والنسب وتواريخ الميلاد تعدّلها الإدارة فقط.{" "}
+                    <Link href="/portal/profile/privacy" className="font-bold text-primary-dark hover:underline">من يرى بياناتي؟</Link>
                 </p>
             </div>
 

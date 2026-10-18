@@ -3,7 +3,8 @@ import { ActionError } from "@/lib/action-result";
 import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
-import { DEMO_IDS, ENV_ADMIN_ID, SESSION_COOKIE, isDemoLoginEnabled, verifySessionToken, type Role } from "@/lib/auth/session";
+import { DEMO_IDS, ENV_ADMIN_ID, SESSION_COOKIE, isDemoLoginEnabled, isStaff, verifySessionToken, type Role } from "@/lib/auth/session";
+import type { Viewer } from "@/lib/privacy";
 
 export interface CurrentUser {
     userId: string;
@@ -53,4 +54,12 @@ export async function requireRole(...roles: Role[]): Promise<CurrentUser> {
     const session = await getSession();
     if (!session || !roles.includes(session.role)) throw new ActionError("غير مصرح");
     return session;
+}
+
+/** Who is viewing, for the privacy rules in lib/privacy.ts. */
+export async function getViewer(): Promise<Viewer> {
+    const session = await getSession();
+    if (!session) return { kind: "anon" };
+    if (isStaff(session.role)) return { kind: "staff" };
+    return { kind: "member", memberId: session.memberId };
 }

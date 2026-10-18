@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Search, User } from "lucide-react";
 import { listBranches, listDirectory } from "@/lib/data/members";
+import { getViewer } from "@/lib/auth/current";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "دليل الأعضاء" };
@@ -10,7 +11,7 @@ const deceasedLabel = (gender: "male" | "female") => (gender === "female" ? "ر�
 
 export default async function DirectoryPage({ searchParams }: { searchParams: Promise<{ q?: string; branch?: string }> }) {
     const { q = "", branch = "" } = await searchParams;
-    const [entries, branches] = await Promise.all([listDirectory({ q, branch }), listBranches()]);
+    const [entries, branches] = await Promise.all([listDirectory({ q, branch }, await getViewer()), listBranches()]);
 
     return (
         <div className="space-y-6">

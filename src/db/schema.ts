@@ -86,6 +86,8 @@ export const members = pgTable(
         bio: text("bio"),
         interests: text("interests").array().default(sql`'{}'::text[]`).notNull(),
         isPublic: integer("is_public").default(1).notNull(), // 1 = shown on public pages
+        // Who may see each personal detail; see lib/privacy.ts. Empty = the defaults.
+        privacy: jsonb("privacy").$type<Record<string, string>>().default({}).notNull(),
 
         ...timestamps,
     },

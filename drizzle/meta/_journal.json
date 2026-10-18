@@ -43,6 +43,13 @@
       "when": 1792276357387,
       "tag": "0005_member_change_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792346933525,
+      "tag": "0006_member_privacy",
+      "breakpoints": true
     }
   ]
 }

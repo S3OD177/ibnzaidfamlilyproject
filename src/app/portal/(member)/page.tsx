@@ -49,7 +49,7 @@ export default async function MemberHomePage() {
 
     const today = new Date().toISOString().slice(0, 10);
     const [member, news, events, decisions, documents] = await Promise.all([
-        session.memberId ? getPortalMember(session.memberId) : Promise.resolve(null),
+        session.memberId ? getPortalMember(session.memberId, { kind: "member", memberId: session.memberId }) : Promise.resolve(null),
         latestNews(3),
         listEvents(),
         listDecisions({}),

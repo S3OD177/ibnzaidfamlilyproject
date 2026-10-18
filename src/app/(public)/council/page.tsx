@@ -4,6 +4,7 @@ import { Eye, FileText, MapPin, User } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/heritage/PageHero";
 import { Star8 } from "@/components/heritage/Ornament";
 import { getCouncilMembers } from "@/lib/data/members";
+import { getViewer } from "@/lib/auth/current";
 import { getCharter } from "@/lib/data/documents";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "مجلس العائلة" };
 
 export default async function CouncilPage() {
     // Ordered by council_order; the first (the chair) gets the large card.
-    const [[chair, ...members], charter] = await Promise.all([getCouncilMembers(), getCharter()]);
+    const [[chair, ...members], charter] = await Promise.all([getViewer().then(getCouncilMembers), getCharter()]);
 
     return (
         <main className="flex-grow">

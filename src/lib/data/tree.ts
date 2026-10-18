@@ -1,4 +1,5 @@
 import "server-only";
+import { canSee, readPrivacy, type Viewer } from "@/lib/privacy";
 import { ActionError } from "@/lib/action-result";
 import { asc } from "drizzle-orm";
 import { getDb, schema } from "@/db";
@@ -185,17 +186,27 @@ export interface TreeViewData {
 }
 
 /** The whole tree for the members' read-only view. */
-export async function getTreeView(): Promise<TreeViewData> {
-    const { nodes, edges } = await getTreeData();
+export async function getTreeView(viewer: Viewer): Promise<TreeViewData> {
+    const db = getDb();
+    const [memberRows, links] = await Promise.all([
+        db.select().from(schema.members).orderBy(asc(schema.members.serialNumber), asc(schema.members.createdAt)),
+        db.select().from(schema.relationships),
+    ]);
+    const nodes = memberRows.map((row) => ({
+        id: row.id,
+        data: rowToNodeData(row),
+        showPhoto: canSee(readPrivacy(row.privacy).photo, viewer, row.id),
+    }));
+    const edges = links.map((link) => ({ id: link.id, source: link.parentId, target: link.childId }));
     return {
-        nodes: nodes.map(({ id, data }) => ({
+        nodes: nodes.map(({ id, data, showPhoto }) => ({
             id,
             data: {
                 label: data.label,
                 gender: data.gender,
                 status: data.status,
                 serialNumber: data.serialNumber,
-                photo: data.photo,
+                photo: showPhoto ? data.photo : undefined,
                 role: data.role,
             },
         })),
