@@ -9,6 +9,7 @@ import { CalendarEvent } from '@/types/calendar';
 import type { StoredEvent } from '@/lib/data/events';
 import { addEvent, deleteEvent } from '@/app/portal/admin/calendar/actions';
 import { unwrap } from '@/lib/action-result';
+import { confirmAction, toast } from "@/components/ui/feedback";
 
 // "YYYY-MM-DD" <-> local Date, so an event never shifts a day across time zones.
 const toLocalDate = (iso: string) => {
@@ -49,19 +50,21 @@ export default function CalendarView({ initialEvents }: { initialEvents: StoredE
                     category: newEvent.category ?? 'general',
                 }));
                 setStored((prev) => [...prev, saved]);
+                toast.success("تمت إضافة المناسبة");
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'تعذر حفظ الحدث');
             }
         });
     };
 
-    const handleDelete = (event: CalendarEvent) => {
-        if (!confirm(`حذف "${event.title}"؟`)) return;
+    const handleDelete = async (event: CalendarEvent) => {
+        if (!(await confirmAction({ title: `حذف "${event.title}"؟`, confirmLabel: "حذف", danger: true }))) return;
         setError(null);
         startTransition(async () => {
             try {
                 await unwrap(deleteEvent(event.id));
                 setStored((prev) => prev.filter((e) => e.id !== event.id));
+                toast.success("تم حذف المناسبة");
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'تعذر الحذف');
             }
@@ -72,8 +75,8 @@ export default function CalendarView({ initialEvents }: { initialEvents: StoredE
         <div className="space-y-6">
             <header className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div>
-                    <h1 className="text-2xl font-bold text-[#111814] mb-2">التقويم العائلي</h1>
-                    <p className="text-[#618975] text-sm">تتبع المناسبات والاجتماعات والفعاليات العائلية.</p>
+                    <h1 className="text-2xl font-bold text-ink mb-2">التقويم العائلي</h1>
+                    <p className="text-muted text-sm">تتبع المناسبات والاجتماعات والفعاليات العائلية.</p>
                     {pending && <p className="text-xs font-bold text-blue-600 mt-2">جارٍ الحفظ...</p>}
                     {error && <p className="text-xs font-bold text-red-600 mt-2">{error}</p>}
                 </div>

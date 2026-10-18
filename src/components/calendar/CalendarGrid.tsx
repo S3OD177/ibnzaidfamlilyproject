@@ -63,7 +63,7 @@ export default function CalendarGrid({ events, onDateSelect, selectedDate }: Cal
                     onClick={() => onDateSelect(date)}
                     className={`h-24 border border-gray-100 p-2 cursor-pointer transition-colors relative hover:bg-gray-50
                         ${isToday ? 'bg-blue-50/30' : 'bg-white'}
-                        ${isSelected ? 'ring-2 ring-[#D4AF37] ring-inset z-10' : ''}
+                        ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : ''}
                     `}
                 >
                     <div className="flex justify-between items-start">
@@ -100,7 +100,7 @@ export default function CalendarGrid({ events, onDateSelect, selectedDate }: Cal
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-[#fcfdfc]">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-canvas">
                 <div className="flex gap-2">
                     <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
                         <ChevronRight className="w-5 h-5" />
@@ -109,7 +109,7 @@ export default function CalendarGrid({ events, onDateSelect, selectedDate }: Cal
                         <ChevronLeft className="w-5 h-5" />
                     </button>
                 </div>
-                <h2 className="text-xl font-bold text-[#111814]">
+                <h2 className="text-xl font-bold text-ink">
                     {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                 </h2>
                 <div>

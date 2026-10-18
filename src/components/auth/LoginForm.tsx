@@ -46,21 +46,21 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
     };
 
     return (
-        <div className="min-h-screen bg-[#f8faf9] flex flex-col items-center justify-center p-4 font-body">
+        <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-4 font-body">
 
             {/* Logo Section */}
             <Link href="/" className="mb-8 flex flex-col items-center gap-3 group">
                 <div className="size-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 border border-gray-100">
                     <Users className="w-8 h-8" />
                 </div>
-                <h1 className="text-2xl font-bold text-[#111813] font-display">{siteName}</h1>
+                <h1 className="text-2xl font-bold text-ink font-display">{siteName}</h1>
             </Link>
 
             {/* Login Card */}
             <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
                 <div className="p-8 sm:p-10">
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-[#111813] mb-2">تسجيل الدخول</h2>
+                        <h2 className="text-2xl font-bold text-ink mb-2">تسجيل الدخول</h2>
                         <p className="text-gray-500 text-sm">أهلاً بك في البوابة الإلكترونية للعائلة</p>
                     </div>
 
@@ -73,7 +73,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
 
                         {/* Username Field */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-[#111813] select-none" htmlFor="username">
+                            <label className="text-sm font-bold text-ink select-none" htmlFor="username">
                                 اسم المستخدم
                             </label>
                             <div className="relative">
@@ -87,7 +87,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                                     autoComplete="username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full pr-12 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#111813] font-medium"
+                                    className="w-full pr-12 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-ink font-medium"
                                     placeholder="أدخل اسم المستخدم"
                                     required
                                 />
@@ -97,7 +97,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                         {/* Password Field */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-sm font-bold text-[#111813] select-none" htmlFor="password">
+                                <label className="text-sm font-bold text-ink select-none" htmlFor="password">
                                     كلمة المرور
                                 </label>
                                 <Link href="/#contact" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
@@ -115,7 +115,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                                     autoComplete="current-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pr-12 pl-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-[#111813] font-medium"
+                                    className="w-full pr-12 pl-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-ink font-medium"
                                     placeholder="••••••••"
                                     required
                                 />
@@ -163,7 +163,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                                             setPassword(demoAccounts[role].password);
                                             setError(null);
                                         }}
-                                        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-bold text-[#111813] transition-colors hover:border-primary hover:text-primary cursor-pointer"
+                                        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary cursor-pointer"
                                     >
                                         <Icon className="w-4 h-4" />
                                         <span>{label}</span>
@@ -178,7 +178,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                 <div className="bg-gray-50 border-t border-gray-100 p-6 text-center">
                     <p className="text-sm text-gray-500">
                         لست عضواً بعد؟{" "}
-                        <Link href="/join" className="font-bold text-[#111813] hover:text-primary transition-colors">
+                        <Link href="/join" className="font-bold text-ink hover:text-primary transition-colors">
                             اطلب الانضمام
                         </Link>
                     </p>

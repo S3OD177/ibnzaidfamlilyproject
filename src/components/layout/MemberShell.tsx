@@ -31,8 +31,8 @@ export default function MemberShell({ children, siteName, displayName, memberId,
     })();
 
     return (
-        <div className="min-h-screen bg-[#f6f8f7] font-display text-[#111814]" dir="rtl">
-            <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-[#e5ece8]">
+        <div className="min-h-screen bg-canvas font-display text-ink" dir="rtl">
+            <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-line">
                 <div className="max-w-6xl mx-auto h-16 px-4 flex items-center gap-6">
                     <Link href="/portal" className="flex items-center gap-2 shrink-0">
                         <span className="bg-primary text-white p-1.5 rounded-lg">
@@ -49,7 +49,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                                 aria-current={activeHref === item.href ? "page" : undefined}
                                 className={`px-3 py-2 rounded-lg text-sm transition-colors ${activeHref === item.href
                                     ? "bg-primary/10 text-primary font-bold"
-                                    : "text-[#4b5d54] hover:bg-[#f0f4f2]"
+                                    : "text-muted hover:bg-mist"
                                     }`}
                             >
                                 {item.name}
@@ -69,7 +69,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                         )}
                         <Link
                             href="/portal/account"
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#f0f4f2] ${pathname === "/portal/account" ? "bg-[#f0f4f2]" : ""}`}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-mist ${pathname === "/portal/account" ? "bg-mist" : ""}`}
                             aria-label="حسابي"
                         >
                             <span className="hidden sm:block text-sm font-bold max-w-40 truncate">{displayName}</span>
@@ -89,7 +89,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
             <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-28 md:pb-12">{children}</main>
 
             <nav
-                className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[#e5ece8] pb-[env(safe-area-inset-bottom)]"
+                className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-line pb-[env(safe-area-inset-bottom)]"
                 aria-label="بوابة الأعضاء"
             >
                 <div className="grid grid-cols-4">
@@ -101,7 +101,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                                 key={item.href}
                                 href={item.href}
                                 aria-current={active ? "page" : undefined}
-                                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? "text-primary font-bold" : "text-[#618975]"}`}
+                                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? "text-primary font-bold" : "text-muted"}`}
                             >
                                 <Icon className="w-5 h-5" />
                                 {item.name}

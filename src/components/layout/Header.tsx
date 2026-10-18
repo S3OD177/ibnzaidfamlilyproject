@@ -28,19 +28,19 @@ export function Header({ siteName }: { siteName: string }) {
     const getLinkClass = (path: string) => {
         return isActive(path)
             ? "text-primary text-sm font-bold leading-normal outline-none"
-            : "text-[#111813] text-sm font-medium leading-normal hover:text-primary transition-colors outline-none";
+            : "text-ink text-sm font-medium leading-normal hover:text-primary transition-colors outline-none";
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-white border-b border-[#f0f4f2]">
+        <header className="sticky top-0 z-50 bg-white border-b border-mist">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-3 flex items-center justify-between whitespace-nowrap">
                 {/* Logo & Brand - Right (RTL) */}
-                <Link href="/" className="flex items-center gap-4 text-[#111813]">
+                <Link href="/" className="flex items-center gap-4 text-ink">
                     <div className="size-8 text-primary">
                         {/* Using Lucide Users as equivalent to diversity_2 */}
                         <Users className="w-8 h-8" />
                     </div>
-                    <h2 className="text-[#111813] text-xl font-bold leading-tight tracking-[-0.015em] font-display">
+                    <h2 className="text-ink text-xl font-bold leading-tight tracking-[-0.015em] font-display">
                         {siteName}
                     </h2>
                 </Link>
@@ -58,7 +58,7 @@ export function Header({ siteName }: { siteName: string }) {
                     {/* Login Button */}
                     <Link
                         href="/portal/login"
-                        className="flex items-center gap-2 bg-[#111812] text-white px-5 py-2 rounded-lg font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md"
+                        className="flex items-center gap-2 bg-ink text-white px-5 py-2 rounded-lg font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md"
                     >
                         <Menu className="w-[18px] h-[18px]" />
                         <span>الخدمات الإلكترونية</span>
@@ -69,7 +69,7 @@ export function Header({ siteName }: { siteName: string }) {
                 <div className="lg:hidden flex items-center">
                     <button
                         type="button"
-                        className="text-[#111813] p-2 -m-2 cursor-pointer"
+                        className="text-ink p-2 -m-2 cursor-pointer"
                         aria-label={menuOpen ? "إغلاق القائمة" : "فتح القائمة"}
                         aria-expanded={menuOpen}
                         aria-controls="mobile-menu"
@@ -82,7 +82,7 @@ export function Header({ siteName }: { siteName: string }) {
 
             {/* Mobile Menu */}
             {menuOpen && (
-                <nav id="mobile-menu" className="lg:hidden border-t border-[#f0f4f2] bg-white px-4 pb-4 shadow-lg">
+                <nav id="mobile-menu" className="lg:hidden border-t border-mist bg-white px-4 pb-4 shadow-lg">
                     <ul className="flex flex-col py-2">
                         {NAV.map((item) => (
                             <li key={item.href}>
@@ -98,7 +98,7 @@ export function Header({ siteName }: { siteName: string }) {
                     </ul>
                     <Link
                         href="/portal/login"
-                        className="mt-2 flex items-center justify-center gap-2 bg-[#111812] text-white px-5 py-3 rounded-lg font-bold text-sm"
+                        className="mt-2 flex items-center justify-center gap-2 bg-ink text-white px-5 py-3 rounded-lg font-bold text-sm"
                     >
                         <Menu className="w-[18px] h-[18px]" />
                         <span>الخدمات الإلكترونية</span>

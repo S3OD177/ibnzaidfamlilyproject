@@ -32,33 +32,33 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                     <article className="w-full lg:w-2/3 flex flex-col">
 
                         {/* Breadcrumbs */}
-                        <div className="flex flex-wrap items-center gap-2 mb-6 text-sm text-[#61896f] font-body">
+                        <div className="flex flex-wrap items-center gap-2 mb-6 text-sm text-muted font-body">
                             <Link className="hover:text-primary transition-colors" href="/">الرئيسية</Link>
                             <ChevronLeft className="w-4 h-4 text-gray-400" />
                             <Link className="hover:text-primary transition-colors" href="/news">أخبار العائلة</Link>
                             <ChevronLeft className="w-4 h-4 text-gray-400" />
-                            <span className="text-[#111813] font-semibold truncate max-w-[200px]">{article.title}</span>
+                            <span className="text-ink font-semibold truncate max-w-[200px]">{article.title}</span>
                         </div>
 
                         {/* Headline */}
-                        <h1 className="font-display text-3xl md:text-4xl lg:text-[42px] font-bold text-[#111813] leading-tight mb-4">
+                        <h1 className="font-display text-3xl md:text-4xl lg:text-[42px] font-bold text-ink leading-tight mb-4">
                             {article.title}
                         </h1>
 
                         {/* Meta Data */}
-                        <div className="flex flex-wrap items-center gap-4 md:gap-6 pb-6 border-b border-[#f0f4f2] mb-8 font-body">
-                            <div className="flex items-center gap-2 text-[#61896f]">
+                        <div className="flex flex-wrap items-center gap-4 md:gap-6 pb-6 border-b border-mist mb-8 font-body">
+                            <div className="flex items-center gap-2 text-muted">
                                 <Calendar className="w-5 h-5 text-primary" />
                                 <time className="text-sm font-medium pt-1" dateTime={article.publishedAt?.toISOString()}>{formatNewsDate(article.publishedAt)}</time>
                             </div>
                             {article.authorName && (
-                                <div className="flex items-center gap-2 text-[#61896f]">
+                                <div className="flex items-center gap-2 text-muted">
                                     <User className="w-5 h-5 text-primary" />
                                     <span className="text-sm font-medium pt-1">{article.authorName}</span>
                                 </div>
                             )}
-                            <div className="flex items-center gap-2 text-[#61896f] mr-auto lg:mr-0">
-                                <span className="px-3 py-1 bg-[#f0f4f0] text-primary rounded-full text-xs font-bold">
+                            <div className="flex items-center gap-2 text-muted mr-auto lg:mr-0">
+                                <span className="px-3 py-1 bg-mist text-primary rounded-full text-xs font-bold">
                                     {article.category}
                                 </span>
                             </div>
@@ -66,14 +66,14 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
 
                         {/* Featured Image */}
                         {article.coverUrl && (
-                            <div className="bg-white p-2 border border-[#f0f4f2] rounded-lg shadow-sm mb-8">
+                            <div className="bg-white p-2 border border-mist rounded-lg shadow-sm mb-8">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={article.coverUrl} alt="" className="w-full max-h-[450px] object-cover rounded" />
                             </div>
                         )}
 
                         {/* Article Body */}
-                        <div className="prose prose-lg max-w-none font-naskh text-[#111813]">
+                        <div className="prose prose-lg max-w-none font-naskh text-ink">
                             {paragraphs.map((p, i) => (
                                 <p key={i} className="mb-6 text-lg leading-loose text-gray-800 whitespace-pre-line">{p}</p>
                             ))}
@@ -86,8 +86,8 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                     <aside className="w-full lg:w-1/3 flex flex-col gap-8">
 
                         {/* Latest News Widget */}
-                        <div className="bg-white rounded-xl shadow-sm border border-[#f0f4f2] overflow-hidden p-6 font-body">
-                            <div className="flex items-center justify-between mb-6 border-b border-[#f0f4f0] pb-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-mist overflow-hidden p-6 font-body">
+                            <div className="flex items-center justify-between mb-6 border-b border-mist pb-4">
                                 <h3 className="font-display text-xl font-bold text-primary">آخر الأخبار</h3>
                                 <Link className="text-xs font-bold text-primary hover:underline" href="/news">عرض الكل</Link>
                             </div>
@@ -103,10 +103,10 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                                         </div>
                                         <div className="flex flex-col pt-0.5">
                                             <span className="text-xs text-primary font-medium mb-1">{item.category}</span>
-                                            <h4 className="font-display font-bold text-[#111813] text-sm leading-tight group-hover:text-primary transition-colors">
+                                            <h4 className="font-display font-bold text-ink text-sm leading-tight group-hover:text-primary transition-colors">
                                                 {item.title}
                                             </h4>
-                                            <span className="text-xs text-[#61896f] mt-2">{formatNewsDate(item.publishedAt)}</span>
+                                            <span className="text-xs text-muted mt-2">{formatNewsDate(item.publishedAt)}</span>
                                         </div>
                                     </Link>
                                 ))}

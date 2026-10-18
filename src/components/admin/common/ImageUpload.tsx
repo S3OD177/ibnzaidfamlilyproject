@@ -120,7 +120,7 @@ export default function ImageUpload({ value, onChange, className = '', showPrevi
                 <Upload className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#111813] mb-1">
+                <p className="text-sm font-bold text-ink mb-1">
                   اسحب الصورة هنا أو انقر للتحميل
                 </p>
                 <p className="text-xs text-gray-500">

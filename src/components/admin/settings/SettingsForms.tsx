@@ -12,7 +12,7 @@ const areaClass = `${inputClass} min-h-[90px] leading-relaxed`;
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
     return (
         <label className="block space-y-1.5">
-            <span className="text-sm font-bold text-[#111813]">{label}</span>
+            <span className="text-sm font-bold text-ink">{label}</span>
             {children}
             {hint && <span className="text-xs text-gray-400 block">{hint}</span>}
         </label>
@@ -55,7 +55,7 @@ export function SiteSettingsForm({ initial }: { initial: SiteSettings }) {
 
     return (
         <section id="site" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5 scroll-mt-24">
-            <h3 className="text-xl font-bold text-[#111813] flex items-center gap-2">
+            <h3 className="text-xl font-bold text-ink flex items-center gap-2">
                 <Globe className="w-5 h-5 text-primary" />
                 الموقع ومعلومات التواصل
             </h3>
@@ -92,7 +92,7 @@ export function AboutContentForm({ initial }: { initial: AboutContent }) {
 
     return (
         <section id="about" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5 scroll-mt-24">
-            <h3 className="text-xl font-bold text-[#111813] flex items-center gap-2">
+            <h3 className="text-xl font-bold text-ink flex items-center gap-2">
                 <Info className="w-5 h-5 text-primary" />
                 صفحة «عن العائلة»
             </h3>
@@ -111,7 +111,7 @@ export function AboutContentForm({ initial }: { initial: AboutContent }) {
                 </Field>
             </div>
             <div className="space-y-2">
-                <span className="text-sm font-bold text-[#111813] block">قيمنا</span>
+                <span className="text-sm font-bold text-ink block">قيمنا</span>
                 <div className="flex flex-wrap gap-2">
                     {v.values.map((value, i) => (
                         <span key={`${value}-${i}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold">

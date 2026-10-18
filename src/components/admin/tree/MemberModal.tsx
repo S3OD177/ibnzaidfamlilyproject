@@ -9,6 +9,7 @@ import { generateTimelineEvents } from '@/lib/timeline/timelineUtils';
 
 import { Member, defaultMember } from '@/types/member';
 import SpousesEditor, { type MemberOption } from './SpousesEditor';
+import { confirmAction } from "@/components/ui/feedback";
 
 interface MemberModalProps {
     isOpen: boolean;
@@ -72,17 +73,17 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
             onClick={onClose}
         >
             <div
-                className="bg-[#fcfdfc] rounded-lg shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+                className="bg-canvas rounded-lg shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
             >
 
                 {/* Tabs Header - Segmented Control Style */}
-                <div className="bg-[#fcfdfc] px-6 pt-6 pb-2 border-b border-gray-50">
+                <div className="bg-canvas px-6 pt-6 pb-2 border-b border-gray-50">
                     <div className="flex bg-gray-100/50 p-1 rounded-xl">
                         <button
                             onClick={() => setActiveTab('info')}
                             className={`flex-1 py-2 text-xs font-bold transition-all rounded-lg flex items-center justify-center gap-1.5 ${activeTab === 'info'
-                                ? 'bg-white text-[#111814] shadow-sm'
+                                ? 'bg-white text-ink shadow-sm'
                                 : 'text-gray-400 hover:text-gray-600'
                                 }`}
                         >
@@ -102,7 +103,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                         <button
                             onClick={() => setActiveTab('edit')}
                             className={`flex-1 py-2 text-xs font-bold transition-all rounded-lg flex items-center justify-center gap-1.5 ${activeTab === 'edit'
-                                ? 'bg-white text-[#D4AF37] shadow-sm'
+                                ? 'bg-white text-primary shadow-sm'
                                 : 'text-gray-400 hover:text-gray-600'
                                 }`}
                         >
@@ -123,10 +124,10 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                 </div>
 
                 {/* Header Summary */}
-                <div className="bg-[#fcfdfc]/50 p-4 flex justify-between items-start">
+                <div className="bg-canvas/50 p-4 flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-2">
-                            <h2 className="text-lg font-bold text-[#111814]">{formData.label || "الاسم"}</h2>
+                            <h2 className="text-lg font-bold text-ink">{formData.label || "الاسم"}</h2>
                             {formData.gender === 'male' ? <div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> : <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />}
                             <User className="w-4 h-4 text-gray-400 stroke-[1.5]" />
                         </div>
@@ -175,12 +176,12 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                 </button>
                                 <div className="h-px bg-gray-50 my-1" />
                                 <button
-                                    onClick={() => {
-                                        if (confirm('هل أنت متأكد من حذف هذا الفرد؟')) {
+                                    onClick={async () => {
+                                        setIsOptionsMenuOpen(false);
+                                        if (await confirmAction({ title: `حذف ${formData.label || 'هذا الفرد'} من الشجرة؟`, message: 'تُحذف روابطه مع أبنائه ووالديه، ولا يمكن التراجع.', confirmLabel: 'حذف', danger: true })) {
                                             onDelete();
                                             onClose();
                                         }
-                                        setIsOptionsMenuOpen(false);
                                     }}
                                     className="w-full px-3 py-2 text-right text-[11px] font-bold text-red-500 hover:bg-red-50 flex items-center justify-between"
                                 >
@@ -193,7 +194,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto p-4 bg-[#fcfdfc] space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 bg-canvas space-y-4">
 
                     {/* --- INFO TAB --- */}
                     {activeTab === 'info' && (
@@ -201,7 +202,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                             {/* Personal Data Card */}
                             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
                                 <div className="space-y-3 flex-1">
-                                    <h3 className="text-xs font-bold text-[#111814] mb-3">البيانات الشخصية</h3>
+                                    <h3 className="text-xs font-bold text-ink mb-3">البيانات الشخصية</h3>
 
                                     <div className="grid grid-cols-1 gap-3">
                                         <div className="flex justify-between items-center">
@@ -237,17 +238,17 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
 
                             {/* Bio Card */}
                             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
-                                <h3 className="text-xs font-bold text-[#111814]">النبذة</h3>
+                                <h3 className="text-xs font-bold text-ink">النبذة</h3>
                                 <p className="text-xs text-gray-300 font-bold">{formData.bio || "لا يوجد"}</p>
                             </div>
 
                             {/* Relatives Card */}
                             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-xs font-bold text-[#111814]">الأقارب</h3>
+                                    <h3 className="text-xs font-bold text-ink">الأقارب</h3>
                                     <div className="flex gap-4 text-[10px] font-bold text-gray-500">
-                                        <span>الأبناء والبنات <span className="text-[#111814]">{data?.relatives?.children?.length || 0}</span></span>
-                                        <span>الإخوان والأخوات <span className="text-[#111814]">{data?.relatives?.siblings?.length || 0}</span></span>
+                                        <span>الأبناء والبنات <span className="text-ink">{data?.relatives?.children?.length || 0}</span></span>
+                                        <span>الإخوان والأخوات <span className="text-ink">{data?.relatives?.siblings?.length || 0}</span></span>
                                     </div>
                                 </div>
 
@@ -258,7 +259,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                         <div className="flex flex-wrap gap-2">
                                             {(data?.relatives?.siblings.filter((r) => r.gender === 'male').length ?? 0) > 0 ? (
                                                 data!.relatives!.siblings.filter((r) => r.gender === 'male').map((rel) => (
-                                                    <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
+                                                    <span key={rel.id} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
                                         </div>
@@ -268,7 +269,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                         <div className="flex flex-wrap gap-2">
                                             {(data?.relatives?.siblings.filter((r) => r.gender === 'female').length ?? 0) > 0 ? (
                                                 data!.relatives!.siblings.filter((r) => r.gender === 'female').map((rel) => (
-                                                    <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
+                                                    <span key={rel.id} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
                                         </div>
@@ -282,7 +283,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                         <div className="flex flex-wrap gap-2">
                                             {(data?.relatives?.children.filter((r) => r.gender === 'male').length ?? 0) > 0 ? (
                                                 data!.relatives!.children.filter((r) => r.gender === 'male').map((rel) => (
-                                                    <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
+                                                    <span key={rel.id} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
                                         </div>
@@ -292,7 +293,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                         <div className="flex flex-wrap gap-2">
                                             {(data?.relatives?.children.filter((r) => r.gender === 'female').length ?? 0) > 0 ? (
                                                 data!.relatives!.children.filter((r) => r.gender === 'female').map((rel) => (
-                                                    <span key={rel.id} className="px-3 py-1 bg-[#00c853] text-white text-[10px] font-bold rounded">{rel.label}</span>
+                                                    <span key={rel.id} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded">{rel.label}</span>
                                                 ))
                                             ) : <span className="text-[10px] text-gray-300">لا يوجد</span>}
                                         </div>
@@ -302,7 +303,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
 
                             {/* Spouses Card */}
                             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2 min-h-[100px]">
-                                <h3 className="text-xs font-bold text-[#111814]">الأزواج</h3>
+                                <h3 className="text-xs font-bold text-ink">الأزواج</h3>
                                 {memberId ? (
                                     <SpousesEditor memberId={memberId} options={memberOptions} readOnly />
                                 ) : (
@@ -319,7 +320,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                             {newMembers.map((member, index) => (
                                 <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4 relative group">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-sm font-bold text-[#111814]">اسم الفرد #{index + 1}</h3>
+                                        <h3 className="text-sm font-bold text-ink">اسم الفرد #{index + 1}</h3>
                                         {newMembers.length > 1 && (
                                             <button
                                                 onClick={() => removeNewMemberForm(index)}
@@ -417,7 +418,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
 
                             <button
                                 onClick={addNewMemberForm}
-                                className="w-full py-3 bg-white border border-[#dbe6e0] rounded-xl shadow-sm hover:border-primary hover:shadow-md transition-all flex items-center justify-center gap-2 text-gray-600 font-bold text-sm"
+                                className="w-full py-3 bg-white border border-line rounded-xl shadow-sm hover:border-primary hover:shadow-md transition-all flex items-center justify-center gap-2 text-gray-600 font-bold text-sm"
                             >
                                 <Plus className="w-4 h-4" />
                                 إضافة فرد آخر
@@ -731,7 +732,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                     {activeTab === 'edit' && (
                         <button
                             onClick={() => onSave(formData)}
-                            className="w-full py-3 bg-[#00c853] text-white font-bold rounded-lg shadow-sm hover:bg-[#00b248] transition-colors"
+                            className="w-full py-3 bg-primary text-white font-bold rounded-lg shadow-sm hover:bg-primary-dark transition-colors"
                         >
                             تعديل
                         </button>
@@ -743,7 +744,7 @@ export default function MemberModal({ isOpen, onClose, data, onSave, onDelete, o
                                 onClose();
                                 setNewMembers([{ label: '', gender: 'male', status: 'unknown' }]); // Reset
                             }}
-                            className="w-full py-3 bg-[#00c853] text-white font-bold rounded-lg shadow-sm hover:bg-[#00b248] transition-colors"
+                            className="w-full py-3 bg-primary text-white font-bold rounded-lg shadow-sm hover:bg-primary-dark transition-colors"
                         >
                             إضافة الأفراد
                         </button>

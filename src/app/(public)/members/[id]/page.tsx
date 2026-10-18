@@ -34,7 +34,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
     const iconBg = "bg-primary/10";
 
     return (
-        <div className="bg-[#f6f8f6] min-h-screen font-body text-[#111812]">
+        <div className="bg-canvas min-h-screen font-body text-ink">
 
             <main className="max-w-[1200px] mx-auto px-4 py-8">
 
@@ -57,7 +57,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                     )}
                                 </div>
                                 {member.councilRole && (
-                                    <div className="absolute -bottom-2 -right-2 bg-[#D4AF37] text-white text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm">
+                                    <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm">
                                         المجلس
                                     </div>
                                 )}
@@ -65,10 +65,10 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                             {/* Basic Info */}
                             <div className="flex-1 pb-2 text-center md:text-right">
-                                <h1 className="text-3xl font-bold text-[#111812] font-naskh mb-2">{member.name}</h1>
+                                <h1 className="text-3xl font-bold text-ink font-naskh mb-2">{member.name}</h1>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-2">
                                     {member.councilRole && (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#102210] text-[#D4AF37] text-sm font-bold">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-deep text-primary text-sm font-bold">
                                             <Award className="w-4 h-4 mr-2 ml-1" />
                                             {member.councilRole}
                                         </span>
@@ -80,7 +80,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                         </span>
                                     )}
                                     {member.generation && (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-medium border border-[#D4AF37]/20">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
                                             <Clock className="w-4 h-4 mr-2 ml-1" />
                                             {member.generation}
                                         </span>
@@ -121,7 +121,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-500 font-medium">تاريخ الميلاد</p>
-                                        <p className="text-base font-bold text-[#111812]">{member.birth || "غير متوفر"}</p>
+                                        <p className="text-base font-bold text-ink">{member.birth || "غير متوفر"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -130,7 +130,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-500 font-medium">مكان الإقامة</p>
-                                        <p className="text-base font-bold text-[#111812]">{member.location || "غير متوفر"}</p>
+                                        <p className="text-base font-bold text-ink">{member.location || "غير متوفر"}</p>
                                     </div>
                                 </div>
                             </div>
@@ -162,10 +162,10 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                         {/* Role Card */}
                         {member.councilRole && (
-                        <div className="bg-[#102210] rounded-xl p-6 text-white shadow-lg border border-primary/20">
+                        <div className="bg-deep rounded-xl p-6 text-white shadow-lg border border-primary/20">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="size-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center border border-[#D4AF37]/30">
-                                    <Award className="w-5 h-5 text-[#D4AF37]" />
+                                <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                    <Award className="w-5 h-5 text-primary" />
                                 </div>
                                 <h3 className="text-lg font-bold">الدور في العائلة</h3>
                             </div>
@@ -175,7 +175,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                             {member.councilSince && (
                                 <div className="flex items-center justify-between pt-4 border-t border-white/10">
                                     <span className="text-xs text-gray-400">تاريخ التعيين</span>
-                                    <span className="text-sm font-bold text-[#D4AF37]">{member.councilSince}</span>
+                                    <span className="text-sm font-bold text-primary">{member.councilSince}</span>
                                 </div>
                             )}
                         </div>
@@ -188,7 +188,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                         {/* Biography */}
                         <section className={`bg-white rounded-xl border ${borderColor} p-8 shadow-sm`}>
-                            <h2 className={`text-xl font-bold text-[#111812] mb-6 flex items-center gap-2 ${iconColor}`}>
+                            <h2 className={`text-xl font-bold text-ink mb-6 flex items-center gap-2 ${iconColor}`}>
                                 <Edit className="w-5 h-5" />
                                 السيرة الذاتية
                             </h2>
@@ -203,7 +203,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                         {/* Family Connections */}
                         <section className={`bg-white rounded-xl border ${borderColor} p-8 shadow-sm`}>
-                            <h2 className={`text-xl font-bold text-[#111812] mb-8 flex items-center gap-2 ${iconColor}`}>
+                            <h2 className={`text-xl font-bold text-ink mb-8 flex items-center gap-2 ${iconColor}`}>
                                 <Users className="w-5 h-5" />
                                 الروابط العائلية
                             </h2>
@@ -211,7 +211,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Parents */}
                                 <div className="space-y-4">
-                                    <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest border-r-4 border-[#D4AF37] pr-3">الوالدين</h4>
+                                    <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest border-r-4 border-primary pr-3">الوالدين</h4>
                                     <div className="space-y-3">
                                         {!member.father && !member.mother && <p className="text-sm text-gray-400">غير مسجلين</p>}
                                         {member.father && (
@@ -243,7 +243,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                 <div className="space-y-4">
                                     <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest border-r-4 border-primary pr-3">العائلة المباشرة</h4>
                                     <div className="space-y-3">
-                                        <div className="p-3 rounded-lg bg-[#f6f8f6] border border-primary/10">
+                                        <div className="p-3 rounded-lg bg-canvas border border-primary/10">
                                             <p className="text-xs text-gray-500 mb-2">الأبناء ({member.children.length})</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {member.children.map((child) => (
@@ -255,7 +255,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                         </div>
                                         {member.spouses.map((spouse) => (
                                             <div key={spouse} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-all">
-                                                <div className="size-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
+                                                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                                     <Heart className="w-5 h-5" />
                                                 </div>
                                                 <div>

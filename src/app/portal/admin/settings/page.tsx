@@ -16,7 +16,7 @@ export default async function SettingsPage() {
         <div className="max-w-5xl mx-auto font-display space-y-8 pb-16">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black text-[#111813] mb-2 flex items-center gap-3">
+                    <h2 className="text-3xl font-black text-ink mb-2 flex items-center gap-3">
                         <Settings className="w-7 h-7 text-primary" />
                         إعدادات المنصة
                     </h2>

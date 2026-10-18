@@ -12,6 +12,14 @@
   --color-primary-dark: #B5952F;
   --color-primary-light: #F3EACF;
   --color-accent: #4B3F35;
+
+  /* Neutrals: text, secondary text, borders, page backgrounds, dark sections */
+  --color-ink: #111814;
+  --color-muted: #618975;
+  --color-line: #dbe6e0;
+  --color-canvas: #f6f8f7;
+  --color-mist: #f0f4f2;
+  --color-deep: #102210;
   --color-surface: #ffffff;
 
   --color-background: var(--background);
@@ -20,15 +28,9 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111814;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);

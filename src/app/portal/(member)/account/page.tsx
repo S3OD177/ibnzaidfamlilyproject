@@ -18,7 +18,7 @@ export default async function AccountPage() {
                     <div className="flex items-center gap-3">
                         <UserCircle className="w-10 h-10 text-primary" />
                         <div>
-                            <h1 className="text-xl font-bold text-[#111813]">{session.displayName}</h1>
+                            <h1 className="text-xl font-bold text-ink">{session.displayName}</h1>
                             <p className="text-sm text-gray-500">{ROLE_LABELS[session.role]}</p>
                         </div>
                     </div>

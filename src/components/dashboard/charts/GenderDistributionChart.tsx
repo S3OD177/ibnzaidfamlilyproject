@@ -8,8 +8,8 @@ interface GenderDistributionChartProps {
 
 export default function GenderDistributionChart({ data }: GenderDistributionChartProps) {
   return (
-    <div className="bg-white p-6 rounded-xl border border-[#dbe6e0] shadow-sm">
-      <h3 className="text-lg font-bold text-[#111814] mb-4">توزيع الجنس</h3>
+    <div className="bg-white p-6 rounded-xl border border-line shadow-sm">
+      <h3 className="text-lg font-bold text-ink mb-4">توزيع الجنس</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -47,7 +47,7 @@ export default function GenderDistributionChart({ data }: GenderDistributionChar
             <div className="size-4 rounded" style={{ backgroundColor: item.fill }}></div>
             <div className="flex-1">
               <p className="text-xs text-gray-500">{item.name}</p>
-              <p className="text-lg font-bold text-[#111814]">{item.value}</p>
+              <p className="text-lg font-bold text-ink">{item.value}</p>
             </div>
           </div>
         ))}

@@ -13,7 +13,7 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
             {/* Cover / Background Pattern */}
-            <div className="h-32 bg-gradient-to-r from-[#111814] to-[#1a241e] relative">
+            <div className="h-32 bg-gradient-to-r from-ink to-[#1a241e] relative">
                 <div className="absolute inset-0 opacity-10 bg-[url('/patterns/islamic.png')]"></div>
             </div>
 
@@ -42,7 +42,7 @@ export default function ProfileHeader({ member, onEdit }: ProfileHeaderProps) {
 
                         {/* Name & Status */}
                         <div className="sm:mt-14 space-y-1 text-center sm:text-right">
-                            <h1 className="text-2xl font-bold text-[#111814] flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <h1 className="text-2xl font-bold text-ink flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                 {member.label}
                                 {isDeceased && (
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full border border-gray-200">

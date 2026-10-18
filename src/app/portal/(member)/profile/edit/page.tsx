@@ -6,11 +6,11 @@ import ChangeRequestForm from "@/components/portal/ChangeRequestForm";
 import { getSession } from "@/lib/auth/current";
 import { currentValues, getMemberRow, latestRequestFor } from "@/lib/data/change-requests";
 import { STATUS_LABELS } from "@/lib/change-requests";
+import { formatHijri } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "تحديث بياناتي" };
 
-const dateFormat = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" });
 
 export default async function EditMyProfilePage() {
     const session = await getSession();
@@ -19,7 +19,7 @@ export default async function EditMyProfilePage() {
     const row = session.memberId ? await getMemberRow(session.memberId) : null;
     if (!row) {
         return (
-            <div className="max-w-md mx-auto bg-white rounded-2xl border border-[#e5ece8] p-8 text-center">
+            <div className="max-w-md mx-auto bg-white rounded-2xl border border-line p-8 text-center">
                 <div className="size-14 mx-auto mb-4 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                     <UserX className="w-7 h-7" />
                 </div>
@@ -36,7 +36,7 @@ export default async function EditMyProfilePage() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
-            <Link href={`/portal/members/${row.id}`} className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#111814]">
+            <Link href={`/portal/members/${row.id}`} className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-ink">
                 <ArrowRight className="w-4 h-4" />
                 ملفي
             </Link>
@@ -51,7 +51,7 @@ export default async function EditMyProfilePage() {
                 <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                     <Clock className="w-5 h-5 shrink-0" />
                     <p>
-                        لديك طلب قيد المراجعة أُرسل في {dateFormat.format(new Date(pending.createdAt))}، والحقول المعدّلة فيه ظاهرة أدناه.
+                        لديك طلب قيد المراجعة أُرسل في {formatHijri(pending.createdAt)}، والحقول المعدّلة فيه ظاهرة أدناه.
                         إرسال طلب جديد يحلّ محله.
                     </p>
                 </div>
@@ -61,7 +61,7 @@ export default async function EditMyProfilePage() {
                     <Info className="w-5 h-5 shrink-0" />
                     <p>
                         آخر طلب لك: <strong>{STATUS_LABELS[latest.status].label}</strong>
-                        {latest.reviewedAt && ` في ${dateFormat.format(new Date(latest.reviewedAt))}`}.
+                        {latest.reviewedAt && ` في ${formatHijri(latest.reviewedAt)}`}.
                         {latest.reviewNote && <> ملاحظة الإدارة: «{latest.reviewNote}»</>}
                     </p>
                 </div>

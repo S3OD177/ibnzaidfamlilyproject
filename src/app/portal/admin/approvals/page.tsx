@@ -24,8 +24,8 @@ export default async function ApprovalsPage({ searchParams }: { searchParams: Pr
         <div className="max-w-5xl mx-auto font-display space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-[#111814]">طلبات انضمام الأعضاء</h1>
-                    <p className="text-[#618975] mt-1">راجع الطلبات المرسلة من صفحة طلب الانضمام، واعتمدها لإنشاء حساب عضو.</p>
+                    <h1 className="text-3xl font-black tracking-tight text-ink">طلبات انضمام الأعضاء</h1>
+                    <p className="text-muted mt-1">راجع الطلبات المرسلة من صفحة طلب الانضمام، واعتمدها لإنشاء حساب عضو.</p>
                 </div>
                 <Link href="/join" target="_blank" className="flex items-center gap-2 text-sm font-bold text-primary hover:underline">
                     <ExternalLink className="w-4 h-4" />
@@ -33,14 +33,14 @@ export default async function ApprovalsPage({ searchParams }: { searchParams: Pr
                 </Link>
             </div>
 
-            <div className="flex gap-2 border-b border-[#dbe6e0] pb-4">
+            <div className="flex gap-2 border-b border-line pb-4">
                 {TABS.map((t) => (
                     <Link
                         key={t.key}
                         href={t.key === "pending" ? "/portal/admin/approvals" : `/portal/admin/approvals?status=${t.key}`}
                         className={t.key === tab
                             ? "px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold border border-primary/20"
-                            : "px-4 py-2 bg-white border border-[#dbe6e0] text-[#618975] rounded-lg text-sm font-bold hover:bg-[#f8faf8]"}
+                            : "px-4 py-2 bg-white border border-line text-muted rounded-lg text-sm font-bold hover:bg-canvas"}
                     >
                         {t.label}
                     </Link>

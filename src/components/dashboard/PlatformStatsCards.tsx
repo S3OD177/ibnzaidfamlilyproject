@@ -9,7 +9,7 @@ export default function PlatformStatsCards({ stats }: { stats: PlatformStats }) 
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <p className="text-gray-500 text-sm font-medium">مستخدمي المنصة</p>
-                        <h3 className="text-3xl font-bold text-[#111814] mt-1">{stats.users.total}</h3>
+                        <h3 className="text-3xl font-bold text-ink mt-1">{stats.users.total}</h3>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
                         <Users className="w-6 h-6" />
@@ -32,7 +32,7 @@ export default function PlatformStatsCards({ stats }: { stats: PlatformStats }) 
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <p className="text-gray-500 text-sm font-medium">المحتوى والأرشيف</p>
-                        <h3 className="text-3xl font-bold text-[#111814] mt-1">{stats.content.documents}</h3>
+                        <h3 className="text-3xl font-bold text-ink mt-1">{stats.content.documents}</h3>
                     </div>
                     <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform">
                         <FileText className="w-6 h-6" />

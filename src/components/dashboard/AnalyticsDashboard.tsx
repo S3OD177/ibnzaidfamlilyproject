@@ -26,12 +26,12 @@ export default function AnalyticsDashboard({ stats, platform }: AnalyticsDashboa
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#111814]">لوحة الإحصائيات</h2>
+            <h2 className="text-2xl font-bold text-ink">لوحة الإحصائيات</h2>
 
             {/* Platform Stats (New) */}
             <PlatformStatsCards stats={platform} />
 
-            <h3 className="text-xl font-bold text-[#111814] mt-8 mb-4">إحصائيات شجرة العائلة</h3>
+            <h3 className="text-xl font-bold text-ink mt-8 mb-4">إحصائيات شجرة العائلة</h3>
 
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -39,7 +39,7 @@ export default function AnalyticsDashboard({ stats, platform }: AnalyticsDashboa
                     <div key={idx} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500 font-medium mb-1">{card.label}</p>
-                            <h3 className="text-2xl font-bold text-[#111814]">{card.value}</h3>
+                            <h3 className="text-2xl font-bold text-ink">{card.value}</h3>
                         </div>
                         <div className={`p-3 rounded-xl ${card.bg}`}>
                             <card.icon className={`w-6 h-6 ${card.color}`} />
@@ -54,7 +54,7 @@ export default function AnalyticsDashboard({ stats, platform }: AnalyticsDashboa
 
                 {/* Age Groups Placeholder */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-[#111814] mb-1">التوزيع العمري</h3>
+                    <h3 className="text-lg font-bold text-ink mb-1">التوزيع العمري</h3>
                     <p className="text-xs text-gray-400 mb-4">للأحياء المسجل لهم تاريخ ميلاد ({agedMembers})</p>
                     <div className="space-y-4">
                         {stats.ageGroups.map((group, idx) => (
@@ -65,7 +65,7 @@ export default function AnalyticsDashboard({ stats, platform }: AnalyticsDashboa
                                 </div>
                                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-[#D4AF37]"
+                                        className="h-full bg-primary"
                                         style={{ width: `${(group.value / (agedMembers || 1)) * 100}%` }}
                                     />
                                 </div>

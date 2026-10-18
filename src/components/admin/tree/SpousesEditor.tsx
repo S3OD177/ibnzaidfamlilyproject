@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Heart, Trash2 } from "lucide-react";
 import { addSpouse, listSpouses, removeSpouse, type SpouseEntry } from "@/app/portal/admin/tree/actions";
 import { unwrap } from "@/lib/action-result";
+import { confirmAction, toast } from "@/components/ui/feedback";
 
 export interface MemberOption {
     id: string;
@@ -51,9 +52,9 @@ export default function SpousesEditor({ memberId, options, readOnly = false }: {
             {spouses === null && !error && <p className="text-xs text-gray-300">جارٍ التحميل...</p>}
             {spouses?.length === 0 && <p className="text-xs text-gray-300 font-bold text-center py-2">لا يوجد أزواج</p>}
             {spouses?.map((s) => (
-                <div key={s.marriageId} className="flex items-center gap-2 p-2 rounded-lg bg-[#fbfaf6] border border-[#D4AF37]/20">
-                    <Heart className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                    <span className="text-sm font-bold text-[#111814] flex-1 truncate">{s.name}</span>
+                <div key={s.marriageId} className="flex items-center gap-2 p-2 rounded-lg bg-[#fbfaf6] border border-primary/20">
+                    <Heart className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm font-bold text-ink flex-1 truncate">{s.name}</span>
                     {s.marriageYear && <span className="text-[11px] text-gray-400">{s.marriageYear}</span>}
                     {!s.spouseId && <span className="text-[10px] text-gray-400">من خارج الشجرة</span>}
                     {!readOnly && (
@@ -61,9 +62,12 @@ export default function SpousesEditor({ memberId, options, readOnly = false }: {
                             type="button"
                             disabled={pending}
                             aria-label={`حذف ${s.name}`}
-                            onClick={() => {
-                                if (!confirm(`إزالة ${s.name} من الأزواج؟`)) return;
-                                run(() => unwrap(removeSpouse(s.marriageId)));
+                            onClick={async () => {
+                                if (!(await confirmAction({ title: `إزالة ${s.name} من الأزواج؟`, confirmLabel: "إزالة", danger: true }))) return;
+                                run(async () => {
+                                    await unwrap(removeSpouse(s.marriageId));
+                                    toast.success("تمت الإزالة");
+                                });
                             }}
                             className="p-1 text-gray-300 hover:text-red-500 cursor-pointer"
                         >
@@ -110,6 +114,7 @@ export default function SpousesEditor({ memberId, options, readOnly = false }: {
                                     await unwrap(addSpouse(memberId, { spouseId: form.spouseId || null, spouseName: form.spouseName, marriageYear: form.marriageYear }));
                                     setForm({ spouseId: "", spouseName: "", marriageYear: "" });
                                     setAdding(false);
+                                    toast.success("تمت إضافة الزوج / الزوجة");
                                 })
                             }
                             className="flex-1 py-2 bg-primary text-white rounded-lg text-xs font-bold disabled:opacity-50 cursor-pointer"

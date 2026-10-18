@@ -12,7 +12,6 @@ import {
     Connection,
     Edge,
     Node,
-    Position,
     ReactFlowProvider,
     useReactFlow,
 } from '@xyflow/react';
@@ -260,7 +259,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
             <div className="absolute top-4 right-4 left-4 lg:left-auto z-10 flex flex-wrap gap-2 whitespace-nowrap">
                 <button
                     onClick={onLayout}
-                    className="bg-white p-2 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 text-[#111814] font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer"
+                    className="bg-white p-2 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 text-ink font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer"
                 >
                     <RotateCcw className="w-4 h-4" />
                     إعادة توزيع

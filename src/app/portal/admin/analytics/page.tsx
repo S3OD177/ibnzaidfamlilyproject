@@ -7,10 +7,10 @@ export default async function AnalyticsPage() {
     const [stats, platform] = await Promise.all([getFamilyStats(), getPlatformStats()]);
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa] pb-20 p-8" dir="rtl">
+        <div className="min-h-screen bg-canvas pb-20 p-8" dir="rtl">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#111814]">الإحصائيات والتقارير</h1>
+                    <h1 className="text-3xl font-bold text-ink">الإحصائيات والتقارير</h1>
                     <p className="text-gray-500 mt-2">نظرة شاملة على بيانات العائلة وتوزعها</p>
                 </div>
 

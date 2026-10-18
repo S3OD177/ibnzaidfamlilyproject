@@ -8,10 +8,11 @@ import { approveChangeRequest, rejectChangeRequest } from "@/app/portal/admin/ch
 import { unwrap } from "@/lib/action-result";
 import { STATUS_LABELS, displayValue, fieldByKey } from "@/lib/change-requests";
 import type { ChangeRequestRow } from "@/lib/data/change-requests";
+import { toast } from "@/components/ui/feedback";
+import { formatHijri } from "@/lib/dates";
 
 type Request = ChangeRequestRow & { current: Record<string, string> | null };
 
-const dateFormat = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" });
 
 function Value({ field, value }: { field: string; value: string | null | undefined }) {
     if (fieldByKey.get(field)?.kind === "photo") {
@@ -37,6 +38,7 @@ function RequestCard({ request }: { request: Request }) {
         setError("");
         try {
             await unwrap((kind === "approve" ? approveChangeRequest : rejectChangeRequest)(request.id, note));
+            toast.success(kind === "approve" ? `تم اعتماد تعديلات ${request.memberName}` : "تم رفض الطلب");
             router.refresh();
         } catch (e) {
             setError(e instanceof Error ? e.message : "تعذر الحفظ");
@@ -45,15 +47,15 @@ function RequestCard({ request }: { request: Request }) {
     };
 
     return (
-        <li className="bg-white rounded-2xl border border-[#dbe6e0] p-5 space-y-4">
+        <li className="bg-white rounded-2xl border border-line p-5 space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <Link href={`/portal/members/${request.memberId}`} target="_blank" className="font-bold text-lg hover:text-primary inline-flex items-center gap-1.5">
                         {request.memberName}
                         <ExternalLink className="w-3.5 h-3.5" />
                     </Link>
-                    <p className="text-xs text-[#618975] mt-0.5">
-                        أرسله {request.requesterName} · {dateFormat.format(new Date(request.createdAt))}
+                    <p className="text-xs text-muted mt-0.5">
+                        أرسله {request.requesterName} · {formatHijri(request.createdAt)}
                     </p>
                 </div>
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${STATUS_LABELS[request.status].className}`}>
@@ -64,7 +66,7 @@ function RequestCard({ request }: { request: Request }) {
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="text-right text-xs text-[#618975] border-b border-gray-100">
+                        <tr className="text-right text-xs text-muted border-b border-gray-100">
                             <th className="py-2 pl-4 font-bold">الحقل</th>
                             {pending && <th className="py-2 pl-4 font-bold">الحالي</th>}
                             <th className="py-2 font-bold">{pending ? "المطلوب" : "القيمة المطلوبة"}</th>
@@ -79,7 +81,7 @@ function RequestCard({ request }: { request: Request }) {
                                         <Value field={key} value={request.current?.[key]} />
                                     </td>
                                 )}
-                                <td className="py-2.5 text-[#111814] font-medium">
+                                <td className="py-2.5 text-ink font-medium">
                                     <Value field={key} value={value} />
                                 </td>
                             </tr>
@@ -89,13 +91,13 @@ function RequestCard({ request }: { request: Request }) {
             </div>
 
             {request.note && (
-                <p className="text-sm bg-[#f6f8f7] rounded-xl p-3">
+                <p className="text-sm bg-canvas rounded-xl p-3">
                     <span className="font-bold">ملاحظة العضو: </span>
                     {request.note}
                 </p>
             )}
             {!pending && request.reviewNote && (
-                <p className="text-sm bg-[#f6f8f7] rounded-xl p-3">
+                <p className="text-sm bg-canvas rounded-xl p-3">
                     <span className="font-bold">ملاحظة المراجعة: </span>
                     {request.reviewNote}
                 </p>

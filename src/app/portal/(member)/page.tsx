@@ -8,14 +8,10 @@ import { listEvents } from "@/lib/data/events";
 import { DECISION_STATES, listDecisions } from "@/lib/data/decisions";
 import { listDocuments } from "@/lib/data/documents";
 import { formatBytes } from "@/lib/files";
+import { formatDateBoth, formatWeekday } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
-const hijri = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric" });
-const weekday = new Intl.DateTimeFormat("ar-SA", { weekday: "long" });
-
-/** "YYYY-MM-DD" as a local date, so the day never shifts with the time zone. */
-const parseDay = (day: string) => new Date(`${day}T12:00:00`);
 
 function Section({ title, icon: Icon, href, linkLabel, children }: {
     title: string;
@@ -25,7 +21,7 @@ function Section({ title, icon: Icon, href, linkLabel, children }: {
     children: React.ReactNode;
 }) {
     return (
-        <section className="bg-white rounded-2xl border border-[#e5ece8] p-5 md:p-6">
+        <section className="bg-white rounded-2xl border border-line p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold flex items-center gap-2">
                     <Icon className="w-5 h-5 text-primary" />
@@ -175,14 +171,13 @@ export default async function MemberHomePage() {
                         ) : (
                             <ul className="space-y-3">
                                 {upcoming.map((e) => {
-                                    const date = parseDay(e.date);
                                     return (
                                         <li key={e.id} className="flex gap-3">
                                             <div className="w-1 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
                                             <div className="min-w-0">
                                                 <h3 className="font-bold text-sm">{e.title}</h3>
                                                 <p className="text-xs text-gray-500 mt-0.5">
-                                                    {weekday.format(date)} · {hijri.format(date)}
+                                                    {formatWeekday(e.date)} · {formatDateBoth(e.date)}
                                                 </p>
                                                 <span className="text-[11px] text-gray-400">{e.categoryLabel}</span>
                                             </div>

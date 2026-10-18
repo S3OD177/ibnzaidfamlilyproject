@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getSiteSettings } from "@/lib/settings";
+import { FeedbackHost } from "@/components/ui/feedback";
 
 // Loaded via a stylesheet link instead of next/font/google: the build server
 // receives Google font URLs that next/font cannot parse, which fails the build.
@@ -13,11 +14,14 @@ const fontVariables = {
   "--font-naskh": "'Noto Naskh Arabic'",
 } as React.CSSProperties;
 
+export const viewport: Viewport = { themeColor: "#D4AF37" };
+
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteSettings();
   return {
     title: { default: site.siteName, template: `%s | ${site.siteName}` },
     description: site.tagline,
+    appleWebApp: { capable: true, title: site.siteName, statusBarStyle: "default" },
   };
 }
 
@@ -36,9 +40,10 @@ export default function RootLayout({
       </head>
       <body
         style={fontVariables}
-        className="font-sans antialiased bg-slate-50 text-slate-900"
+        className="font-sans antialiased bg-canvas text-ink"
       >
         {children}
+        <FeedbackHost />
       </body>
     </html>
   );

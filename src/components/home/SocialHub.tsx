@@ -7,14 +7,14 @@ import { Twitter, Mail, ExternalLink, MessageCircle } from "lucide-react";
 // Contact channels come from the site settings; a channel left empty is hidden.
 export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: string; xHandle: string; whatsapp: string }) {
     return (
-        <section id="contact" className="bg-[#f0f4f2] py-20 border-t border-[#e5e7eb] scroll-mt-20">
+        <section id="contact" className="bg-mist py-20 border-t border-line scroll-mt-20">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
 
                     {/* Left: Social Actions */}
                     <div className="flex-1 flex flex-col gap-8 order-2 lg:order-1">
                         <div>
-                            <h2 className="text-3xl font-black text-[#111813] mb-4 font-display">تواصل معنا</h2>
+                            <h2 className="text-3xl font-black text-ink mb-4 font-display">تواصل معنا</h2>
                             <p className="text-lg text-gray-600 leading-relaxed font-naskh">
                                 نسعد بتواصلكم ومشاركتكم في فعاليات العائلة. يمكنكم الوصول إلينا عبر القنوات الرسمية التالية.
                             </p>
@@ -26,16 +26,16 @@ export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: s
                             <Link
                                 href={`https://x.com/${xHandle}`}
                                 target="_blank"
-                                className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-[#D4AF37] hover:shadow-md transition-all duration-300"
+                                className="group flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 hover:border-primary hover:shadow-md transition-all duration-300"
                             >
                                 <div className="size-12 rounded-xl bg-black flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                                     <Twitter className="w-6 h-6" fill="currentColor" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-[#111813] text-lg">منصة X</p>
+                                    <p className="font-bold text-ink text-lg">منصة X</p>
                                     <p className="text-sm text-gray-500 font-naskh">تابع أخبارنا أولاً بأول</p>
                                 </div>
-                                <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#D4AF37] rtl:rotate-180" />
+                                <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-primary rtl:rotate-180" />
                             </Link>
                             )}
 
@@ -50,7 +50,7 @@ export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: s
                                         <MessageCircle className="w-6 h-6" fill="currentColor" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-[#111813] text-lg">واتساب</p>
+                                        <p className="font-bold text-ink text-lg">واتساب</p>
                                         <p className="text-sm text-gray-500 font-naskh">تواصل مع إدارة المجلس</p>
                                     </div>
                                     <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-[#25D366] rtl:rotate-180" />
@@ -67,7 +67,7 @@ export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: s
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-[#111813] text-lg">البريد الإلكتروني</p>
+                                    <p className="font-bold text-ink text-lg">البريد الإلكتروني</p>
                                     <p className="text-sm text-gray-500 font-naskh">للمراسلات الرسمية والاستفسارات</p>
                                 </div>
                                 <ExternalLink className="w-5 h-5 text-gray-300 mr-auto group-hover:text-primary rtl:rotate-180" />
@@ -80,7 +80,7 @@ export function SocialHub({ contactEmail, xHandle, whatsapp }: { contactEmail: s
                     {xHandle && (
                     <div className="flex-1 order-1 lg:order-2">
                         <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm relative overflow-hidden h-full min-h-[500px]">
-                            <div className="absolute top-0 right-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50"></div>
+                            <div className="absolute top-0 right-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
 
                             <div className="h-full flex flex-col justify-center text-center">
                                 <a

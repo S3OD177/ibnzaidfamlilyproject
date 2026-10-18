@@ -7,7 +7,7 @@ export default function CityDistributionChart({ data }: { data: { name: string; 
 
     return (
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full">
-            <h3 className="text-lg font-bold text-[#111814] mb-4">التوزيع الجغرافي</h3>
+            <h3 className="text-lg font-bold text-ink mb-4">التوزيع الجغرافي</h3>
             <div className="h-[300px] w-full" dir="ltr">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart

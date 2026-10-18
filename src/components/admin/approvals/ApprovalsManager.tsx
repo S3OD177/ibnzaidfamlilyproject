@@ -7,10 +7,12 @@ import type { JoinRequestRow, MemberOption } from "@/lib/data/users";
 import { approveRequest, rejectRequest } from "@/app/portal/admin/approvals/actions";
 import { TempPasswordNotice } from "@/components/admin/users/UsersManager";
 import { unwrap } from "@/lib/action-result";
+import { confirmAction, toast } from "@/components/ui/feedback";
+import { formatHijri } from "@/lib/dates";
 
-const inputClass = "w-full rounded-lg border border-[#dbe6e0] bg-white px-3 py-2 text-sm outline-none focus:border-primary";
+const inputClass = "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-primary";
 const formatDate = (iso: string) =>
-    new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" }).format(new Date(iso));
+    formatHijri(iso);
 
 // Suggested username from the email's local part, else from the mobile number.
 function suggestUsername(req: JoinRequestRow) {
@@ -47,36 +49,36 @@ function RequestCard({ req, members, onApproved }: { req: JoinRequestRow; member
     };
 
     return (
-        <div className="bg-white border border-[#dbe6e0] rounded-xl p-5 space-y-4">
+        <div className="bg-white border border-line rounded-xl p-5 space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="size-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200">
                         <User className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="font-bold text-[#111814]">{req.fullName}</p>
-                        <p className="text-xs text-[#618975]">طلب بتاريخ {formatDate(req.createdAt)}</p>
+                        <p className="font-bold text-ink">{req.fullName}</p>
+                        <p className="text-xs text-muted">طلب بتاريخ {formatDate(req.createdAt)}</p>
                     </div>
                 </div>
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${status.className}`}>{status.label}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-[#111814]">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-ink">
                 <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span dir="ltr">{req.mobile || "—"}</span></span>
                 <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /><span dir="ltr">{req.email || "—"}</span></span>
                 <span className="flex items-center gap-2"><GitBranch className="w-4 h-4 text-gray-400" />{req.branch || "—"}</span>
             </div>
-            {req.note && <p className="text-sm text-gray-600 bg-[#f6f8f7] rounded-lg p-3">{req.note}</p>}
+            {req.note && <p className="text-sm text-gray-600 bg-canvas rounded-lg p-3">{req.note}</p>}
 
             {req.status === "pending" && (
-                <div className="border-t border-[#f0f4f2] pt-4 space-y-3">
+                <div className="border-t border-mist pt-4 space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <label className="block">
-                            <span className="text-xs font-bold text-[#618975] mb-1 block">اسم المستخدم للحساب</span>
+                            <span className="text-xs font-bold text-muted mb-1 block">اسم المستخدم للحساب</span>
                             <input className={inputClass} dir="ltr" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))} />
                         </label>
                         <label className="block">
-                            <span className="text-xs font-bold text-[#618975] mb-1 block">ربطه بفرد في الشجرة (اختياري)</span>
+                            <span className="text-xs font-bold text-muted mb-1 block">ربطه بفرد في الشجرة (اختياري)</span>
                             <select className={inputClass} value={memberId ?? ""} onChange={(e) => setMemberId(e.target.value || null)}>
                                 <option value="">لاحقاً</option>
                                 {members.map((m) => (
@@ -91,9 +93,12 @@ function RequestCard({ req, members, onApproved }: { req: JoinRequestRow; member
                             <button
                                 type="button"
                                 disabled={pending}
-                                onClick={() => {
-                                    if (!confirm(`رفض طلب ${req.fullName}؟`)) return;
-                                    run(() => unwrap(rejectRequest(req.id)));
+                                onClick={async () => {
+                                    if (!(await confirmAction({ title: `رفض طلب ${req.fullName}؟`, confirmLabel: "رفض", danger: true }))) return;
+                                    run(async () => {
+                                        await unwrap(rejectRequest(req.id));
+                                        toast.success("تم رفض الطلب");
+                                    });
                                 }}
                                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
                             >
@@ -129,7 +134,7 @@ export default function ApprovalsManager({ requests, members }: { requests: Join
         <div className="space-y-4">
             {notice && <TempPasswordNotice who={notice.who} password={notice.password} onClose={() => setNotice(null)} />}
             {requests.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-xl border border-dashed border-[#dbe6e0] text-gray-400 text-sm">
+                <div className="text-center py-16 bg-white rounded-xl border border-dashed border-line text-gray-400 text-sm">
                     لا توجد طلبات هنا.
                 </div>
             ) : (

@@ -98,7 +98,7 @@ function FamilyNode({ data, selected }: { data: FamilyNodeData; selected?: boole
                                     e.stopPropagation();
                                     if (data.onAddMember) data.onAddMember();
                                 }}
-                                className="w-full py-2 bg-[#00c853] text-white rounded-lg flex items-center justify-center gap-2 text-xs font-black hover:bg-[#00b24a] transition-all shadow-md active:scale-95"
+                                className="w-full py-2 bg-primary text-white rounded-lg flex items-center justify-center gap-2 text-xs font-black hover:bg-primary-dark transition-all shadow-md active:scale-95"
                             >
                                 <span className="text-sm">إضافة فرد</span>
                                 <Plus className="w-4 h-4" />

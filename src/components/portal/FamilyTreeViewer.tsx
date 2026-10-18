@@ -51,7 +51,7 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
     const isMine = myMemberId !== null && nodes.some((n) => n.id === myMemberId);
 
     return (
-        <div className="relative h-[calc(100dvh-16rem)] md:h-[calc(100dvh-12rem)] min-h-[420px] bg-white rounded-2xl border border-[#e5ece8] overflow-hidden">
+        <div className="relative h-[calc(100dvh-16rem)] md:h-[calc(100dvh-12rem)] min-h-[420px] bg-white rounded-2xl border border-line overflow-hidden">
             <div className="absolute top-3 inset-x-3 z-10 flex flex-wrap gap-2 items-start">
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />

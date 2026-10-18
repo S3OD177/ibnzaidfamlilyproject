@@ -1,6 +1,7 @@
 import "server-only";
 import { and, count, desc, eq, gt, ilike, lte, or, sql, type SQL } from "drizzle-orm";
 import { getDb, schema } from "@/db";
+import { formatDateBoth } from "@/lib/dates";
 
 export type NewsRow = typeof schema.news.$inferSelect;
 export type NewsStatusFilter = "all" | "published" | "draft" | "scheduled";
@@ -20,7 +21,7 @@ export function categoryColor(category: string) {
 }
 
 export function formatNewsDate(date: Date | null) {
-    return date ? new Intl.DateTimeFormat("ar", { day: "2-digit", month: "long", year: "numeric" }).format(date) : "";
+    return formatDateBoth(date);
 }
 
 /** Splits stored plain text into paragraphs on blank lines. */

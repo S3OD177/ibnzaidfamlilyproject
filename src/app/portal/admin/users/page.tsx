@@ -15,11 +15,11 @@ export default async function UsersPage() {
     return (
         <div className="max-w-[1440px] mx-auto w-full font-display min-h-screen space-y-6">
             <div className="space-y-1">
-                <h2 className="text-3xl font-black tracking-tight text-[#111813] flex items-center gap-3">
+                <h2 className="text-3xl font-black tracking-tight text-ink flex items-center gap-3">
                     <Shield className="w-7 h-7 text-primary" />
                     إدارة المستخدمين
                 </h2>
-                <p className="text-[#61896b] max-w-2xl">
+                <p className="text-muted max-w-2xl">
                     حسابات الدخول إلى البوابة وأدوارها: مدير النظام، محرر المحتوى، وعضو العائلة.
                 </p>
             </div>

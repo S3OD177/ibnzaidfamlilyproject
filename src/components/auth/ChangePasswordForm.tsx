@@ -5,7 +5,7 @@ import { KeyRound } from "lucide-react";
 import { changePassword } from "@/app/portal/(member)/account/actions";
 import { unwrap } from "@/lib/action-result";
 
-const inputClass = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary outline-none text-[#111813]";
+const inputClass = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary outline-none text-ink";
 
 export default function ChangePasswordForm() {
     const [form, setForm] = useState({ current: "", next: "", confirm: "" });
@@ -39,15 +39,15 @@ export default function ChangePasswordForm() {
                 </div>
             )}
             <label className="block space-y-2">
-                <span className="text-sm font-bold text-[#111813]">كلمة المرور الحالية</span>
+                <span className="text-sm font-bold text-ink">كلمة المرور الحالية</span>
                 <input className={inputClass} type="password" autoComplete="current-password" required value={form.current} onChange={(e) => setForm({ ...form, current: e.target.value })} />
             </label>
             <label className="block space-y-2">
-                <span className="text-sm font-bold text-[#111813]">كلمة المرور الجديدة</span>
+                <span className="text-sm font-bold text-ink">كلمة المرور الجديدة</span>
                 <input className={inputClass} type="password" autoComplete="new-password" required minLength={8} value={form.next} onChange={(e) => setForm({ ...form, next: e.target.value })} />
             </label>
             <label className="block space-y-2">
-                <span className="text-sm font-bold text-[#111813]">تأكيد كلمة المرور الجديدة</span>
+                <span className="text-sm font-bold text-ink">تأكيد كلمة المرور الجديدة</span>
                 <input className={inputClass} type="password" autoComplete="new-password" required minLength={8} value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} />
             </label>
             <button type="submit" disabled={pending} className="w-full bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer">

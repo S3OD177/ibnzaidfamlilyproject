@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 function Group({ title, icon: Icon, count, children }: { title: string; icon: typeof Users; count: number; children: React.ReactNode }) {
     if (count === 0) return null;
     return (
-        <section className="bg-white rounded-xl border border-[#dbe6e0] overflow-hidden">
-            <h2 className="px-5 py-3 bg-[#f8faf8] border-b border-[#dbe6e0] text-sm font-bold text-[#111814] flex items-center gap-2">
+        <section className="bg-white rounded-xl border border-line overflow-hidden">
+            <h2 className="px-5 py-3 bg-canvas border-b border-line text-sm font-bold text-ink flex items-center gap-2">
                 <Icon className="w-4 h-4 text-primary" />
                 {title} ({count})
             </h2>
-            <ul className="divide-y divide-[#f0f4f2]">{children}</ul>
+            <ul className="divide-y divide-mist">{children}</ul>
         </section>
     );
 }
@@ -20,9 +20,9 @@ function Group({ title, icon: Icon, count, children }: { title: string; icon: ty
 function Row({ href, title, detail, external }: { href: string; title: string; detail?: string | null; external?: boolean }) {
     return (
         <li>
-            <Link href={href} target={external ? "_blank" : undefined} className="block px-5 py-3 hover:bg-[#fcfdfc]">
-                <p className="text-sm font-bold text-[#111814]">{title}</p>
-                {detail && <p className="text-xs text-[#618975] mt-0.5">{detail}</p>}
+            <Link href={href} target={external ? "_blank" : undefined} className="block px-5 py-3 hover:bg-canvas">
+                <p className="text-sm font-bold text-ink">{title}</p>
+                {detail && <p className="text-xs text-muted mt-0.5">{detail}</p>}
             </Link>
         </li>
     );
@@ -37,20 +37,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
         <div className="max-w-3xl mx-auto font-display space-y-6">
             <form action="/portal/admin/search" method="get" className="relative">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#618975]" />
+                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                 <input
                     name="q"
                     type="search"
                     defaultValue={query}
                     autoFocus={!query}
                     placeholder="بحث عن عضو، خبر، قرار، أو وثيقة..."
-                    className="w-full rounded-xl border border-[#dbe6e0] bg-white py-3.5 pr-12 pl-4 text-base outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-line bg-white py-3.5 pr-12 pl-4 text-base outline-none focus:border-primary"
                 />
             </form>
 
             {query.length > 0 && query.length < 2 && <p className="text-sm text-gray-500">اكتب حرفين على الأقل.</p>}
             {query.length >= 2 && total === 0 && (
-                <p className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-[#dbe6e0]">لا توجد نتائج لـ «{query}».</p>
+                <p className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-line">لا توجد نتائج لـ «{query}».</p>
             )}
 
             <Group title="أفراد العائلة" icon={Users} count={results.members.length}>

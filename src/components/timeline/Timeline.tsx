@@ -21,7 +21,7 @@ export default function Timeline({ events, onDelete }: TimelineProps) {
             case 'birth': return <Baby className="w-5 h-5 text-blue-500" />;
             case 'death': return <UserMinus className="w-5 h-5 text-red-500" />;
             case 'marriage': return <Heart className="w-5 h-5 text-pink-500" />;
-            default: return <Star className="w-5 h-5 text-[#D4AF37]" />;
+            default: return <Star className="w-5 h-5 text-primary" />;
         }
     };
 
@@ -35,16 +35,16 @@ export default function Timeline({ events, onDelete }: TimelineProps) {
     };
 
     return (
-        <div className="relative border-r border-[#dbe6e0] mr-6 space-y-12">
+        <div className="relative border-r border-line mr-6 space-y-12">
             {events.map((event) => (
                 <div key={event.id} className="relative pr-8">
                     {/* Timeline Dot */}
-                    <div className="absolute top-0 -right-3 w-6 h-6 rounded-full bg-white border-4 border-[#D4AF37] shadow-sm z-10" />
+                    <div className="absolute top-0 -right-3 w-6 h-6 rounded-full bg-white border-4 border-primary shadow-sm z-10" />
 
                     {/* Content Card */}
                     <div className={`p-5 rounded-2xl border transition-all hover:shadow-md ${getBgColor(event.type)}`}>
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-lg font-bold text-[#111814] flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-ink flex items-center gap-2">
                                 <div className="p-1.5 bg-white rounded-lg shadow-sm">
                                     {getIcon(event.type)}
                                 </div>
@@ -77,7 +77,7 @@ export default function Timeline({ events, onDelete }: TimelineProps) {
                         {event.memberId && (
                             <Link
                                 href={`/portal/members/${event.memberId}`}
-                                className="inline-flex items-center text-xs font-bold text-[#D4AF37] hover:underline"
+                                className="inline-flex items-center text-xs font-bold text-primary hover:underline"
                             >
                                 عرض الملف الشخصي
                             </Link>

@@ -14,7 +14,7 @@ export default async function Home() {
     <>
       <main className="flex-grow flex flex-col">
         {/* Hero Section */}
-        <section className="w-full bg-white border-b border-[#f0f4f2] py-12 md:py-20">
+        <section className="w-full bg-white border-b border-mist py-12 md:py-20">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
               <div className="flex-1 flex flex-col items-start gap-6">
@@ -22,15 +22,15 @@ export default async function Home() {
                   <CalendarCheck className="w-5 h-5" />
                   <span>أبرز الأحداث</span>
                 </div>
-                <h1 className="text-4xl lg:text-6xl font-black text-[#111813] leading-[1.15] font-display">
+                <h1 className="text-4xl lg:text-6xl font-black text-ink leading-[1.15] font-display">
                   {featured ? featured.title : `مرحباً بكم في ${site.siteName}`}
                 </h1>
-                <p className="text-lg text-[#61896f] leading-relaxed max-w-2xl">
+                <p className="text-lg text-muted leading-relaxed max-w-2xl">
                   {featured ? featured.excerpt : "الموقع الرسمي للعائلة وبوابة أفرادها، ستجدون هنا آخر الأخبار والفعاليات."}
                 </p>
                 {featured && (
                   <>
-                    <div className="flex items-center gap-4 text-sm text-[#61896f] mt-1">
+                    <div className="flex items-center gap-4 text-sm text-muted mt-1">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-[18px] h-[18px]" />
                         <time dateTime={featured.publishedAt?.toISOString()}>{formatNewsDate(featured.publishedAt)}</time>
@@ -69,9 +69,9 @@ export default async function Home() {
 
 
         {/* Latest News Section */}
-        <section className="w-full bg-white py-16 border-b border-[#f0f4f2]">
+        <section className="w-full bg-white py-16 border-b border-mist">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-10 flex flex-col gap-10">
-            <div className="flex items-center justify-between border-b border-[#f0f4f2] pb-6">
+            <div className="flex items-center justify-between border-b border-mist pb-6">
               <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase">
                 <CalendarCheck className="w-5 h-5" />
                 <span>المركز الإعلامي</span>
@@ -82,13 +82,13 @@ export default async function Home() {
               </Link>
             </div>
             <div className="mb-2">
-              <h2 className="text-3xl lg:text-4xl font-black text-[#111813] font-display">
+              <h2 className="text-3xl lg:text-4xl font-black text-ink font-display">
                 آخر أخبار ومستجدات العائلة
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {rest.length === 0 && <p className="text-[#61896f]">لا توجد أخبار أخرى حالياً.</p>}
+              {rest.length === 0 && <p className="text-muted">لا توجد أخبار أخرى حالياً.</p>}
               {rest.map((item) => (
                 <ArticleCard key={item.id} item={item} />
               ))}
@@ -100,7 +100,7 @@ export default async function Home() {
         <SocialHub contactEmail={site.contactEmail} xHandle={site.xHandle} whatsapp={site.whatsapp} />
 
         {/* Digital Services Section */}
-        <section className="w-full bg-[#f8faf9] py-16">
+        <section className="w-full bg-canvas py-16">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
             <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-4">
               <div>
@@ -108,11 +108,11 @@ export default async function Home() {
                   <CalendarCheck className="w-5 h-5" />
                   <span>الخدمات الإلكترونية</span>
                 </div>
-                <h2 className="text-3xl lg:text-4xl font-black text-[#111813] font-display">
+                <h2 className="text-3xl lg:text-4xl font-black text-ink font-display">
                   خدمات العائلة الرقمية
                 </h2>
               </div>
-              <p className="text-[#61896f] max-w-md text-lg">
+              <p className="text-muted max-w-md text-lg">
                 مجموعة من الخدمات الإلكترونية المصممة لخدمة أفراد العائلة وتسهيل التواصل وتحديث المعلومات.
               </p>
             </div>
@@ -128,8 +128,8 @@ export default async function Home() {
                   <div className="p-4 bg-primary/5 rounded-xl shadow-sm mb-6 group-hover:scale-110 transition-transform duration-300 text-primary">
                     <service.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#111813] mb-2 font-display">{service.title}</h3>
-                  <p className="text-[#61896f] text-sm leading-relaxed mb-6">
+                  <h3 className="text-xl font-bold text-ink mb-2 font-display">{service.title}</h3>
+                  <p className="text-muted text-sm leading-relaxed mb-6">
                     {service.desc}
                   </p>
                   <div className="mt-auto flex items-center gap-2 text-primary text-sm font-bold group-hover:gap-3 transition-all">
@@ -149,7 +149,7 @@ export default async function Home() {
 
 function ArticleCard({ item }: { item: NewsRow }) {
   return (
-    <Link href={`/news/${item.slug}`} className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#e5e7eb] hover:shadow-xl hover:shadow-gray-100/50 hover:-translate-y-1 transition-all duration-300">
+    <Link href={`/news/${item.slug}`} className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-line hover:shadow-xl hover:shadow-gray-100/50 hover:-translate-y-1 transition-all duration-300">
       <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100">
         {/* Badge */}
         <div className="absolute top-4 right-4 z-10">
@@ -169,16 +169,16 @@ function ArticleCard({ item }: { item: NewsRow }) {
       </div>
 
       <div className="flex flex-col flex-1 p-6">
-        <div className="flex items-center gap-2 text-[#61896f] text-xs font-bold mb-3 uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-muted text-xs font-bold mb-3 uppercase tracking-wider">
           <Calendar className="w-4 h-4" />
           <time dateTime={item.publishedAt?.toISOString()}>{formatNewsDate(item.publishedAt)}</time>
         </div>
 
-        <h3 className="text-xl font-bold text-[#111813] mb-3 leading-snug group-hover:text-primary transition-colors font-display line-clamp-2">
+        <h3 className="text-xl font-bold text-ink mb-3 leading-snug group-hover:text-primary transition-colors font-display line-clamp-2">
           {item.title}
         </h3>
 
-        <p className="text-[#61896f] text-sm leading-relaxed mb-6 line-clamp-3">
+        <p className="text-muted text-sm leading-relaxed mb-6 line-clamp-3">
           {item.excerpt}
         </p>
 

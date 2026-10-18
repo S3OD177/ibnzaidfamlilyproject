@@ -10,7 +10,7 @@ export default async function CouncilPage() {
     const [[chair, ...members], charter] = await Promise.all([getCouncilMembers(), getCharter()]);
 
     return (
-        <div className="bg-[#fcfdfa] min-h-screen flex flex-col font-body text-[#111812]" style={{
+        <div className="bg-[#fcfdfa] min-h-screen flex flex-col font-body text-ink" style={{
             backgroundImage: "radial-gradient(#e5e7eb 0.5px, transparent 0.5px)",
             backgroundSize: "20px 20px"
         }}>
@@ -23,7 +23,7 @@ export default async function CouncilPage() {
                         <h1 className="text-primary font-bold text-5xl font-naskh mb-4">
                             هيكلية مجلس العائلة
                         </h1>
-                        <div className="h-1 w-24 bg-[#D4AF37] mx-auto rounded-full"></div>
+                        <div className="h-1 w-24 bg-primary mx-auto rounded-full"></div>
                         <p className="text-gray-600 mt-6 max-w-2xl mx-auto text-lg leading-relaxed">
                             قيادة تسعى لتمتين الروابط الأسرية وتعزيز قيم التلاحم والعطاء في ظل رؤية العائلة المستقبلية.
                         </p>
@@ -35,7 +35,7 @@ export default async function CouncilPage() {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                                 <div className="relative bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                                     <Link href={`/members/${chair.id}`} className="flex flex-col md:flex-row items-stretch w-full hover:bg-gray-50 transition-colors">
-                                        <div className="w-full md:w-2/5 h-56 md:h-auto md:aspect-[4/5] bg-gray-50 flex items-center justify-center border-b md:border-b-0 border-[#e5e7eb] overflow-hidden">
+                                        <div className="w-full md:w-2/5 h-56 md:h-auto md:aspect-[4/5] bg-gray-50 flex items-center justify-center border-b md:border-b-0 border-line overflow-hidden">
                                             {chair.photoUrl ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={chair.photoUrl} alt={chair.name} className="w-full h-full object-cover" />
@@ -48,13 +48,13 @@ export default async function CouncilPage() {
                                                 {chair.role}
                                             </span>
                                             <h2 className="text-3xl font-bold text-gray-900 mb-2 font-naskh leading-snug">{chair.name}</h2>
-                                            {chair.since && <p className="text-[#D4AF37] font-medium mb-6">فترة الولاية: {chair.since} - الحالي</p>}
+                                            {chair.since && <p className="text-primary font-medium mb-6">فترة الولاية: {chair.since} - الحالي</p>}
                                             {chair.statement && (
-                                                <div className="relative italic text-gray-700 mb-8 leading-relaxed text-lg font-naskh border-r-4 border-[#D4AF37] pr-6">
+                                                <div className="relative italic text-gray-700 mb-8 leading-relaxed text-lg font-naskh border-r-4 border-primary pr-6">
                                                     &quot;{chair.statement}&quot;
                                                 </div>
                                             )}
-                                            <span className="inline-flex self-start items-center gap-2 bg-[#111812] text-white px-6 py-3 rounded-lg font-bold">
+                                            <span className="inline-flex self-start items-center gap-2 bg-ink text-white px-6 py-3 rounded-lg font-bold">
                                                 <span>السيرة الذاتية</span>
                                             </span>
                                         </div>
@@ -79,7 +79,7 @@ export default async function CouncilPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {members.map((member) => (
                                     <Link key={member.id} href={`/members/${member.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex sm:block items-center">
-                                        <div className="size-20 m-3 sm:m-0 shrink-0 rounded-full sm:rounded-none sm:size-auto sm:w-full sm:aspect-[3/4] bg-gray-50 flex items-center justify-center sm:border-b border-[#e5e7eb] group-hover:bg-gray-100 transition-colors overflow-hidden">
+                                        <div className="size-20 m-3 sm:m-0 shrink-0 rounded-full sm:rounded-none sm:size-auto sm:w-full sm:aspect-[3/4] bg-gray-50 flex items-center justify-center sm:border-b border-line group-hover:bg-gray-100 transition-colors overflow-hidden">
                                             {member.photoUrl ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
@@ -104,7 +104,7 @@ export default async function CouncilPage() {
                     </section>
 
                     {/* Council Charter Section */}
-                    <section className="bg-[#111812] text-white rounded-xl p-10 overflow-hidden relative shadow-2xl">
+                    <section className="bg-ink text-white rounded-xl p-10 overflow-hidden relative shadow-2xl">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                             <div className="text-center md:text-right flex-1">

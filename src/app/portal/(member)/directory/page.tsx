@@ -19,7 +19,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
                 <p className="text-sm text-gray-500 mt-1">ابحث عن أي فرد من العائلة وافتح ملفه.</p>
             </div>
 
-            <form method="get" className="bg-white rounded-2xl border border-[#e5ece8] p-4 flex flex-col sm:flex-row gap-3">
+            <form method="get" className="bg-white rounded-2xl border border-line p-4 flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
                     <input
@@ -53,7 +53,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
                     <li key={m.id}>
                         <Link
                             href={`/portal/members/${m.id}`}
-                            className="flex items-center gap-3 bg-white rounded-2xl border border-[#e5ece8] p-4 hover:border-primary hover:shadow-sm transition-all"
+                            className="flex items-center gap-3 bg-white rounded-2xl border border-line p-4 hover:border-primary hover:shadow-sm transition-all"
                         >
                             <span className={`size-12 rounded-full border-2 overflow-hidden flex items-center justify-center shrink-0 ${m.gender === "female" ? "border-pink-200 bg-pink-50 text-pink-400" : "border-blue-200 bg-blue-50 text-blue-400"}`}>
                                 {m.photo ? (

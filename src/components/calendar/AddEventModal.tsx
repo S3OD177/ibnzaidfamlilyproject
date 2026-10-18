@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, Type, Users, PartyPopper, AlertCircle, Bookmark } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
+import { formatGregorian, formatHijri } from "@/lib/dates";
 
 const EVENT_CATEGORIES = [
     {
@@ -83,9 +84,9 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedDate }: 
                 className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 cursor-default border border-white/20"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="bg-[#f8faf9] p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="bg-canvas p-6 border-b border-gray-100 flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold text-[#111814]">إضافة حدث جديد</h3>
+                        <h3 className="text-xl font-bold text-ink">إضافة حدث جديد</h3>
                         <p className="text-xs text-gray-500 mt-1">أضف مناسبة أو تذكير للتقويم العائلي</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white hover:shadow-sm rounded-full text-gray-400 hover:text-red-500 transition-all">
@@ -98,7 +99,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedDate }: 
                     <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
                         <div className="bg-white p-3 rounded-xl shadow-sm text-center min-w-[60px]">
                             <span className="block text-xs font-bold text-gray-400 uppercase">
-                                {selectedDate.toLocaleDateString('en-US', { month: 'short' })}
+                                {selectedDate.toLocaleDateString('ar-SA-u-ca-gregory-nu-latn', { month: 'short' })}
                             </span>
                             <span className="block text-2xl font-bold text-primary leading-none mt-1">
                                 {selectedDate.getDate()}
@@ -106,8 +107,8 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedDate }: 
                         </div>
                         <div>
                             <p className="text-xs font-bold text-gray-500 mb-1">التاريخ المحدد</p>
-                            <p className="font-bold text-[#111814]">
-                                {selectedDate.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            <p className="font-bold text-ink">
+                                {formatHijri(selectedDate, { weekday: true })} · {formatGregorian(selectedDate)}
                             </p>
                         </div>
                     </div>

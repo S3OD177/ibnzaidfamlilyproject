@@ -22,8 +22,8 @@ export default function EventList({ events, selectedDate, onDelete }: EventListP
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
             <div className="p-6 border-b border-gray-100 bg-[#fbfcfa]">
-                <h3 className="text-lg font-bold text-[#111814] mb-1">أحداث اليوم</h3>
-                <div className="flex items-center gap-2 text-[#618975] text-sm">
+                <h3 className="text-lg font-bold text-ink mb-1">أحداث اليوم</h3>
+                <div className="flex items-center gap-2 text-muted text-sm">
                     <CalendarIcon className="w-4 h-4" />
                     <span>{formattedDate}</span>
                 </div>
@@ -42,7 +42,7 @@ export default function EventList({ events, selectedDate, onDelete }: EventListP
                             className={`p-4 rounded-xl border-l-4 shadow-sm transition-all hover:shadow-md bg-white ${event.color?.replace('bg-', 'border-') || 'border-gray-200'}`}
                         >
                             <div className="flex justify-between items-start">
-                                <h4 className="font-bold text-[#111814]">{event.title}</h4>
+                                <h4 className="font-bold text-ink">{event.title}</h4>
                                 <div className="flex items-center gap-2">
                                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${event.color || 'bg-gray-100 text-gray-600'}`}>
                                         {event.categoryLabel ?? 'حدث'}
@@ -83,10 +83,10 @@ export default function EventList({ events, selectedDate, onDelete }: EventListP
                                 <div key={`upcoming-${event.id}`} className="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
                                     <div className="text-center bg-white p-2 rounded border border-gray-200 min-w-[50px]">
                                         <span className="block text-[10px] text-gray-400">{format(event.date, 'MMM', { locale: arSA })}</span>
-                                        <span className="block text-lg font-bold text-[#111814] leading-none">{format(event.date, 'd')}</span>
+                                        <span className="block text-lg font-bold text-ink leading-none">{format(event.date, 'd')}</span>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-[#111814] line-clamp-1">{event.title}</p>
+                                        <p className="text-sm font-bold text-ink line-clamp-1">{event.title}</p>
                                         <p className="text-[10px] text-gray-500">{event.categoryLabel ?? 'حدث'}</p>
                                     </div>
                                 </div>

@@ -8,7 +8,7 @@ export async function SiteFooter() {
     const year = new Date().getFullYear();
 
     return (
-        <footer className="bg-[#102210] text-white/80 py-12 mt-auto font-body">
+        <footer className="bg-deep text-white/80 py-12 mt-auto font-body">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-8 mb-8">
                     <div className="flex items-center gap-3">

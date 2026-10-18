@@ -8,7 +8,7 @@ interface FamilyConnectionsProps {
 export default function FamilyConnections({ member }: FamilyConnectionsProps) {
     const renderConnectionCard = (relative: RelativeRef, role: string) => (
         <Link href={`/portal/members/${relative.id}`} key={relative.id} className="block group">
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-[#D4AF37] hover:shadow-md transition-all">
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-primary hover:shadow-md transition-all">
                 <div className="size-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
                     {/* Placeholder for avatar */}
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
@@ -16,7 +16,7 @@ export default function FamilyConnections({ member }: FamilyConnectionsProps) {
                     </div>
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-[#111814] group-hover:text-[#D4AF37] transition-colors">{relative.label}</p>
+                    <p className="text-sm font-bold text-ink group-hover:text-primary transition-colors">{relative.label}</p>
                     <p className="text-[10px] text-gray-500">{role}</p>
                 </div>
             </div>
@@ -25,7 +25,7 @@ export default function FamilyConnections({ member }: FamilyConnectionsProps) {
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-bold text-[#111814] mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-ink mb-6 flex items-center gap-2">
                 الروابط العائلية
                 <span className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded-full">
                     {/* Total count logic could go here */}

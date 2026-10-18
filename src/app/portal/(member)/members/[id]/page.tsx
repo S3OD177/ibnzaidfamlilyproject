@@ -6,11 +6,12 @@ import FamilyConnections from "@/components/admin/members/FamilyConnections";
 import { getPortalMember } from "@/lib/data/members";
 import { getSession } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
+import { formatHijri } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 function formatDate(date: Date) {
-    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" }).format(date);
+    return formatHijri(date);
 }
 
 export default async function MemberProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,7 +31,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                     <div className="size-14 mx-auto mb-4 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                         <UserX className="w-7 h-7" />
                     </div>
-                    <h1 className="text-xl font-bold text-[#111814] mb-2">حسابك غير مرتبط بالشجرة بعد</h1>
+                    <h1 className="text-xl font-bold text-ink mb-2">حسابك غير مرتبط بالشجرة بعد</h1>
                     <p className="text-sm text-gray-500 mb-6">
                         سيتم ربط حسابك بملفك في شجرة العائلة من قبل الإدارة. يمكنك تصفح الموقع حتى ذلك الحين.
                     </p>
@@ -60,7 +61,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
             <div className="max-w-5xl mx-auto">
                 {/* Breadcrumb / Back */}
                 <div className="mb-6 flex items-center justify-between gap-3">
-                    <Link href={backLink.href} className="inline-flex items-center gap-2 text-gray-500 hover:text-[#111814] transition-colors font-bold text-sm">
+                    <Link href={backLink.href} className="inline-flex items-center gap-2 text-gray-500 hover:text-ink transition-colors font-bold text-sm">
                         <ArrowRight className="w-4 h-4" />
                         {backLink.label}
                     </Link>
@@ -82,7 +83,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
 
                         {/* Bio / History */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                            <h3 className="text-lg font-bold text-[#111814] mb-4">السيرة الذاتية</h3>
+                            <h3 className="text-lg font-bold text-ink mb-4">السيرة الذاتية</h3>
                             <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
                                 {member.bio || "لا توجد سيرة ذاتية مسجلة."}
                             </p>
@@ -99,11 +100,11 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">تاريخ الإضافة</span>
-                                    <span className="font-medium text-[#111814]">{formatDate(member.createdAt)}</span>
+                                    <span className="font-medium text-ink">{formatDate(member.createdAt)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">آخر تعديل</span>
-                                    <span className="font-medium text-[#111814]">{formatDate(member.updatedAt)}</span>
+                                    <span className="font-medium text-ink">{formatDate(member.updatedAt)}</span>
                                 </div>
                             </div>
                         </div>

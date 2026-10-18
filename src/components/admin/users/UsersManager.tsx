@@ -6,6 +6,8 @@ import { UserPlus, KeyRound, Save, Copy, Check, X } from "lucide-react";
 import type { MemberOption, UserRow } from "@/lib/data/users";
 import { createUser, resetUserPassword, updateUser } from "@/app/portal/admin/users/actions";
 import { unwrap } from "@/lib/action-result";
+import { confirmAction, toast } from "@/components/ui/feedback";
+import { formatHijri } from "@/lib/dates";
 
 const ROLE_OPTIONS = [
     { id: "admin", label: "مدير النظام", hint: "كل الصلاحيات بما فيها المستخدمين والطلبات" },
@@ -13,9 +15,9 @@ const ROLE_OPTIONS = [
     { id: "member", label: "عضو", hint: "بوابة الأعضاء فقط" },
 ] as const;
 
-const inputClass = "w-full rounded-lg border border-[#dbe6de] bg-white px-3 py-2 text-sm outline-none focus:border-primary";
+const inputClass = "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-primary";
 const formatDate = (iso: string | null) =>
-    iso ? new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { dateStyle: "medium" }).format(new Date(iso)) : "لم يسجل دخول";
+    iso ? formatHijri(iso) : "لم يسجل دخول";
 
 function MemberSelect({ value, onChange, members }: { value: string | null; onChange: (v: string | null) => void; members: MemberOption[] }) {
     return (
@@ -40,7 +42,7 @@ export function TempPasswordNotice({ who, password, onClose }: { who: string; pa
                 <p className="text-xs mt-1">انسخها وأرسلها له الآن، لن تظهر مرة أخرى.</p>
             </div>
             <div className="flex items-center gap-2">
-                <code dir="ltr" className="bg-white border border-amber-200 rounded-lg px-3 py-2 font-mono text-base font-bold text-[#111813]">{password}</code>
+                <code dir="ltr" className="bg-white border border-amber-200 rounded-lg px-3 py-2 font-mono text-base font-bold text-ink">{password}</code>
                 <button
                     type="button"
                     onClick={async () => {
@@ -94,7 +96,7 @@ function UserRowEditor({ user, members, isSelf, onPassword }: { user: UserRow; m
         <tr className={`align-top ${user.status === "disabled" ? "bg-gray-50/70" : ""}`}>
             <td className="px-4 py-3 min-w-[200px]">
                 <input className={`${inputClass} font-bold`} value={draft.displayName} placeholder="الاسم الظاهر" onChange={(e) => setDraft({ ...draft, displayName: e.target.value })} />
-                <p className="text-xs text-[#61896b] mt-1" dir="ltr">@{user.username}{isSelf ? " (أنت)" : ""}</p>
+                <p className="text-xs text-muted mt-1" dir="ltr">@{user.username}{isSelf ? " (أنت)" : ""}</p>
             </td>
             <td className="px-4 py-3 min-w-[180px]">
                 <input className={inputClass} dir="ltr" type="email" value={draft.email} placeholder="email@example.com" onChange={(e) => setDraft({ ...draft, email: e.target.value })} />
@@ -113,13 +115,13 @@ function UserRowEditor({ user, members, isSelf, onPassword }: { user: UserRow; m
             <td className="px-4 py-3 min-w-[200px]">
                 <MemberSelect value={draft.memberId} members={members} onChange={(memberId) => setDraft({ ...draft, memberId })} />
             </td>
-            <td className="px-4 py-3 text-xs text-[#61896b] whitespace-nowrap">{formatDate(user.lastLoginAt)}</td>
+            <td className="px-4 py-3 text-xs text-muted whitespace-nowrap">{formatDate(user.lastLoginAt)}</td>
             <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
                         disabled={!dirty || pending}
-                        onClick={() => run(async () => { await unwrap(updateUser(user.id, draft)); router.refresh(); })}
+                        onClick={() => run(async () => { await unwrap(updateUser(user.id, draft)); toast.success("تم حفظ الحساب"); router.refresh(); })}
                         className="flex items-center gap-1 px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold disabled:opacity-30 cursor-pointer"
                     >
                         <Save className="w-3.5 h-3.5" />
@@ -129,14 +131,14 @@ function UserRowEditor({ user, members, isSelf, onPassword }: { user: UserRow; m
                         type="button"
                         disabled={pending}
                         title="إعادة تعيين كلمة المرور"
-                        onClick={() => {
-                            if (!confirm(`إنشاء كلمة مرور مؤقتة جديدة لـ ${user.displayName || user.username}؟ ستتوقف كلمة المرور الحالية.`)) return;
+                        onClick={async () => {
+                            if (!(await confirmAction({ title: `إنشاء كلمة مرور مؤقتة جديدة لـ ${user.displayName || user.username}؟`, message: "ستتوقف كلمة المرور الحالية عن العمل.", confirmLabel: "إنشاء" }))) return;
                             run(async () => {
                                 const { tempPassword } = await unwrap(resetUserPassword(user.id));
                                 onPassword(user.displayName || user.username, tempPassword);
                             });
                         }}
-                        className="p-2 rounded-lg border border-[#dbe6de] text-[#61896b] hover:bg-gray-50 cursor-pointer"
+                        className="p-2 rounded-lg border border-line text-muted hover:bg-gray-50 cursor-pointer"
                     >
                         <KeyRound className="w-4 h-4" />
                     </button>
@@ -173,37 +175,37 @@ export default function UsersManager({ users, members, currentUserId }: { users:
         <div className="space-y-6">
             {notice && <TempPasswordNotice who={notice.who} password={notice.password} onClose={() => setNotice(null)} />}
 
-            <form onSubmit={create} className="bg-white border border-[#dbe6de] rounded-xl p-5 space-y-4">
-                <h3 className="font-bold text-[#111813] flex items-center gap-2">
+            <form onSubmit={create} className="bg-white border border-line rounded-xl p-5 space-y-4">
+                <h3 className="font-bold text-ink flex items-center gap-2">
                     <UserPlus className="w-5 h-5 text-primary" />
                     إضافة مستخدم
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <label className="block">
-                        <span className="text-xs font-bold text-[#61896b] mb-1 block">اسم المستخدم</span>
+                        <span className="text-xs font-bold text-muted mb-1 block">اسم المستخدم</span>
                         <input className={inputClass} dir="ltr" required placeholder="ahmad.s" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/\s/g, "") })} />
                     </label>
                     <label className="block">
-                        <span className="text-xs font-bold text-[#61896b] mb-1 block">الاسم الظاهر</span>
+                        <span className="text-xs font-bold text-muted mb-1 block">الاسم الظاهر</span>
                         <input className={inputClass} placeholder="أحمد بن سعد" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
                     </label>
                     <label className="block">
-                        <span className="text-xs font-bold text-[#61896b] mb-1 block">البريد (اختياري)</span>
+                        <span className="text-xs font-bold text-muted mb-1 block">البريد (اختياري)</span>
                         <input className={inputClass} dir="ltr" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                     </label>
                     <label className="block">
-                        <span className="text-xs font-bold text-[#61896b] mb-1 block">الدور</span>
+                        <span className="text-xs font-bold text-muted mb-1 block">الدور</span>
                         <select className={inputClass} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                             {ROLE_OPTIONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
                         </select>
                     </label>
                     <label className="block">
-                        <span className="text-xs font-bold text-[#61896b] mb-1 block">الفرد في الشجرة</span>
+                        <span className="text-xs font-bold text-muted mb-1 block">الفرد في الشجرة</span>
                         <MemberSelect value={form.memberId} members={members} onChange={(memberId) => setForm({ ...form, memberId })} />
                     </label>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-[#61896b]">
+                    <p className="text-xs text-muted">
                         {ROLE_OPTIONS.find((r) => r.id === form.role)?.hint}. ستظهر كلمة مرور مؤقتة بعد الإنشاء.
                     </p>
                     <div className="flex items-center gap-3">
@@ -216,12 +218,12 @@ export default function UsersManager({ users, members, currentUserId }: { users:
                 </div>
             </form>
 
-            <div className="bg-white border border-[#dbe6de] rounded-xl overflow-x-auto">
+            <div className="bg-white border border-line rounded-xl overflow-x-auto">
                 {users.length === 0 ? (
                     <p className="p-8 text-center text-sm text-gray-400">لا يوجد مستخدمون بعد. أضف أول حساب من النموذج أعلاه.</p>
                 ) : (
                     <table className="w-full text-right">
-                        <thead className="bg-[#f0f4f1] text-[#61896b] text-xs">
+                        <thead className="bg-mist text-muted text-xs">
                             <tr>
                                 <th className="px-4 py-3 font-bold">المستخدم</th>
                                 <th className="px-4 py-3 font-bold">البريد</th>
@@ -232,7 +234,7 @@ export default function UsersManager({ users, members, currentUserId }: { users:
                                 <th className="px-4 py-3"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#f0f4f1]">
+                        <tbody className="divide-y divide-mist">
                             {users.map((user) => (
                                 <UserRowEditor
                                     key={`${user.id}-${user.role}-${user.status}-${user.memberId}`}

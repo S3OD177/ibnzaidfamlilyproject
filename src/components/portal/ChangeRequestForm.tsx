@@ -98,7 +98,7 @@ export default function ChangeRequestForm({ current, initial }: { current: Value
     return (
         <form onSubmit={submit} className="space-y-6">
             {groups.map(([group, title]) => (
-                <section key={group} className="bg-white rounded-2xl border border-[#e5ece8] p-5 md:p-6">
+                <section key={group} className="bg-white rounded-2xl border border-line p-5 md:p-6">
                     <h2 className="font-bold mb-4">{title}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {CHANGE_FIELDS.filter((f) => f.group === group).map((field) => (
@@ -116,7 +116,7 @@ export default function ChangeRequestForm({ current, initial }: { current: Value
                 </section>
             ))}
 
-            <section className="bg-white rounded-2xl border border-[#e5ece8] p-5 md:p-6 space-y-4">
+            <section className="bg-white rounded-2xl border border-line p-5 md:p-6 space-y-4">
                 <label className="block space-y-1.5">
                     <span className="text-sm font-bold text-gray-600">ملاحظة للإدارة (اختياري)</span>
                     <textarea
