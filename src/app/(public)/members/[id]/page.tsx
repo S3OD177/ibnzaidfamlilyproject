@@ -28,36 +28,36 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
     // Contact details are for signed-in family members only.
     const signedIn = Boolean(await getSession());
 
-    const bgGradient = "from-primary/20 via-primary/5";
-    const borderColor = "border-[#e8efe9]";
-    const iconColor = "text-primary";
+    const borderColor = "border-sand";
+    const iconColor = "text-primary-dark";
     const iconBg = "bg-primary/10";
 
     return (
-        <div className="bg-canvas min-h-screen font-body text-ink">
+        <div className="bg-cream min-h-screen font-body text-ink">
 
             <main className="max-w-[1200px] mx-auto px-4 py-8">
 
                 {/* Profile Header Card */}
-                <div className={`bg-white rounded-xl shadow-sm border ${borderColor} overflow-hidden mb-8`}>
-                    {/* Cover Gradient (No Image) */}
-                    <div className={`h-40 bg-gradient-to-l ${bgGradient} to-transparent relative`}>
+                <div className={`bg-white rounded-3xl shadow-sm border ${borderColor} overflow-hidden mb-8`}>
+                    {/* Cover: deep green with the heritage pattern */}
+                    <div className="h-40 bg-deep relative overflow-hidden">
+                        <div className="absolute inset-0 heritage-pattern opacity-15" />
                     </div>
 
                     <div className="px-8 pb-8 -mt-16 relative flex flex-col md:flex-row items-end justify-between gap-6">
                         <div className="flex flex-col md:flex-row items-end gap-6 w-full">
                             {/* Profile Picture Placeholder */}
                             <div className="relative self-center md:self-auto">
-                                <div className="size-36 rounded-xl bg-white p-1 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center bg-gray-50">
+                                <div className="size-36 rounded-2xl p-1 border-4 border-white ring-2 ring-primary/50 shadow-lg overflow-hidden flex items-center justify-center bg-cream">
                                     {member.photoUrl ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover rounded-lg" />
                                     ) : (
-                                        <Users className="w-20 h-20 text-gray-300" />
+                                        <Users className="w-20 h-20 text-primary/40" />
                                     )}
                                 </div>
                                 {member.councilRole && (
-                                    <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm">
+                                    <div className="absolute -bottom-2 -right-2 bg-primary text-deep text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm">
                                         المجلس
                                     </div>
                                 )}
@@ -65,7 +65,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
 
                             {/* Basic Info */}
                             <div className="flex-1 pb-2 text-center md:text-right">
-                                <h1 className="text-3xl font-bold text-ink font-naskh mb-2">{member.name}</h1>
+                                <h1 className="font-heritage text-4xl font-bold text-deep mb-2">{member.name}</h1>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-2">
                                     {member.councilRole && (
                                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-deep text-primary text-sm font-bold">
@@ -87,7 +87,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                                     )}
                                     {member.status === "deceased" && (
                                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm font-medium">
-                                            رحمه الله{member.death ? ` (${member.death})` : ""}
+                                            {member.gender === "female" ? "رحمها الله" : "رحمه الله"}{member.death ? ` (${member.death})` : ""}
                                         </span>
                                     )}
                                 </div>
@@ -98,7 +98,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                         <div className="flex gap-3 pb-2 w-full md:w-auto">
                             <ShareButton
                                 title={member.name}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-all shadow-md shadow-primary/20 cursor-pointer"
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-deep text-primary font-bold rounded-lg hover:bg-deep-light transition-all cursor-pointer"
                             />
                         </div>
                     </div>
@@ -109,7 +109,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                     <div className="lg:col-span-4 space-y-6 lg:order-2">
 
                         {/* Info Card */}
-                        <div className={`bg-white rounded-xl border ${borderColor} p-6 shadow-sm`}>
+                        <div className={`bg-white rounded-2xl border ${borderColor} p-6 shadow-sm`}>
                             <h3 className={`text-lg font-bold mb-6 pb-2 border-b border-gray-100 flex items-center gap-2 ${iconColor}`}>
                                 <User className="w-5 h-5" />
                                 البيانات الأساسية
@@ -187,7 +187,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                     <div className="lg:col-span-8 space-y-6 lg:order-1">
 
                         {/* Biography */}
-                        <section className={`bg-white rounded-xl border ${borderColor} p-8 shadow-sm`}>
+                        <section className={`bg-white rounded-2xl border ${borderColor} p-8 shadow-sm`}>
                             <h2 className={`text-xl font-bold text-ink mb-6 flex items-center gap-2 ${iconColor}`}>
                                 <Edit className="w-5 h-5" />
                                 السيرة الذاتية
@@ -202,7 +202,7 @@ export default async function MemberProfile({ params }: { params: Promise<{ id: 
                         </section>
 
                         {/* Family Connections */}
-                        <section className={`bg-white rounded-xl border ${borderColor} p-8 shadow-sm`}>
+                        <section className={`bg-white rounded-2xl border ${borderColor} p-8 shadow-sm`}>
                             <h2 className={`text-xl font-bold text-ink mb-8 flex items-center gap-2 ${iconColor}`}>
                                 <Users className="w-5 h-5" />
                                 الروابط العائلية

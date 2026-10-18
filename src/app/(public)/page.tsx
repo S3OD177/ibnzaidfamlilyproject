@@ -1,192 +1,257 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, CalendarCheck, Landmark, UserPlus, Users } from "lucide-react";
-import { SocialHub } from "@/components/home/SocialHub";
+import { ArrowLeft, BookOpen, Calendar, FileText, Landmark, Mail, MessageCircle, Network, PencilLine, Twitter, User, UserPlus, Users } from "lucide-react";
+import { PageHero, SectionHeading } from "@/components/heritage/PageHero";
+import { Star8 } from "@/components/heritage/Ornament";
 import { categoryColor, formatNewsDate, latestNews, type NewsRow } from "@/lib/data/news";
-import { getSiteSettings } from "@/lib/settings";
+import { getCouncilMembers } from "@/lib/data/members";
+import { getCharter } from "@/lib/data/documents";
+import { getPublicCounts } from "@/lib/data/stats";
+import { getAboutContent, getSiteSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  // Newest article leads the page; the next three fill the news grid.
-  const [[featured, ...rest], site] = await Promise.all([latestNews(4), getSiteSettings()]);
+  const [news, site, about, counts, council, charter] = await Promise.all([
+    latestNews(4),
+    getSiteSettings(),
+    getAboutContent(),
+    getPublicCounts(),
+    getCouncilMembers(),
+    getCharter(),
+  ]);
+  const [featured, ...rest] = news;
+  const chair = council[0];
+
+  const stats = [
+    { label: "فرداً في الشجرة", value: counts.members, icon: Users },
+    { label: "جيلاً موثّقاً", value: counts.generations, icon: Network },
+    { label: "أسرة", value: counts.families, icon: Landmark },
+    { label: "خبراً منشوراً", value: counts.news, icon: BookOpen },
+  ];
 
   return (
-    <>
-      <main className="flex-grow flex flex-col">
-        {/* Hero Section */}
-        <section className="w-full bg-white border-b border-mist py-12 md:py-20">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
-            <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-              <div className="flex-1 flex flex-col items-start gap-6">
-                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase">
-                  <CalendarCheck className="w-5 h-5" />
-                  <span>أبرز الأحداث</span>
-                </div>
-                <h1 className="text-4xl lg:text-6xl font-black text-ink leading-[1.15] font-display">
-                  {featured ? featured.title : `مرحباً بكم في ${site.siteName}`}
-                </h1>
-                <p className="text-lg text-muted leading-relaxed max-w-2xl">
-                  {featured ? featured.excerpt : "الموقع الرسمي للعائلة وبوابة أفرادها، ستجدون هنا آخر الأخبار والفعاليات."}
-                </p>
-                {featured && (
-                  <>
-                    <div className="flex items-center gap-4 text-sm text-muted mt-1">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-[18px] h-[18px]" />
-                        <time dateTime={featured.publishedAt?.toISOString()}>{formatNewsDate(featured.publishedAt)}</time>
-                      </div>
-                    </div>
-                    <Link
-                      className="group inline-flex items-center gap-2 text-white bg-primary hover:bg-green-600 px-6 py-3 rounded-lg font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 mt-4"
-                      href={`/news/${featured.slug}`}
-                    >
-                      <span>اقرأ التفاصيل</span>
-                      {/* ArrowRight logic reversed for RTL */}
-                      <ArrowRight className="w-5 h-5 rtl:rotate-180 group-hover:-translate-x-1 transition-transform" />
-                    </Link>
-                  </>
-                )}
-              </div>
-              <div className="flex-1 w-full max-w-[600px]">
-                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white rotate-1 hover:rotate-0 transition-transform duration-500 bg-gray-100 flex items-center justify-center">
-                  {featured?.coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={featured.coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover z-20" />
-                  )}
-                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary to-transparent" />
-                  <div className="relative z-10 p-8 text-center">
-                    <CalendarCheck className="w-24 h-24 text-primary/20 mx-auto mb-4" />
-                    <p className="text-primary/40 font-bold text-lg">صورة الحدث</p>
-                  </div>
-                </div>
-              </div>
+    <main className="flex-grow flex flex-col">
+      <PageHero size="lg" eyebrow="الموقع الرسمي للعائلة" title={site.siteName} subtitle={about.heroTitle}>
+        <p className="text-white/65 max-w-2xl mx-auto mt-3 leading-relaxed font-naskh">{about.heroText}</p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
+          <Link href="/portal" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-deep px-7 py-3.5 rounded-xl font-bold hover:bg-primary-light transition-colors">
+            <Network className="w-5 h-5" />
+            شجرة العائلة وبوابة الأعضاء
+          </Link>
+          <Link href="/about" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-primary/50 text-primary px-7 py-3.5 rounded-xl font-bold hover:bg-primary/10 transition-colors">
+            تعرّف على العائلة
+          </Link>
+        </div>
+      </PageHero>
+
+      {/* Family in numbers, overlapping the hero */}
+      <section className="relative z-10 -mt-10 px-4">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {stats.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="bg-white rounded-2xl border border-primary/25 shadow-lg shadow-deep/5 p-5 text-center">
+              <Icon className="w-5 h-5 text-primary mx-auto mb-2" />
+              <p className="font-heritage font-bold text-4xl text-deep leading-none">{value}</p>
+              <p className="text-sm text-muted mt-2">{label}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Mission, vision and values */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeading eyebrow="من نحن" title="رسالتنا ورؤيتنا" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+            {[
+              { title: "رسالتنا", text: about.mission },
+              { title: "رؤيتنا", text: about.vision },
+            ].map((card) => (
+              <div key={card.title} className="relative bg-white rounded-2xl border border-sand p-8 overflow-hidden">
+                <Star8 className="absolute -left-6 -top-6 w-24 h-24 text-primary/10" />
+                <h3 className="font-heritage font-bold text-2xl text-deep mb-3">{card.title}</h3>
+                <p className="text-gray-600 leading-loose font-naskh">{card.text}</p>
+              </div>
+            ))}
           </div>
-        </section>
-
-
-
-
-
-        {/* Latest News Section */}
-        <section className="w-full bg-white py-16 border-b border-mist">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-10 flex flex-col gap-10">
-            <div className="flex items-center justify-between border-b border-mist pb-6">
-              <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase">
-                <CalendarCheck className="w-5 h-5" />
-                <span>المركز الإعلامي</span>
-              </div>
-              <Link href="/news" className="flex items-center gap-1 text-primary font-bold text-sm hover:underline">
-                عرض جميع الأخبار
-                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
-              </Link>
-            </div>
-            <div className="mb-2">
-              <h2 className="text-3xl lg:text-4xl font-black text-ink font-display">
-                آخر أخبار ومستجدات العائلة
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {rest.length === 0 && <p className="text-muted">لا توجد أخبار أخرى حالياً.</p>}
-              {rest.map((item) => (
-                <ArticleCard key={item.id} item={item} />
+          {about.values.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-3 mt-8">
+              {about.values.map((value) => (
+                <span key={value} className="inline-flex items-center gap-2 bg-sand/60 text-deep px-4 py-2 rounded-full text-sm font-bold">
+                  <Star8 className="w-3 h-3 text-primary-dark" />
+                  {value}
+                </span>
               ))}
             </div>
+          )}
+          <div className="text-center mt-8">
+            <Link href="/about" className="inline-flex items-center gap-2 text-primary-dark font-bold hover:gap-3 transition-all">
+              قصة العائلة كاملة
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Social Hub Section */}
-        <SocialHub contactEmail={site.contactEmail} xHandle={site.xHandle} whatsapp={site.whatsapp} />
-
-        {/* Digital Services Section */}
-        <section className="w-full bg-canvas py-16">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-2">
-                  <CalendarCheck className="w-5 h-5" />
-                  <span>الخدمات الإلكترونية</span>
-                </div>
-                <h2 className="text-3xl lg:text-4xl font-black text-ink font-display">
-                  خدمات العائلة الرقمية
-                </h2>
-              </div>
-              <p className="text-muted max-w-md text-lg">
-                مجموعة من الخدمات الإلكترونية المصممة لخدمة أفراد العائلة وتسهيل التواصل وتحديث المعلومات.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { title: "تحديث البيانات", icon: Users, href: "/portal/login", desc: "تحديث بياناتك وبيانات أسرتك في الشجرة" },
-                { title: "الفعاليات والمناسبات", icon: CalendarCheck, href: `/news?category=${encodeURIComponent("فعاليات")}`, desc: "أخبار فعاليات ومناسبات العائلة" },
-                { title: "مجلس العائلة", icon: Landmark, href: "/council", desc: "أعضاء المجلس وميثاق العائلة" },
-                { title: "طلب انضمام", icon: UserPlus, href: "/join", desc: "انضم إلى بوابة أفراد العائلة" },
-              ].map((service) => (
-                <Link key={service.title} href={service.href} className="group bg-white hover:bg-white p-8 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-100/50 flex flex-col items-start">
-                  <div className="p-4 bg-primary/5 rounded-xl shadow-sm mb-6 group-hover:scale-110 transition-transform duration-300 text-primary">
-                    <service.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-ink mb-2 font-display">{service.title}</h3>
-                  <p className="text-muted text-sm leading-relaxed mb-6">
-                    {service.desc}
-                  </p>
-                  <div className="mt-auto flex items-center gap-2 text-primary text-sm font-bold group-hover:gap-3 transition-all">
-                    <span>دخول الخدمة</span>
-                    <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-                  </div>
+      {/* Latest news */}
+      <section className="bg-white border-y border-sand py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeading eyebrow="المركز الإعلامي" title="أخبار العائلة" />
+          {!featured ? (
+            <p className="text-center text-muted mt-12">لا توجد أخبار منشورة بعد.</p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-12">
+              <FeaturedCard item={featured} />
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                {rest.map((item) => (
+                  <CompactCard key={item.id} item={item} />
+                ))}
+                <Link href="/news" className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 text-primary-dark font-bold py-3 hover:bg-primary/5 transition-colors">
+                  أرشيف الأخبار
+                  <ArrowLeft className="w-4 h-4" />
                 </Link>
-              ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Council */}
+      <section className="relative overflow-hidden bg-deep text-white py-20 px-4">
+        <div className="absolute inset-0 heritage-pattern opacity-[0.07]" />
+        <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <SectionHeading eyebrow="القيادة" title="مجلس العائلة" align="start" light />
+            <p className="text-white/75 leading-loose font-naskh mt-6">
+              يقود المجلس شؤون العائلة، ويعمل على توثيق الروابط ودعم المبادرات الاجتماعية والتعليمية، وفق ميثاق يحدد الحقوق والواجبات وآليات اتخاذ القرار.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-8">
+              <Link href="/council" className="inline-flex items-center gap-2 bg-primary text-deep px-6 py-3 rounded-xl font-bold hover:bg-primary-light transition-colors">
+                <Landmark className="w-5 h-5" />
+                أعضاء المجلس
+              </Link>
+              {charter && (
+                <a href={`/files/${charter.fileId}`} target="_blank" className="inline-flex items-center gap-2 border border-primary/50 text-primary px-6 py-3 rounded-xl font-bold hover:bg-primary/10 transition-colors">
+                  <FileText className="w-5 h-5" />
+                  ميثاق العائلة
+                </a>
+              )}
+            </div>
+          </div>
+          {chair ? (
+            <Link href={`/members/${chair.id}`} className="group bg-white/5 border border-primary/30 rounded-2xl p-6 md:p-8 flex items-center gap-5 hover:bg-white/10 transition-colors">
+              <span className="size-24 md:size-28 rounded-full border-2 border-primary overflow-hidden bg-deep-light flex items-center justify-center shrink-0">
+                {chair.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={chair.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-12 h-12 text-primary/60" />
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="text-primary text-sm font-bold">{chair.role}</span>
+                <span className="block font-heritage font-bold text-3xl mt-1">{chair.name}</span>
+                {chair.statement && <span className="block text-white/70 text-sm mt-3 leading-relaxed line-clamp-3 font-naskh">«{chair.statement}»</span>}
+              </span>
+            </Link>
+          ) : (
+            <p className="text-white/60 text-center">ستُنشر أسماء أعضاء المجلس قريباً.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Members' portal services */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeading eyebrow="بوابة الأعضاء" title="خدمات أفراد العائلة" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
+            {[
+              { title: "شجرة العائلة", desc: "تصفّح الشجرة واعرف صلة القرابة بين أي فردين", icon: Network, href: "/portal/tree" },
+              { title: "دليل الأعضاء", desc: "ابحث عن أي فرد من العائلة وافتح ملفه", icon: Users, href: "/portal/directory" },
+              { title: "تحديث بياناتي", desc: "أرسل تحديث بياناتك لتعتمده الإدارة", icon: PencilLine, href: "/portal/profile/edit" },
+              { title: "طلب انضمام", desc: "لست مسجلاً بعد؟ اطلب حساباً في البوابة", icon: UserPlus, href: "/join" },
+            ].map((s) => (
+              <Link key={s.title} href={s.href} className="group bg-white rounded-2xl border border-sand p-6 hover:border-primary hover:shadow-lg hover:shadow-deep/5 transition-all">
+                <span className="size-12 rounded-xl bg-deep text-primary flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
+                  <s.icon className="w-6 h-6" />
+                </span>
+                <h3 className="font-heritage font-bold text-2xl text-deep mb-2">{s.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{s.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      {(site.contactEmail || site.xHandle || site.whatsapp) && (
+        <section id="contact" className="bg-sand/40 border-t border-sand py-16 px-4 scroll-mt-20">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading eyebrow="نسعد بتواصلكم" title="تواصل معنا" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10">
+              {site.xHandle && (
+                <ContactCard href={`https://x.com/${site.xHandle}`} icon={Twitter} title="منصة X" detail={`@${site.xHandle}`} />
+              )}
+              {site.whatsapp && <ContactCard href={`https://wa.me/${site.whatsapp}`} icon={MessageCircle} title="واتساب" detail="تواصل مع الإدارة" />}
+              {site.contactEmail && <ContactCard href={`mailto:${site.contactEmail}`} icon={Mail} title="البريد الإلكتروني" detail={site.contactEmail} />}
             </div>
           </div>
         </section>
-      </main>
-
-    </>
+      )}
+    </main>
   );
 }
 
-function ArticleCard({ item }: { item: NewsRow }) {
+function FeaturedCard({ item }: { item: NewsRow }) {
   return (
-    <Link href={`/news/${item.slug}`} className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-line hover:shadow-xl hover:shadow-gray-100/50 hover:-translate-y-1 transition-all duration-300">
-      <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100">
-        {/* Badge */}
-        <div className="absolute top-4 right-4 z-10">
-          <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm ${categoryColor(item.category)}`}>
-            {item.category}
-          </span>
-        </div>
-
-        {item.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.coverUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300 group-hover:scale-105 transition-transform duration-700">
-            <Calendar className="w-16 h-16 opacity-20" />
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col flex-1 p-6">
-        <div className="flex items-center gap-2 text-muted text-xs font-bold mb-3 uppercase tracking-wider">
+    <Link href={`/news/${item.slug}`} className="group lg:col-span-3 relative rounded-2xl overflow-hidden bg-deep min-h-[360px] flex flex-col justify-end border border-primary/30">
+      {item.coverUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={item.coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
+      ) : (
+        <div className="absolute inset-0 heritage-pattern opacity-20" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/60 to-transparent" />
+      <div className="relative p-6 md:p-8 text-white">
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${categoryColor(item.category)}`}>{item.category}</span>
+        <h3 className="font-heritage font-bold text-3xl md:text-4xl leading-snug mt-3 group-hover:text-primary transition-colors">{item.title}</h3>
+        {item.excerpt && <p className="text-white/75 mt-3 line-clamp-2 font-naskh">{item.excerpt}</p>}
+        <p className="flex items-center gap-2 text-primary/90 text-sm mt-4">
           <Calendar className="w-4 h-4" />
           <time dateTime={item.publishedAt?.toISOString()}>{formatNewsDate(item.publishedAt)}</time>
-        </div>
-
-        <h3 className="text-xl font-bold text-ink mb-3 leading-snug group-hover:text-primary transition-colors font-display line-clamp-2">
-          {item.title}
-        </h3>
-
-        <p className="text-muted text-sm leading-relaxed mb-6 line-clamp-3">
-          {item.excerpt}
         </p>
-
-        <div className="mt-auto pt-4 border-t border-gray-50 flex items-center text-primary text-sm font-bold group-hover:gap-2 transition-all">
-          <span>اقرأ التفاصيل</span>
-          <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-        </div>
       </div>
     </Link>
-  )
+  );
+}
+
+function CompactCard({ item }: { item: NewsRow }) {
+  return (
+    <Link href={`/news/${item.slug}`} className="group flex gap-4 bg-cream rounded-2xl border border-sand p-3 hover:border-primary transition-colors">
+      <span className="size-24 shrink-0 rounded-xl overflow-hidden bg-deep relative">
+        {item.coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <span className="absolute inset-0 heritage-pattern opacity-25" />
+        )}
+      </span>
+      <span className="min-w-0 py-1">
+        <span className="text-xs font-bold text-primary-dark">{item.category}</span>
+        <span className="block font-bold text-deep leading-snug mt-1 line-clamp-2 group-hover:text-primary-dark transition-colors">{item.title}</span>
+        <span className="block text-xs text-muted mt-2">{formatNewsDate(item.publishedAt)}</span>
+      </span>
+    </Link>
+  );
+}
+
+function ContactCard({ href, icon: Icon, title, detail }: { href: string; icon: typeof Mail; title: string; detail: string }) {
+  return (
+    <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener" className="group bg-white rounded-2xl border border-sand p-6 text-center hover:border-primary transition-colors">
+      <span className="size-12 mx-auto rounded-full bg-deep text-primary flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+        <Icon className="w-5 h-5" />
+      </span>
+      <span className="block font-bold text-deep">{title}</span>
+      <span className="block text-sm text-muted mt-1 truncate" dir="auto">{detail}</span>
+    </a>
+  );
 }

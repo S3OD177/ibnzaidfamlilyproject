@@ -1,35 +1,60 @@
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Mail, MessageCircle, Twitter } from "lucide-react";
+import { Emblem, Ornament } from "@/components/heritage/Ornament";
 import { getSiteSettings } from "@/lib/settings";
 
-// Shared footer for every public page; texts come from the site settings.
+// Shared footer for every public page; texts and contact channels come from the site settings.
 export async function SiteFooter() {
     const site = await getSiteSettings();
     const year = new Date().getFullYear();
+    const links = [
+        { href: "/about", label: "عن العائلة" },
+        { href: "/council", label: "مجلس العائلة" },
+        { href: "/news", label: "الأخبار" },
+        { href: "/join", label: "طلب انضمام" },
+        { href: "/portal", label: "بوابة الأعضاء" },
+    ];
 
     return (
-        <footer className="bg-deep text-white/80 py-12 mt-auto font-body">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-8 mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className="size-8 rounded bg-primary/20 flex items-center justify-center text-primary">
-                            <Users className="w-5 h-5" />
-                        </div>
-                        <span className="font-display text-lg font-bold text-white">{site.siteName}</span>
+        <footer className="relative overflow-hidden bg-deep text-white/75 mt-auto font-body">
+            <div className="absolute inset-0 heritage-pattern opacity-[0.06]" />
+            <div className="relative max-w-[1280px] mx-auto px-4 sm:px-8 pt-14 pb-8">
+                <div className="flex flex-col items-center text-center gap-4">
+                    <Emblem className="w-12 h-12" />
+                    <p className="font-heritage font-bold text-3xl text-primary">{site.siteName}</p>
+                    {site.tagline && <p className="text-white/70 font-naskh">{site.tagline}</p>}
+                    <Ornament light className="mt-1" />
+                </div>
+
+                <nav className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-8 text-sm" aria-label="روابط الموقع">
+                    {links.map((l) => (
+                        <Link key={l.href} href={l.href} className="hover:text-primary transition-colors">{l.label}</Link>
+                    ))}
+                </nav>
+
+                {(site.xHandle || site.whatsapp || site.contactEmail) && (
+                    <div className="flex justify-center gap-3 mt-8">
+                        {site.xHandle && (
+                            <a href={`https://x.com/${site.xHandle}`} target="_blank" rel="noopener" aria-label="منصة X" className="size-10 rounded-full border border-primary/30 flex items-center justify-center text-primary hover:bg-primary hover:text-deep transition-colors">
+                                <Twitter className="w-4 h-4" />
+                            </a>
+                        )}
+                        {site.whatsapp && (
+                            <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener" aria-label="واتساب" className="size-10 rounded-full border border-primary/30 flex items-center justify-center text-primary hover:bg-primary hover:text-deep transition-colors">
+                                <MessageCircle className="w-4 h-4" />
+                            </a>
+                        )}
+                        {site.contactEmail && (
+                            <a href={`mailto:${site.contactEmail}`} aria-label="البريد الإلكتروني" className="size-10 rounded-full border border-primary/30 flex items-center justify-center text-primary hover:bg-primary hover:text-deep transition-colors">
+                                <Mail className="w-4 h-4" />
+                            </a>
+                        )}
                     </div>
-                    <nav className="flex flex-wrap justify-center gap-6 text-sm font-medium">
-                        <Link className="hover:text-white transition-colors" href="/about">عن العائلة</Link>
-                        <Link className="hover:text-white transition-colors" href="/council">المجلس</Link>
-                        <Link className="hover:text-white transition-colors" href="/news">الأخبار</Link>
-                        <Link className="hover:text-white transition-colors" href="/join">طلب انضمام</Link>
-                        <Link className="hover:text-white transition-colors" href="/#contact">اتصل بنا</Link>
-                    </nav>
-                </div>
-                <div className="text-center md:text-right">
-                    <p className="text-xs leading-relaxed text-white/60 font-naskh">
-                        جميع الحقوق محفوظة لـ{site.siteName} © {year}.{site.footerText ? ` ${site.footerText}` : ""}
-                    </p>
-                </div>
+                )}
+
+                <p className="text-center text-xs leading-relaxed text-white/50 font-naskh border-t border-white/10 mt-10 pt-6">
+                    جميع الحقوق محفوظة لـ{site.siteName} © {year}.{site.footerText ? ` ${site.footerText}` : ""}
+                </p>
             </div>
         </footer>
     );

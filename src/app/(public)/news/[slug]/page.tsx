@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatNewsDate, getPublishedNewsBySlug, latestNews, toParagraphs } from "@/lib/data/news";
-import { Calendar, User, ChevronLeft, Info } from "lucide-react";
+import { Calendar, User, ChevronLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -41,12 +41,12 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                         </div>
 
                         {/* Headline */}
-                        <h1 className="font-display text-3xl md:text-4xl lg:text-[42px] font-bold text-ink leading-tight mb-4">
+                        <h1 className="font-heritage text-4xl md:text-5xl font-bold text-deep leading-snug mb-4">
                             {article.title}
                         </h1>
 
                         {/* Meta Data */}
-                        <div className="flex flex-wrap items-center gap-4 md:gap-6 pb-6 border-b border-mist mb-8 font-body">
+                        <div className="flex flex-wrap items-center gap-4 md:gap-6 pb-6 border-b border-sand mb-8 font-body">
                             <div className="flex items-center gap-2 text-muted">
                                 <Calendar className="w-5 h-5 text-primary" />
                                 <time className="text-sm font-medium pt-1" dateTime={article.publishedAt?.toISOString()}>{formatNewsDate(article.publishedAt)}</time>
@@ -58,7 +58,7 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                                 </div>
                             )}
                             <div className="flex items-center gap-2 text-muted mr-auto lg:mr-0">
-                                <span className="px-3 py-1 bg-mist text-primary rounded-full text-xs font-bold">
+                                <span className="px-3 py-1 bg-sand/70 text-deep rounded-full text-xs font-bold">
                                     {article.category}
                                 </span>
                             </div>
@@ -66,9 +66,9 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
 
                         {/* Featured Image */}
                         {article.coverUrl && (
-                            <div className="bg-white p-2 border border-mist rounded-lg shadow-sm mb-8">
+                            <div className="bg-white p-2 border border-primary/30 rounded-2xl mb-8">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={article.coverUrl} alt="" className="w-full max-h-[450px] object-cover rounded" />
+                                <img src={article.coverUrl} alt="" className="w-full max-h-[450px] object-cover rounded-xl" />
                             </div>
                         )}
 
@@ -86,16 +86,16 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                     <aside className="w-full lg:w-1/3 flex flex-col gap-8">
 
                         {/* Latest News Widget */}
-                        <div className="bg-white rounded-xl shadow-sm border border-mist overflow-hidden p-6 font-body">
-                            <div className="flex items-center justify-between mb-6 border-b border-mist pb-4">
-                                <h3 className="font-display text-xl font-bold text-primary">آخر الأخبار</h3>
-                                <Link className="text-xs font-bold text-primary hover:underline" href="/news">عرض الكل</Link>
+                        <div className="bg-white rounded-2xl border border-sand overflow-hidden p-6 font-body">
+                            <div className="flex items-center justify-between mb-6 border-b border-sand pb-4">
+                                <h3 className="font-heritage text-2xl font-bold text-deep">آخر الأخبار</h3>
+                                <Link className="text-xs font-bold text-primary-dark hover:underline" href="/news">عرض الكل</Link>
                             </div>
                             <div className="flex flex-col gap-6">
                                 {others.length === 0 && <p className="text-sm text-gray-400">لا توجد أخبار أخرى.</p>}
                                 {others.map((item) => (
                                     <Link key={item.id} className="group flex gap-4 items-start" href={`/news/${item.slug}`}>
-                                        <div className="size-20 shrink-0 rounded-lg bg-gray-100 overflow-hidden relative">
+                                        <div className="size-20 shrink-0 rounded-lg bg-deep overflow-hidden relative">
                                             {item.coverUrl && (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
@@ -113,18 +113,18 @@ export default async function NewsDetailsPage({ params }: { params: Params }) {
                             </div>
                         </div>
 
-                        {/* Info Card Widget */}
-                        <div className="bg-primary/5 rounded-xl border border-primary/20 p-6 font-body">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Info className="w-6 h-6 text-primary" />
-                                <h3 className="font-display text-lg font-bold text-primary">تنويه هام</h3>
+                        {/* Members' portal */}
+                        <div className="relative overflow-hidden bg-deep text-white rounded-2xl p-6 font-body">
+                            <div className="absolute inset-0 heritage-pattern opacity-10" />
+                            <div className="relative">
+                                <h3 className="font-heritage text-2xl font-bold text-primary mb-2">بوابة الأعضاء</h3>
+                                <p className="text-sm text-white/75 leading-relaxed mb-5 font-naskh">
+                                    تصفّح شجرة العائلة، وابحث في دليل الأعضاء، وحدّث بياناتك لتبقى سجلات العائلة دقيقة.
+                                </p>
+                                <Link href="/portal/profile/edit" className="block w-full text-center py-2.5 bg-primary text-deep hover:bg-primary-light rounded-lg text-sm font-bold transition-colors">
+                                    تحديث بياناتي
+                                </Link>
                             </div>
-                            <p className="text-sm text-gray-700 leading-relaxed mb-4 font-naskh">
-                                نذكر جميع أفراد العائلة بضرورة تحديث بيانات شجرة العائلة عبر البوابة الإلكترونية قبل نهاية الشهر الحالي لضمان دقة السجلات في الإصدار المطبوع القادم.
-                            </p>
-                            <button className="w-full py-2 bg-white border border-primary/30 text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-bold transition-all">
-                                تحديث بياناتي
-                            </button>
                         </div>
 
                     </aside>

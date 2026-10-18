@@ -6,7 +6,7 @@ import { FeedbackHost } from "@/components/ui/feedback";
 // Loaded via a stylesheet link instead of next/font/google: the build server
 // receives Google font URLs that next/font cannot parse, which fails the build.
 const fontsHref =
-  "https://fonts.googleapis.com/css2?family=Cairo:wght@200..900&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Noto+Naskh+Arabic:wght@400..700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@200..900&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Noto+Naskh+Arabic:wght@400..700&display=swap";
 
 const fontVariables = {
   "--font-cairo": "'Cairo'",

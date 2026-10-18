@@ -9,7 +9,7 @@ export default async function PublicLayout({
 }) {
     const site = await getSiteSettings();
     return (
-        <div className="min-h-screen flex flex-col bg-white font-body">
+        <div className="min-h-screen flex flex-col bg-cream font-body">
             <Header siteName={site.siteName} />
             {children}
             <SiteFooter />

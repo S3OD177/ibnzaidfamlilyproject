@@ -3,13 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Users, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
+import { Emblem } from "@/components/heritage/Ornament";
 
 const NAV = [
     { href: "/", label: "الرئيسية" },
-    { href: "/news", label: "الأخبار" },
     { href: "/about", label: "عن العائلة" },
     { href: "/council", label: "مجلس العائلة" },
+    { href: "/news", label: "الأخبار" },
+    { href: "/join", label: "طلب انضمام" },
 ];
 
 export function Header({ siteName }: { siteName: string }) {
@@ -18,58 +20,41 @@ export function Header({ siteName }: { siteName: string }) {
     const [openPath, setOpenPath] = useState<string | null>(null);
     const menuOpen = openPath === pathname;
 
-    const isActive = (path: string) => {
-        if (path === "/") {
-            return pathname === "/";
-        }
-        return pathname?.startsWith(path);
-    };
-
-    const getLinkClass = (path: string) => {
-        return isActive(path)
-            ? "text-primary text-sm font-bold leading-normal outline-none"
-            : "text-ink text-sm font-medium leading-normal hover:text-primary transition-colors outline-none";
-    };
+    const isActive = (path: string) => (path === "/" ? pathname === "/" : pathname?.startsWith(path));
 
     return (
-        <header className="sticky top-0 z-50 bg-white border-b border-mist">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-10 py-3 flex items-center justify-between whitespace-nowrap">
-                {/* Logo & Brand - Right (RTL) */}
-                <Link href="/" className="flex items-center gap-4 text-ink">
-                    <div className="size-8 text-primary">
-                        {/* Using Lucide Users as equivalent to diversity_2 */}
-                        <Users className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-ink text-xl font-bold leading-tight tracking-[-0.015em] font-display">
-                        {siteName}
-                    </h2>
+        <header className="sticky top-0 z-50 bg-deep/95 backdrop-blur border-b border-primary/20">
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-6">
+                <Link href="/" className="flex items-center gap-3 min-w-0">
+                    <Emblem />
+                    <span className="font-heritage font-bold text-xl md:text-2xl text-primary truncate">{siteName}</span>
                 </Link>
 
-                {/* Desktop Navigation - Center */}
-                <div className="hidden lg:flex flex-1 justify-end gap-8 items-center">
-                    <nav className="flex items-center gap-9">
-                        {NAV.map((item) => (
-                            <Link key={item.href} className={getLinkClass(item.href)} href={item.href}>
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
+                <nav className="hidden lg:flex items-center gap-1" aria-label="القائمة الرئيسية">
+                    {NAV.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            aria-current={isActive(item.href) ? "page" : undefined}
+                            className={`relative px-4 py-2 text-sm transition-colors ${isActive(item.href) ? "text-primary font-bold" : "text-white/80 hover:text-white"}`}
+                        >
+                            {item.label}
+                            {isActive(item.href) && <span className="absolute inset-x-4 -bottom-[13px] h-0.5 bg-primary rounded-full" />}
+                        </Link>
+                    ))}
+                </nav>
 
-                    {/* Login Button */}
+                <div className="flex items-center gap-2">
                     <Link
-                        href="/portal/login"
-                        className="flex items-center gap-2 bg-ink text-white px-5 py-2 rounded-lg font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md"
+                        href="/portal"
+                        className="hidden sm:flex items-center gap-2 bg-primary text-deep px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary-light transition-colors"
                     >
-                        <Menu className="w-[18px] h-[18px]" />
-                        <span>الخدمات الإلكترونية</span>
+                        <LogIn className="w-4 h-4" />
+                        <span>بوابة الأعضاء</span>
                     </Link>
-                </div>
-
-                {/* Mobile Menu Toggle */}
-                <div className="lg:hidden flex items-center">
                     <button
                         type="button"
-                        className="text-ink p-2 -m-2 cursor-pointer"
+                        className="lg:hidden text-white p-2 -m-1 cursor-pointer"
                         aria-label={menuOpen ? "إغلاق القائمة" : "فتح القائمة"}
                         aria-expanded={menuOpen}
                         aria-controls="mobile-menu"
@@ -80,28 +65,24 @@ export function Header({ siteName }: { siteName: string }) {
                 </div>
             </div>
 
-            {/* Mobile Menu */}
             {menuOpen && (
-                <nav id="mobile-menu" className="lg:hidden border-t border-mist bg-white px-4 pb-4 shadow-lg">
+                <nav id="mobile-menu" className="lg:hidden border-t border-primary/20 bg-deep px-4 pb-5" aria-label="القائمة الرئيسية">
                     <ul className="flex flex-col py-2">
                         {NAV.map((item) => (
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className={`block py-3 border-b border-gray-50 ${getLinkClass(item.href)}`}
                                     aria-current={isActive(item.href) ? "page" : undefined}
+                                    className={`block py-3.5 border-b border-white/10 ${isActive(item.href) ? "text-primary font-bold" : "text-white/85"}`}
                                 >
                                     {item.label}
                                 </Link>
                             </li>
                         ))}
                     </ul>
-                    <Link
-                        href="/portal/login"
-                        className="mt-2 flex items-center justify-center gap-2 bg-ink text-white px-5 py-3 rounded-lg font-bold text-sm"
-                    >
-                        <Menu className="w-[18px] h-[18px]" />
-                        <span>الخدمات الإلكترونية</span>
+                    <Link href="/portal" className="mt-3 flex items-center justify-center gap-2 bg-primary text-deep px-5 py-3 rounded-lg font-bold text-sm">
+                        <LogIn className="w-4 h-4" />
+                        <span>بوابة الأعضاء</span>
                     </Link>
                 </nav>
             )}

@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { History, Target, Heart, Users, ScrollText, Award, ArrowRight } from "lucide-react";
+import { ArrowLeft, Award, Heart, Landmark, ScrollText, Target } from "lucide-react";
+import { PageHero, SectionHeading } from "@/components/heritage/PageHero";
+import { Star8 } from "@/components/heritage/Ornament";
 import { getAboutContent } from "@/lib/settings";
 
 export const metadata = {
@@ -13,128 +15,83 @@ export default async function AboutPage() {
     const about = await getAboutContent();
     const history = about.historyText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
+    const pillars = [
+        { title: "رسالتنا", icon: Target, body: <p>{about.mission}</p> },
+        { title: "رؤيتنا", icon: Award, body: <p>{about.vision}</p> },
+        {
+            title: "قيمنا",
+            icon: Heart,
+            body: (
+                <ul className="space-y-2.5">
+                    {about.values.map((value) => (
+                        <li key={value} className="flex items-center gap-2">
+                            <Star8 className="w-3 h-3 text-primary-dark shrink-0" />
+                            {value}
+                        </li>
+                    ))}
+                </ul>
+            ),
+        },
+    ];
+
     return (
-        <div className="bg-[#f9f7f2] min-h-screen flex flex-col font-body text-ink">
+        <main className="flex-grow">
+            <PageHero eyebrow="قصتنا ورؤيتنا" title={about.heroTitle} subtitle={about.heroText} />
 
-            <main className="flex-grow">
-                {/* Hero Section */}
-                <section className="bg-white border-b border-mist py-16 md:py-24 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-                    <div className="relative max-w-[1280px] mx-auto px-4 sm:px-10 text-center">
-                        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold mb-6 border border-primary/20">
-                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                            <span>قصتنا ورؤيتنا</span>
+            <section className="py-20 px-4">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {pillars.map(({ title, icon: Icon, body }) => (
+                        <div key={title} className="relative bg-white rounded-2xl border border-sand p-8 overflow-hidden">
+                            <Star8 className="absolute -left-8 -bottom-8 w-28 h-28 text-primary/10" />
+                            <span className="size-12 rounded-xl bg-deep text-primary flex items-center justify-center mb-5">
+                                <Icon className="w-6 h-6" />
+                            </span>
+                            <h2 className="font-heritage font-bold text-3xl text-deep mb-4">{title}</h2>
+                            <div className="text-gray-600 leading-loose font-naskh">{body}</div>
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black text-ink mb-6 font-display leading-tight">
-                            {about.heroTitle}
-                        </h1>
-                        <p className="text-muted text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-naskh">
-                            {about.heroText}
-                        </p>
+                    ))}
+                </div>
+            </section>
+
+            <section className="bg-white border-y border-sand py-20 px-4">
+                <div className="max-w-3xl mx-auto">
+                    <SectionHeading eyebrow="لمحة تاريخية" title={about.historyTitle} />
+                    <div className="relative mt-12 pr-8 border-r-2 border-primary/30 space-y-8">
+                        {history.map((paragraph, i) => (
+                            <div key={i} className="relative">
+                                <span className="absolute -right-[42px] top-1 size-5 rounded-full bg-cream border-2 border-primary flex items-center justify-center">
+                                    <Star8 className="w-2.5 h-2.5 text-primary-dark" />
+                                </span>
+                                <p className="text-gray-700 text-lg leading-loose font-naskh">{paragraph}</p>
+                            </div>
+                        ))}
                     </div>
-                </section>
-
-                {/* Values Grid */}
-                <section className="py-16 md:py-24">
-                    <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {/* Mission */}
-                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-line hover:-translate-y-1 transition-transform duration-300">
-                                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6">
-                                    <Target className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-ink mb-4 font-display">رسالتنا</h3>
-                                <p className="text-gray-600 leading-relaxed font-naskh">
-                                    {about.mission}
-                                </p>
-                            </div>
-
-                            {/* Vision */}
-                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-line hover:-translate-y-1 transition-transform duration-300 relative group">
-                                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-                                <div className="relative z-10">
-                                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6">
-                                        <Award className="w-6 h-6" />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-ink mb-4 font-display">رؤيتنا</h3>
-                                    <p className="text-gray-600 leading-relaxed font-naskh">
-                                        {about.vision}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Values */}
-                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-line hover:-translate-y-1 transition-transform duration-300">
-                                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6">
-                                    <Heart className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-ink mb-4 font-display">قيمنا</h3>
-                                <div className="space-y-3 font-naskh text-gray-600">
-                                    {about.values.map((value) => (
-                                        <div key={value} className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                            <span>{value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="text-center mt-12">
+                        <Link href="/portal/tree" className="inline-flex items-center gap-2 text-primary-dark font-bold hover:gap-3 transition-all">
+                            <ScrollText className="w-5 h-5" />
+                            استكشف شجرة العائلة
+                            <ArrowLeft className="w-4 h-4" />
+                        </Link>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {/* History Section */}
-                <section className="bg-white py-16 border-y border-mist">
-                    <div className="max-w-[1280px] mx-auto px-4 sm:px-10">
-                        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-                            <div className="flex-1 order-2 lg:order-1">
-                                <div className="relative aspect-[4/3] bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                                    <div className="text-center p-8">
-                                        <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                        <p className="text-gray-400 font-bold">صورة تاريخية رمزية</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex-1 order-1 lg:order-2">
-                                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-4">
-                                    <ScrollText className="w-5 h-5" />
-                                    <span>لمحة تاريخية</span>
-                                </div>
-                                <h2 className="text-3xl md:text-4xl font-black text-ink mb-6 font-display">
-                                    {about.historyTitle}
-                                </h2>
-                                <div className="text-gray-600 text-lg leading-loose font-naskh mb-8 space-y-4">
-                                    {history.map((paragraph, i) => (
-                                        <p key={i}>{paragraph}</p>
-                                    ))}
-                                </div>
-                                <Link href="/portal/tree" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
-                                    <span>استكشف شجرة العائلة</span>
-                                    <ArrowRight className="w-5 h-5 rtl:rotate-180" />
-                                </Link>
-                            </div>
-                        </div>
+            <section className="relative overflow-hidden bg-deep text-white text-center py-20 px-4">
+                <div className="absolute inset-0 heritage-pattern opacity-[0.08]" />
+                <div className="relative max-w-2xl mx-auto">
+                    <SectionHeading title={about.ctaTitle} light />
+                    <p className="text-white/75 text-lg mt-6 mb-10 font-naskh leading-loose">{about.ctaText}</p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <Link href="/council" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-deep px-8 py-3.5 rounded-xl font-bold hover:bg-primary-light transition-colors">
+                            <Landmark className="w-5 h-5" />
+                            تعرّف على المجلس
+                        </Link>
+                        <Link href="/join" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-primary/50 text-primary px-8 py-3.5 rounded-xl font-bold hover:bg-primary/10 transition-colors">
+                            طلب انضمام للبوابة
+                        </Link>
                     </div>
-                </section>
-
-                {/* CTA Section */}
-                <section className="py-20 bg-deep text-white text-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50"></div>
-                    <div className="relative z-10 max-w-2xl mx-auto px-4">
-                        <Users className="w-12 h-12 mx-auto text-primary mb-6" />
-                        <h2 className="text-3xl md:text-4xl font-black font-display mb-6">{about.ctaTitle}</h2>
-                        <p className="text-white/70 text-lg mb-8 font-naskh">
-                            {about.ctaText}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link href="/council" className="w-full sm:w-auto bg-primary hover:bg-green-600 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2">
-                                <span>تعرف على المجلس</span>
-                                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-        </div>
+                </div>
+            </section>
+        </main>
     );
 }

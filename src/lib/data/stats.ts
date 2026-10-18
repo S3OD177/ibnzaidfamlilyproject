@@ -179,3 +179,26 @@ export async function getPendingRequests(limit = 3) {
         .orderBy(desc(schema.membershipRequests.createdAt))
         .limit(limit);
 }
+
+export interface PublicCounts {
+    members: number;
+    generations: number;
+    families: number;
+    news: number;
+}
+
+/** Headline numbers for the public home page. */
+export async function getPublicCounts(): Promise<PublicCounts> {
+    const db = getDb();
+    const [[m], [r], [n]] = await Promise.all([
+        db
+            .select({
+                members: count(),
+                generations: sql<number>`count(distinct ${schema.members.generationLabel})::int`,
+            })
+            .from(schema.members),
+        db.select({ families: sql<number>`count(distinct ${schema.relationships.parentId})::int` }).from(schema.relationships),
+        db.select({ news: count() }).from(schema.news).where(eq(schema.news.status, "published")),
+    ]);
+    return { members: m.members, generations: m.generations, families: r.families, news: n.news };
+}

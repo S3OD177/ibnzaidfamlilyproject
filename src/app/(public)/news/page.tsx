@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHero } from "@/components/heritage/PageHero";
 import { Search, Calendar, ArrowRight, ChevronLeft, X } from "lucide-react";
 import {
     NEWS_CATEGORIES,
@@ -37,23 +38,15 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
 
     return (
         <>
-            {/* Page Header */}
-            <div className="bg-white border-b border-mist py-12 mb-8">
-                <div className="max-w-[1280px] mx-auto px-4 sm:px-10 text-center">
-                    <h1 className="text-4xl font-black text-ink mb-4 font-display">أرشيف الأخبار</h1>
-                    <p className="text-muted text-lg max-w-2xl mx-auto">
-                        تصفح تاريخ وإعلانات وفعاليات العائلة عبر السنين
-                    </p>
-                </div>
-            </div>
+            <PageHero eyebrow="المركز الإعلامي" title="أخبار العائلة" subtitle="تصفّح إعلانات وفعاليات العائلة ومناسباتها عبر السنين" />
 
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-10 flex-grow w-full pb-20">
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-10 flex-grow w-full pt-10 pb-20">
 
                 {/* Filter Bar */}
-                <form action="/news" method="get" className="bg-white rounded-xl shadow-sm border border-line p-4 mb-10">
+                <form action="/news" method="get" className="bg-white rounded-2xl border border-sand p-4 mb-10">
                     <div className="flex flex-col md:flex-row gap-4">
                         {/* Search */}
-                        <div className="flex-grow relative bg-mist rounded-lg h-12 focus-within:ring-2 ring-primary/20 transition-all">
+                        <div className="flex-grow relative bg-cream rounded-lg h-12 focus-within:ring-2 ring-primary/20 transition-all">
                             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted w-5 h-5" />
                             <input
                                 type="search"
@@ -68,7 +61,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
                         <div className="grid grid-cols-2 md:flex gap-4">
                             <select
                                 name="category"
-                                className="bg-mist border-none text-ink h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[140px] text-sm font-bold"
+                                className="bg-cream border-none text-ink h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[140px] text-sm font-bold"
                                 defaultValue={category ?? ""}
                             >
                                 <option value="">كل التصنيفات</option>
@@ -79,7 +72,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
 
                             <select
                                 name="year"
-                                className="bg-mist border-none text-ink h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[120px] text-sm font-bold"
+                                className="bg-cream border-none text-ink h-12 px-4 rounded-lg focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[120px] text-sm font-bold"
                                 defaultValue={year ? String(year) : ""}
                             >
                                 <option value="">كل السنوات</option>
@@ -90,7 +83,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
 
                             <button
                                 type="submit"
-                                className="bg-primary text-white px-6 h-12 rounded-lg font-bold hover:bg-primary-dark transition flex items-center justify-center gap-2"
+                                className="bg-deep text-primary px-6 h-12 rounded-lg font-bold hover:bg-deep-light transition flex items-center justify-center gap-2"
                             >
                                 <Search className="w-5 h-5" />
                                 <span>بحث</span>
@@ -114,7 +107,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
                     {items.length > 0 ? (
                         items.map((item) => <ArticleCard key={item.id} item={item} />)
                     ) : (
-                        <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-sand">
                             <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                             <h3 className="text-lg font-bold text-gray-900">لا توجد نتائج</h3>
                             <p className="text-gray-500">جرب البحث بكلمات مختلفة أو تغيير التصنيف</p>
@@ -135,7 +128,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
                                 key={n}
                                 href={pageHref(n)}
                                 className={n === page
-                                    ? "w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20"
+                                    ? "w-10 h-10 flex items-center justify-center rounded-lg bg-deep text-primary font-bold"
                                     : "w-10 h-10 flex items-center justify-center rounded-lg border border-line hover:bg-slate-50 transition text-slate-600 font-bold"}
                             >
                                 {n}
@@ -157,8 +150,8 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
 
 function ArticleCard({ item }: { item: NewsRow }) {
     return (
-        <Link href={`/news/${item.slug}`} className="flex flex-col md:flex-row gap-6 bg-white rounded-xl overflow-hidden border border-line hover:shadow-lg hover:shadow-gray-100/50 transition-all duration-300 group cursor-pointer">
-            <div className="w-full md:w-64 h-56 md:h-auto shrink-0 relative overflow-hidden bg-slate-100">
+        <Link href={`/news/${item.slug}`} className="flex flex-col md:flex-row gap-6 bg-white rounded-2xl overflow-hidden border border-sand hover:border-primary hover:shadow-lg hover:shadow-deep/5 transition-all duration-300 group cursor-pointer">
+            <div className="w-full md:w-64 h-56 md:h-auto shrink-0 relative overflow-hidden bg-deep">
                 <div className="absolute top-3 right-3 z-10">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm ${categoryColor(item.category)}`}>
                         {item.category}
@@ -168,9 +161,7 @@ function ArticleCard({ item }: { item: NewsRow }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                        <Calendar className="w-12 h-12 opacity-20" />
-                    </div>
+                    <div className="absolute inset-0 heritage-pattern opacity-25" />
                 )}
             </div>
             <div className="flex flex-col justify-center p-6 md:pr-0 flex-1">
@@ -178,7 +169,7 @@ function ArticleCard({ item }: { item: NewsRow }) {
                     <Calendar className="w-[18px] h-[18px]" />
                     <time dateTime={item.publishedAt?.toISOString()}>{formatNewsDate(item.publishedAt)}</time>
                 </div>
-                <h3 className="text-2xl font-bold text-ink mb-3 group-hover:text-primary transition-colors font-display">
+                <h3 className="font-heritage text-3xl font-bold text-deep mb-3 group-hover:text-primary-dark transition-colors leading-snug">
                     {item.title}
                 </h3>
                 {item.excerpt && (
@@ -187,7 +178,7 @@ function ArticleCard({ item }: { item: NewsRow }) {
                     </p>
                 )}
                 <div className="mt-auto">
-                    <span className="inline-flex items-center gap-1 text-primary font-bold text-sm hover:underline">
+                    <span className="inline-flex items-center gap-1 text-primary-dark font-bold text-sm hover:underline">
                         اقرأ المزيد
                         <ArrowRight className="w-[18px] h-[18px] rtl:rotate-180" />
                     </span>

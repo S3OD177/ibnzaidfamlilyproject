@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { PageHero } from "@/components/heritage/PageHero";
 import JoinForm from "@/components/join/JoinForm";
 
 export const metadata: Metadata = {
@@ -9,23 +9,15 @@ export const metadata: Metadata = {
 
 export default function JoinPage() {
     return (
-        <main className="flex-grow bg-canvas py-12 px-4 font-body">
-            <div className="max-w-xl mx-auto">
-                <div className="text-center mb-8">
-                    <div className="size-14 mx-auto mb-4 rounded-2xl bg-white shadow-sm border border-gray-100 text-primary flex items-center justify-center">
-                        <UserPlus className="w-7 h-7" />
-                    </div>
-                    <h1 className="text-3xl font-black text-ink font-display mb-2">طلب انضمام لبوابة العائلة</h1>
-                    <p className="text-gray-500">
-                        البوابة خاصة بأفراد العائلة. أرسل بياناتك وستراجعها الإدارة قبل إنشاء حسابك.
-                    </p>
-                </div>
-                <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 p-8">
+        <main className="flex-grow font-body">
+            <PageHero eyebrow="بوابة الأعضاء" title="طلب انضمام" subtitle="البوابة خاصة بأفراد العائلة. أرسل بياناتك وستراجعها الإدارة قبل إنشاء حسابك." />
+            <div className="max-w-xl mx-auto px-4 -mt-8 relative pb-16">
+                <div className="bg-white rounded-3xl shadow-xl shadow-deep/5 border border-primary/25 p-6 sm:p-8">
                     <JoinForm />
                 </div>
                 <p className="text-center text-sm text-gray-500 mt-6">
                     لديك حساب؟{" "}
-                    <Link href="/portal/login" className="font-bold text-primary hover:underline">تسجيل الدخول</Link>
+                    <Link href="/portal/login" className="font-bold text-primary-dark hover:underline">تسجيل الدخول</Link>
                 </p>
             </div>
         </main>

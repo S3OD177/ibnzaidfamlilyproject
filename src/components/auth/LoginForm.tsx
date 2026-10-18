@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, Lock, User, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound } from "lucide-react";
+import { Lock, User, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound } from "lucide-react";
+import { Emblem } from "@/components/heritage/Ornament";
 
 export type DemoAccounts = Record<"admin" | "member", { username: string; password: string }>;
 
@@ -46,21 +47,20 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
     };
 
     return (
-        <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-4 font-body">
+        <div className="relative min-h-screen bg-deep flex flex-col items-center justify-center p-4 font-body overflow-hidden">
+            <div className="absolute inset-0 heritage-pattern opacity-[0.1]" />
 
             {/* Logo Section */}
-            <Link href="/" className="mb-8 flex flex-col items-center gap-3 group">
-                <div className="size-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 border border-gray-100">
-                    <Users className="w-8 h-8" />
-                </div>
-                <h1 className="text-2xl font-bold text-ink font-display">{siteName}</h1>
+            <Link href="/" className="relative mb-8 flex flex-col items-center gap-3 group">
+                <Emblem className="w-16 h-16 group-hover:scale-105 transition-transform duration-300" />
+                <h1 className="font-heritage text-4xl font-bold text-primary">{siteName}</h1>
             </Link>
 
             {/* Login Card */}
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
+            <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-primary/30 overflow-hidden">
                 <div className="p-8 sm:p-10">
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-ink mb-2">تسجيل الدخول</h2>
+                        <h2 className="font-heritage text-3xl font-bold text-deep mb-2">تسجيل الدخول</h2>
                         <p className="text-gray-500 text-sm">أهلاً بك في البوابة الإلكترونية للعائلة</p>
                     </div>
 
@@ -175,10 +175,10 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                 </div>
 
                 {/* Footer of Card */}
-                <div className="bg-gray-50 border-t border-gray-100 p-6 text-center">
+                <div className="bg-cream border-t border-sand p-6 text-center">
                     <p className="text-sm text-gray-500">
                         لست عضواً بعد؟{" "}
-                        <Link href="/join" className="font-bold text-ink hover:text-primary transition-colors">
+                        <Link href="/join" className="font-bold text-primary-dark hover:underline">
                             اطلب الانضمام
                         </Link>
                     </p>
@@ -186,7 +186,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
             </div>
 
             {/* Back to Home */}
-            <Link href="/" className="mt-8 flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">
+            <Link href="/" className="relative mt-8 flex items-center gap-2 text-sm font-medium text-white/60 hover:text-primary transition-colors">
                 <ArrowRight className="w-4 h-4 rtl:rotate-180" />
                 <span>العودة للرئيسية</span>
             </Link>
