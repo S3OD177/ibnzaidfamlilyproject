@@ -5,9 +5,11 @@ import {
     FileText,
     Gavel,
     History,
+    Images,
     Landmark,
     LayoutDashboard,
     Newspaper,
+    PartyPopper,
     Shield,
     UserPlus,
     Users,
@@ -23,7 +25,7 @@ export interface AdminTab {
     icon: LucideIcon;
     adminOnly?: boolean;
     /** Shows a pending count: join requests or members' change requests. */
-    badge?: "joins" | "changes";
+    badge?: "joins" | "changes" | "occasions";
 }
 
 export interface AdminSection {
@@ -55,6 +57,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
             { name: "الأخبار", href: "/portal/admin/news", icon: Newspaper },
             { name: "التقويم", href: "/portal/admin/calendar", icon: Calendar },
             { name: "السجل التاريخي", href: "/portal/admin/timeline", icon: History },
+            { name: "الأفراح", href: "/portal/admin/occasions", icon: PartyPopper, badge: "occasions" },
+            { name: "الألبومات", href: "/portal/admin/albums", icon: Images },
         ],
     },
     {

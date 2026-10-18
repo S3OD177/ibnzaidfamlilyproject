@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/current";
 import { homeForRole, isStaff } from "@/lib/auth/session";
 import { countPendingRequests } from "@/lib/data/stats";
 import { countPendingChanges } from "@/lib/data/change-requests";
+import { countPendingOccasions } from "@/lib/data/occasions";
 import { getSiteSettings } from "@/lib/settings";
 
 // Server-side guard in addition to proxy.ts: admin pages render only for an active
@@ -19,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             siteName={(await getSiteSettings()).siteName}
             pendingRequests={session.role === "admin" ? await countPendingRequests() : 0}
             pendingChanges={await countPendingChanges()}
+            pendingOccasions={await countPendingOccasions()}
         >
             {children}
         </AdminShell>

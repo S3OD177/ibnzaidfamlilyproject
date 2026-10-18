@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, ChevronLeft, FileText, Gavel, Network, Newspaper, Paperclip, UserCircle, Users } from "lucide-react";
+import { CalendarDays, ChevronLeft, Images, PartyPopper, FileText, Gavel, Network, Newspaper, Paperclip, UserCircle, Users } from "lucide-react";
 import { getSession } from "@/lib/auth/current";
 import { getPortalMember } from "@/lib/data/members";
 import { latestNews, formatNewsDate } from "@/lib/data/news";
@@ -8,6 +8,10 @@ import { listEvents } from "@/lib/data/events";
 import { DECISION_STATES, listDecisions } from "@/lib/data/decisions";
 import { listDocuments } from "@/lib/data/documents";
 import { formatBytes } from "@/lib/files";
+import { listOccasions } from "@/lib/data/occasions";
+import OccasionCard from "@/components/occasions/OccasionCard";
+import AlbumGrid from "@/components/albums/AlbumGrid";
+import { listAlbums } from "@/lib/data/albums";
 import { formatDateBoth, formatWeekday } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -48,12 +52,14 @@ export default async function MemberHomePage() {
     if (!session) redirect("/portal/login");
 
     const today = new Date().toISOString().slice(0, 10);
-    const [member, news, events, decisions, documents] = await Promise.all([
+    const [member, news, events, decisions, documents, occasions, albums] = await Promise.all([
         session.memberId ? getPortalMember(session.memberId, { kind: "member", memberId: session.memberId }) : Promise.resolve(null),
         latestNews(3),
         listEvents(),
         listDecisions({}),
         listDocuments({}),
+        listOccasions({ limit: 2, viewerKey: session.userId }),
+        listAlbums({ limit: 3 }),
     ]);
     const upcoming = events.filter((e) => e.date >= today).slice(0, 4);
     const files = documents.filter((d) => d.fileId);
@@ -106,6 +112,42 @@ export default async function MemberHomePage() {
                     ))}
                 </div>
             </section>
+
+            {occasions.length > 0 && (
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-heritage text-2xl font-bold text-deep flex items-center gap-2">
+                            <PartyPopper className="w-5 h-5 text-primary-dark" />
+                            أفراح العائلة
+                        </h2>
+                        <Link href="/portal/occasions" className="text-sm font-bold text-primary-dark flex items-center gap-1 hover:gap-2 transition-all">
+                            كل الأفراح
+                            <ChevronLeft className="w-4 h-4" />
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {occasions.map((o) => (
+                            <OccasionCard key={o.id} occasion={o} canCongratulate />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {albums.length > 0 && (
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-heritage text-2xl font-bold text-deep flex items-center gap-2">
+                            <Images className="w-5 h-5 text-primary-dark" />
+                            أحدث الألبومات
+                        </h2>
+                        <Link href="/portal/albums" className="text-sm font-bold text-primary-dark flex items-center gap-1 hover:gap-2 transition-all">
+                            كل الألبومات
+                            <ChevronLeft className="w-4 h-4" />
+                        </Link>
+                    </div>
+                    <AlbumGrid albums={albums} base="/portal/albums" />
+                </section>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">

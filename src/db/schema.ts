@@ -28,6 +28,7 @@ export const requestStatusEnum = pgEnum("request_status", ["pending", "approved"
 export const timelineTypeEnum = pgEnum("timeline_type", ["birth", "death", "marriage", "achievement", "milestone"]);
 export const visibilityEnum = pgEnum("visibility", ["public", "members"]);
 export const decisionStateEnum = pgEnum("decision_state", ["active", "superseded", "cancelled"]);
+export const occasionTypeEnum = pgEnum("occasion_type", ["wedding", "birth", "graduation", "achievement", "other"]);
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
@@ -277,6 +278,79 @@ export const membershipRequests = pgTable(
         ...timestamps,
     },
     (t) => [index("membership_requests_status_idx").on(t.status, t.createdAt)],
+);
+
+// Family happy news (weddings, new babies, graduations...). Members submit them for
+// review ("pending"); staff posts and approved ones are "approved". Family-only unless
+// staff make one public.
+export const occasions = pgTable(
+    "occasions",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        type: occasionTypeEnum("type").notNull(),
+        title: text("title").notNull(),
+        message: text("message"),
+        occasionDate: date("occasion_date"),
+        memberId: uuid("member_id").references(() => members.id, { onDelete: "set null" }),
+        photoUrl: text("photo_url"),
+        visibility: visibilityEnum("visibility").notNull().default("members"),
+        status: requestStatusEnum("status").notNull().default("pending"),
+        submittedBy: uuid("submitted_by").references(() => users.id, { onDelete: "set null" }),
+        submitterName: text("submitter_name").notNull(),
+        reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+        ...timestamps,
+    },
+    (t) => [index("occasions_status_idx").on(t.status, t.occasionDate)],
+);
+
+// "مبارك" from a member under a happy news post, with an optional short message.
+export const occasionCongrats = pgTable(
+    "occasion_congrats",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        occasionId: uuid("occasion_id")
+            .notNull()
+            .references(() => occasions.id, { onDelete: "cascade" }),
+        // Who congratulated: an account id, or a demo/env user id kept as text.
+        authorKey: text("author_key").notNull(),
+        authorName: text("author_name").notNull(),
+        message: text("message"),
+        createdAt: timestamps.createdAt,
+    },
+    (t) => [uniqueIndex("occasion_congrats_author_key").on(t.occasionId, t.authorKey)],
+);
+
+// Photo albums for events and occasions. Photos are files (lib/files.ts) that share
+// the album's visibility.
+export const albums = pgTable(
+    "albums",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        title: text("title").notNull(),
+        description: text("description"),
+        eventDate: date("event_date"),
+        coverFileId: uuid("cover_file_id").references(() => files.id, { onDelete: "set null" }),
+        visibility: visibilityEnum("visibility").notNull().default("members"),
+        createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+        ...timestamps,
+    },
+    (t) => [index("albums_event_date_idx").on(t.eventDate)],
+);
+
+export const albumPhotos = pgTable(
+    "album_photos",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        albumId: uuid("album_id")
+            .notNull()
+            .references(() => albums.id, { onDelete: "cascade" }),
+        fileId: uuid("file_id")
+            .notNull()
+            .references(() => files.id, { onDelete: "cascade" }),
+        caption: text("caption"),
+        createdAt: timestamps.createdAt,
+    },
+    (t) => [index("album_photos_album_idx").on(t.albumId, t.createdAt)],
 );
 
 // A member asking to change their own tree record; staff approve or reject it.

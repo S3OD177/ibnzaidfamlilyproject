@@ -13,24 +13,30 @@ interface AdminShellProps {
     children: React.ReactNode;
     pendingRequests?: number;
     pendingChanges?: number;
+    pendingOccasions?: number;
     role: keyof typeof ROLE_LABELS;
     displayName: string;
     siteName: string;
 }
 
-export default function AdminShell({ children, pendingRequests = 0, pendingChanges = 0, role, displayName, siteName }: AdminShellProps) {
+export default function AdminShell({ children, pendingRequests = 0, pendingChanges = 0, pendingOccasions = 0, role, displayName, siteName }: AdminShellProps) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const sections = sectionsFor(role);
     const active = findActive(sections, pathname);
-    const counts = { joins: pendingRequests, changes: pendingChanges };
-    const badgeFor = (kinds: ("joins" | "changes" | undefined)[]) => {
+    const counts = { joins: pendingRequests, changes: pendingChanges, occasions: pendingOccasions };
+    const badgeFor = (kinds: ("joins" | "changes" | "occasions" | undefined)[]) => {
         const n = kinds.reduce((sum, k) => sum + (k ? counts[k] : 0), 0);
         return n > 0 ? String(n) : undefined;
     };
-    const totalPending = pendingRequests + pendingChanges;
-    const bellHref = pendingRequests > 0 || (role === "admin" && pendingChanges === 0) ? "/portal/admin/approvals" : "/portal/admin/change-requests";
+    const totalPending = pendingRequests + pendingChanges + pendingOccasions;
+    // The bell opens the first queue with something waiting.
+    const bellHref =
+        pendingRequests > 0 ? "/portal/admin/approvals"
+        : pendingChanges > 0 ? "/portal/admin/change-requests"
+        : pendingOccasions > 0 ? "/portal/admin/occasions"
+        : role === "admin" ? "/portal/admin/approvals" : "/portal/admin/change-requests";
 
     return (
         <div className="portal-heritage flex h-screen overflow-hidden bg-cream font-display text-ink">

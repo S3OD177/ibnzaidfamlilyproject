@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, LogOut, Network, UserCircle, Users } from "lucide-react";
+import { Home, Images, LayoutDashboard, LogOut, Network, PartyPopper, UserCircle, Users } from "lucide-react";
 import { Emblem } from "@/components/heritage/Ornament";
 
 interface MemberShellProps {
@@ -18,6 +18,8 @@ const NAV = [
     { name: "الرئيسية", href: "/portal", icon: Home },
     { name: "الشجرة", href: "/portal/tree", icon: Network },
     { name: "الأعضاء", href: "/portal/directory", icon: Users },
+    { name: "الأفراح", href: "/portal/occasions", icon: PartyPopper },
+    { name: "الصور", href: "/portal/albums", icon: Images, desktopOnly: true },
     { name: "ملفي", href: "/portal/members/me", icon: UserCircle },
 ];
 
@@ -91,8 +93,8 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                 className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-deep border-t border-primary/20 pb-[env(safe-area-inset-bottom)]"
                 aria-label="بوابة الأعضاء"
             >
-                <div className="grid grid-cols-4">
-                    {NAV.map((item) => {
+                <div className="grid grid-cols-5">
+                    {NAV.filter((item) => !("desktopOnly" in item)).map((item) => {
                         const Icon = item.icon;
                         const active = activeHref === item.href;
                         return (

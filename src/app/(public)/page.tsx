@@ -6,17 +6,20 @@ import { categoryColor, formatNewsDate, latestNews, type NewsRow } from "@/lib/d
 import { getCouncilMembers } from "@/lib/data/members";
 import { getViewer } from "@/lib/auth/current";
 import { getCharter } from "@/lib/data/documents";
+import { listOccasions } from "@/lib/data/occasions";
+import OccasionCard from "@/components/occasions/OccasionCard";
 import { getAboutContent, getSiteSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [news, site, about, council, charter] = await Promise.all([
+  const [news, site, about, council, charter, occasions] = await Promise.all([
     latestNews(4),
     getSiteSettings(),
     getAboutContent(),
     getViewer().then(getCouncilMembers),
     getCharter(),
+    listOccasions({ publicOnly: true, limit: 3 }),
   ]);
   const [featured, ...rest] = news;
   const chair = council[0];
@@ -95,6 +98,26 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {/* Public happy news */}
+      {occasions.length > 0 && (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <SectionHeading eyebrow="نشارككم الفرح" title="أفراح العائلة" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-12">
+              {occasions.map((o) => (
+                <OccasionCard key={o.id} occasion={o} canCongratulate={false} profileBase={null} />
+              ))}
+            </div>
+            <p className="text-center mt-8">
+              <Link href="/portal/occasions" className="inline-flex items-center gap-2 text-primary-dark font-bold hover:gap-3 transition-all">
+                بارِك لأصحابها عبر بوابة الأعضاء
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Council */}
       <section className="relative overflow-hidden bg-deep text-white py-20 px-4">

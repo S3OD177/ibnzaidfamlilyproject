@@ -11,6 +11,7 @@ export async function SiteFooter() {
         { href: "/about", label: "عن العائلة" },
         { href: "/council", label: "مجلس العائلة" },
         { href: "/news", label: "الأخبار" },
+        { href: "/albums", label: "ألبومات الصور" },
         { href: "/join", label: "طلب انضمام" },
         { href: "/portal", label: "بوابة الأعضاء" },
     ];

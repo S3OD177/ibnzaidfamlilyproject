@@ -11,6 +11,7 @@ const NAV = [
     { href: "/about", label: "عن العائلة" },
     { href: "/council", label: "مجلس العائلة" },
     { href: "/news", label: "الأخبار" },
+    { href: "/albums", label: "الصور" },
     { href: "/join", label: "طلب انضمام" },
 ];
 
