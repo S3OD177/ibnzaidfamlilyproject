@@ -21,9 +21,9 @@ function Section({ title, icon: Icon, href, linkLabel, children }: {
     children: React.ReactNode;
 }) {
     return (
-        <section className="bg-white rounded-2xl border border-line p-5 md:p-6">
+        <section className="bg-white rounded-2xl border border-sand p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold flex items-center gap-2">
+                <h2 className="font-heritage text-xl font-bold text-deep flex items-center gap-2">
                     <Icon className="w-5 h-5 text-primary" />
                     {title}
                 </h2>
@@ -61,9 +61,10 @@ export default async function MemberHomePage() {
     return (
         <div className="space-y-6">
             {/* Greeting and my card */}
-            <section className="bg-gradient-to-l from-primary to-primary-dark text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="size-16 rounded-full bg-white/15 border-2 border-white/40 overflow-hidden flex items-center justify-center shrink-0">
+            <section className="relative overflow-hidden bg-deep text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-primary/25">
+                <div className="absolute inset-0 heritage-pattern opacity-10 pointer-events-none" />
+                <div className="relative flex items-center gap-4 flex-1 min-w-0">
+                    <div className="size-16 rounded-full bg-white/10 border-2 border-primary overflow-hidden flex items-center justify-center shrink-0">
                         {member?.photo ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={member.photo} alt="" className="w-full h-full object-cover" />
@@ -73,7 +74,7 @@ export default async function MemberHomePage() {
                     </div>
                     <div className="min-w-0">
                         <p className="text-white/75 text-sm">أهلاً بك</p>
-                        <h1 className="text-2xl font-black truncate">{member?.label ?? session.displayName}</h1>
+                        <h1 data-on-dark className="font-heritage text-3xl font-bold text-primary truncate">{member?.label ?? session.displayName}</h1>
                         {member ? (
                             <>
                                 <p className="text-white/75 text-sm mt-1 truncate">
@@ -88,7 +89,7 @@ export default async function MemberHomePage() {
                         )}
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 md:w-auto">
+                <div className="relative grid grid-cols-3 gap-2 md:w-auto">
                     {[
                         { href: "/portal/members/me", label: "ملفي", icon: UserCircle },
                         { href: "/portal/tree", label: "الشجرة", icon: Network },
@@ -97,7 +98,7 @@ export default async function MemberHomePage() {
                         <Link
                             key={href}
                             href={href}
-                            className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-3 text-sm font-bold transition-colors"
+                            className="flex flex-col items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-primary/30 text-primary rounded-xl px-4 py-3 text-sm font-bold transition-colors"
                         >
                             <Icon className="w-5 h-5" />
                             {label}

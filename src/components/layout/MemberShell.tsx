@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, LayoutDashboard, LogOut, Network, UserCircle, Users } from "lucide-react";
+import { Emblem } from "@/components/heritage/Ornament";
 
 interface MemberShellProps {
     children: React.ReactNode;
@@ -31,14 +32,12 @@ export default function MemberShell({ children, siteName, displayName, memberId,
     })();
 
     return (
-        <div className="min-h-screen bg-canvas font-display text-ink" dir="rtl">
-            <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-line">
+        <div className="portal-heritage min-h-screen bg-cream font-display text-ink" dir="rtl">
+            <header className="sticky top-0 z-30 bg-deep/95 backdrop-blur border-b border-primary/20">
                 <div className="max-w-6xl mx-auto h-16 px-4 flex items-center gap-6">
-                    <Link href="/portal" className="flex items-center gap-2 shrink-0">
-                        <span className="bg-primary text-white p-1.5 rounded-lg">
-                            <Users className="w-5 h-5" />
-                        </span>
-                        <span className="font-bold">{siteName}</span>
+                    <Link href="/portal" className="flex items-center gap-2.5 shrink-0 min-w-0">
+                        <Emblem />
+                        <span className="font-heritage font-bold text-xl text-primary truncate">{siteName}</span>
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-1" aria-label="بوابة الأعضاء">
@@ -48,8 +47,8 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                                 href={item.href}
                                 aria-current={activeHref === item.href ? "page" : undefined}
                                 className={`px-3 py-2 rounded-lg text-sm transition-colors ${activeHref === item.href
-                                    ? "bg-primary/10 text-primary font-bold"
-                                    : "text-muted hover:bg-mist"
+                                    ? "bg-primary/15 text-primary font-bold"
+                                    : "text-white/75 hover:text-white hover:bg-white/5"
                                     }`}
                             >
                                 {item.name}
@@ -61,7 +60,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                         {isStaff && (
                             <Link
                                 href="/portal/admin"
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-primary border border-primary/30 hover:bg-primary/5"
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-primary border border-primary/40 hover:bg-primary/10"
                             >
                                 <LayoutDashboard className="w-4 h-4" />
                                 <span className="hidden sm:inline">لوحة الإدارة</span>
@@ -69,16 +68,16 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                         )}
                         <Link
                             href="/portal/account"
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-mist ${pathname === "/portal/account" ? "bg-mist" : ""}`}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-white hover:bg-white/5 ${pathname === "/portal/account" ? "bg-white/10" : ""}`}
                             aria-label="حسابي"
                         >
                             <span className="hidden sm:block text-sm font-bold max-w-40 truncate">{displayName}</span>
-                            <span className="size-9 rounded-full border-2 border-primary bg-gray-100 flex items-center justify-center text-gray-400">
+                            <span className="size-9 rounded-full border-2 border-primary bg-deep-light flex items-center justify-center text-primary">
                                 <UserCircle className="w-5 h-5" />
                             </span>
                         </Link>
                         <form action="/api/auth/logout" method="post" className="hidden md:block">
-                            <button type="submit" className="p-2 rounded-lg text-red-600 hover:bg-red-50 cursor-pointer" aria-label="تسجيل الخروج" title="تسجيل الخروج">
+                            <button type="submit" className="p-2 rounded-lg text-red-300 hover:bg-white/5 cursor-pointer" aria-label="تسجيل الخروج" title="تسجيل الخروج">
                                 <LogOut className="w-5 h-5" />
                             </button>
                         </form>
@@ -89,7 +88,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
             <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-28 md:pb-12">{children}</main>
 
             <nav
-                className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-line pb-[env(safe-area-inset-bottom)]"
+                className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-deep border-t border-primary/20 pb-[env(safe-area-inset-bottom)]"
                 aria-label="بوابة الأعضاء"
             >
                 <div className="grid grid-cols-4">
@@ -101,7 +100,7 @@ export default function MemberShell({ children, siteName, displayName, memberId,
                                 key={item.href}
                                 href={item.href}
                                 aria-current={active ? "page" : undefined}
-                                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? "text-primary font-bold" : "text-muted"}`}
+                                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${active ? "text-primary font-bold" : "text-white/60"}`}
                             >
                                 <Icon className="w-5 h-5" />
                                 {item.name}

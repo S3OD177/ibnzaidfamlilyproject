@@ -1,33 +1,25 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Calendar, FileText, Landmark, Mail, MessageCircle, Network, PencilLine, Twitter, User, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Landmark, Mail, MessageCircle, Network, PencilLine, Twitter, User, UserPlus, Users } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/heritage/PageHero";
 import { Star8 } from "@/components/heritage/Ornament";
 import { categoryColor, formatNewsDate, latestNews, type NewsRow } from "@/lib/data/news";
 import { getCouncilMembers } from "@/lib/data/members";
 import { getCharter } from "@/lib/data/documents";
-import { getPublicCounts } from "@/lib/data/stats";
 import { getAboutContent, getSiteSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [news, site, about, counts, council, charter] = await Promise.all([
+  const [news, site, about, council, charter] = await Promise.all([
     latestNews(4),
     getSiteSettings(),
     getAboutContent(),
-    getPublicCounts(),
     getCouncilMembers(),
     getCharter(),
   ]);
   const [featured, ...rest] = news;
   const chair = council[0];
 
-  const stats = [
-    { label: "فرداً في الشجرة", value: counts.members, icon: Users },
-    { label: "جيلاً موثّقاً", value: counts.generations, icon: Network },
-    { label: "أسرة", value: counts.families, icon: Landmark },
-    { label: "خبراً منشوراً", value: counts.news, icon: BookOpen },
-  ];
 
   return (
     <main className="flex-grow flex flex-col">
@@ -44,18 +36,6 @@ export default async function Home() {
         </div>
       </PageHero>
 
-      {/* Family in numbers, overlapping the hero */}
-      <section className="relative z-10 -mt-10 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {stats.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="bg-white rounded-2xl border border-primary/25 shadow-lg shadow-deep/5 p-5 text-center">
-              <Icon className="w-5 h-5 text-primary mx-auto mb-2" />
-              <p className="font-heritage font-bold text-4xl text-deep leading-none">{value}</p>
-              <p className="text-sm text-muted mt-2">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Mission, vision and values */}
       <section className="py-20 px-4">

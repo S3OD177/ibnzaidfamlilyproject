@@ -21,7 +21,7 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
     const year = params.year && /^\d{4}$/.test(params.year) ? Number(params.year) : undefined;
     const page = Number(params.page) > 0 ? Math.floor(Number(params.page)) : 1;
 
-    const [{ items, total, pages }, years] = await Promise.all([
+    const [{ items, pages }, years] = await Promise.all([
         listPublishedNews({ q, category, year, page }),
         listNewsYears(),
     ]);
@@ -141,7 +141,6 @@ export default async function NewsArchivePage({ searchParams }: { searchParams: 
                         )}
                     </nav>
                 )}
-                {total > 0 && <p className="mt-4 text-center text-xs text-gray-400">{total} خبر</p>}
 
             </div>
         </>

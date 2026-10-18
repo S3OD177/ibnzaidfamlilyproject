@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Settings, LogOut, Search, Bell, Menu, X, KeyRound, Users, Home } from "lucide-react";
 import { useState } from "react";
 import { findActive, sectionsFor } from "./adminNav";
+import { Emblem } from "@/components/heritage/Ornament";
 
 const ROLE_LABELS = { admin: "مدير النظام", editor: "محرر", member: "عضو" } as const;
 
@@ -32,7 +33,7 @@ export default function AdminShell({ children, pendingRequests = 0, pendingChang
     const bellHref = pendingRequests > 0 || (role === "admin" && pendingChanges === 0) ? "/portal/admin/approvals" : "/portal/admin/change-requests";
 
     return (
-        <div className="flex h-screen overflow-hidden bg-canvas font-display text-ink">
+        <div className="portal-heritage flex h-screen overflow-hidden bg-cream font-display text-ink">
 
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
@@ -44,23 +45,22 @@ export default function AdminShell({ children, pendingRequests = 0, pendingChang
 
             {/* Sidebar */}
             <aside className={`
-                fixed lg:static inset-y-0 right-0 z-50 w-72 bg-white border-l border-line flex flex-col transition-transform duration-300 transform
+                fixed lg:static inset-y-0 right-0 z-50 w-72 bg-deep text-white border-l border-primary/20 flex flex-col transition-transform duration-300 transform overflow-hidden
                 ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
             `}>
-                <div className="p-6 border-b border-mist flex items-center gap-3">
-                    <div className="bg-primary p-2 rounded-lg text-white">
-                        <Users className="w-6 h-6" />
+                <div className="absolute inset-0 heritage-pattern opacity-[0.06] pointer-events-none" />
+                <div className="relative p-6 border-b border-white/10 flex items-center gap-3">
+                    <Emblem className="w-10 h-10" />
+                    <div className="min-w-0">
+                        <p className="font-heritage text-xl font-bold leading-tight text-primary truncate">{siteName}</p>
+                        <p className="text-white/50 text-xs font-normal">بوابة الإدارة المركزية</p>
                     </div>
-                    <div>
-                        <h1 className="text-lg font-bold leading-tight">{siteName}</h1>
-                        <p className="text-muted text-xs font-normal">بوابة الإدارة المركزية</p>
-                    </div>
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden mr-auto text-gray-400">
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden mr-auto text-white/50">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+                <nav className="relative flex-1 overflow-y-auto p-4 flex flex-col gap-1.5">
                     {sections.map((section) => {
                         const Icon = section.icon;
                         const isActive = active?.section.name === section.name;
@@ -72,8 +72,8 @@ export default function AdminShell({ children, pendingRequests = 0, pendingChang
                                 href={section.tabs[0].href}
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                    ? "bg-primary text-white font-medium"
-                                    : "text-ink hover:bg-mist"
+                                    ? "bg-primary text-deep font-bold"
+                                    : "text-white/75 hover:bg-white/5 hover:text-white"
                                     }`}
                             >
                                 <Icon className="w-5 h-5" />
@@ -87,27 +87,27 @@ export default function AdminShell({ children, pendingRequests = 0, pendingChang
                         );
                     })}
 
-                    <div className="mt-8 mb-2 px-4 text-[10px] uppercase tracking-widest text-muted font-bold">النظام</div>
+                    <div className="mt-8 mb-2 px-4 text-[10px] tracking-widest text-primary/60 font-bold">النظام</div>
 
                     {role === "admin" && (
-                        <Link href="/portal/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-ink hover:bg-mist transition-colors">
+                        <Link href="/portal/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/75 hover:bg-white/5 hover:text-white transition-colors">
                             <Settings className="w-5 h-5" />
                             <span className="text-sm">إعدادات المنصة</span>
                         </Link>
                     )}
-                    <Link href="/portal" className="flex items-center gap-3 px-4 py-3 rounded-lg text-ink hover:bg-mist transition-colors">
+                    <Link href="/portal" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/75 hover:bg-white/5 hover:text-white transition-colors">
                         <Home className="w-5 h-5" />
                         <span className="text-sm">بوابة الأعضاء</span>
                     </Link>
-                    <Link href="/portal/account" className="flex items-center gap-3 px-4 py-3 rounded-lg text-ink hover:bg-mist transition-colors">
+                    <Link href="/portal/account" className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/75 hover:bg-white/5 hover:text-white transition-colors">
                         <KeyRound className="w-5 h-5" />
                         <span className="text-sm">حسابي وكلمة المرور</span>
                     </Link>
                 </nav>
 
-                <div className="p-4 border-t border-mist">
+                <div className="relative p-4 border-t border-white/10">
                     <form action="/api/auth/logout" method="post">
-                        <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+                        <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-300 hover:bg-white/5 transition-colors cursor-pointer">
                             <LogOut className="w-5 h-5" />
                             <span className="text-sm font-bold">تسجيل الخروج</span>
                         </button>
@@ -119,7 +119,7 @@ export default function AdminShell({ children, pendingRequests = 0, pendingChang
             <div className="flex-1 flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <header className="h-16 bg-white border-b border-mist flex items-center justify-between px-4 lg:px-8">
+                <header className="h-16 bg-white border-b border-sand flex items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-gray-500" aria-label="فتح القائمة">
                             <Menu className="w-6 h-6" />
