@@ -3,9 +3,22 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Printer } from "lucide-react";
-import type { TreeViewData, TreeViewNodeData } from "@/lib/data/tree";
-import { NODE_HEIGHT, NODE_WIDTH, getLayoutedElements, toFlow } from "@/lib/tree/layout";
+import type { TreeViewData } from "@/lib/data/tree";
 import { formatHijri } from "@/lib/dates";
+import {
+    CARD_H,
+    CARD_W,
+    CHIP_GAP,
+    CHIP_H,
+    CHIP_W,
+    branchColor,
+    buildFamily,
+    descendantsOf,
+    layoutFamily,
+    unitIdOf,
+} from "@/lib/tree/family";
+import { viewToFamilyPeople } from "@/lib/tree/people";
+import FanChart from "@/components/tree/FanChart";
 
 export const PAPER = {
     A4: { label: "A4", css: "A4 landscape" },
@@ -14,70 +27,62 @@ export const PAPER = {
     A1: { label: "A1 (594×841 مم)", css: "594mm 841mm landscape" },
 } as const;
 export type PaperSize = keyof typeof PAPER;
+export type PosterStyle = "tree" | "fan";
 
-const BOX_W = NODE_WIDTH - 20;
-const BOX_H = 56;
+const FONT = "Amiri, 'Noto Naskh Arabic', serif";
+const SANS = "Cairo, sans-serif";
+const PAD = 40;
+const LABEL_W = 170; // generation labels column on the right
 
-/** Every descendant of root (inclusive), following parent → child links. */
-function subtree(tree: TreeViewData, rootId: string | null): TreeViewData {
-    if (!rootId) return tree;
-    const keep = new Set([rootId]);
-    for (let grew = true; grew; ) {
-        grew = false;
-        for (const e of tree.edges) {
-            if (keep.has(e.source) && !keep.has(e.target)) {
-                keep.add(e.target);
-                grew = true;
-            }
-        }
-    }
-    return { nodes: tree.nodes.filter((n) => keep.has(n.id)), edges: tree.edges.filter((e) => keep.has(e.source) && keep.has(e.target)) };
-}
+const short = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 /**
  * The family tree as a print-ready poster: vector SVG inside a heritage frame, sized
- * for the chosen paper. Controls are hidden when printing.
+ * for the chosen paper. Drawn either as a tree (spouses beside each person, eldest on
+ * the right, generations labelled) or as a fan chart. Controls are hidden when printing.
  */
 export default function TreePoster({
     tree,
     siteName,
     rootId,
     paper,
+    posterStyle,
     branchOptions,
 }: {
     tree: TreeViewData;
     siteName: string;
     rootId: string | null;
     paper: PaperSize;
+    posterStyle: PosterStyle;
     branchOptions: { id: string; name: string }[];
 }) {
     const router = useRouter();
-    const part = useMemo(() => subtree(tree, rootId), [tree, rootId]);
-    const { nodes, edges, box } = useMemo(() => {
-        const flow = toFlow<TreeViewNodeData>(part);
-        const laid = getLayoutedElements(flow.nodes, flow.edges);
-        const xs = laid.nodes.map((n) => n.position.x);
-        const ys = laid.nodes.map((n) => n.position.y);
-        const pad = 40;
-        return {
-            nodes: laid.nodes,
-            edges: laid.edges,
-            box: {
-                x: Math.min(0, ...xs) - pad,
-                y: Math.min(0, ...ys) - pad,
-                w: Math.max(NODE_WIDTH, ...xs.map((x) => x + NODE_WIDTH)) - Math.min(0, ...xs) + pad * 2,
-                h: Math.max(NODE_HEIGHT, ...ys.map((y) => y + NODE_HEIGHT)) - Math.min(0, ...ys) + pad * 2,
-            },
-        };
-    }, [part]);
-    const byId = new Map(nodes.map((n) => [n.id, n]));
-    const rootName = rootId ? tree.nodes.find((n) => n.id === rootId)?.data.label : null;
+    const graph = useMemo(() => buildFamily(viewToFamilyPeople(tree.nodes), tree.edges, tree.marriages), [tree]);
+    const rootUnit = rootId && graph.people.has(rootId) ? unitIdOf(graph, rootId) : null;
+    const include = useMemo(() => (rootUnit ? new Set([rootUnit, ...descendantsOf(graph, rootUnit)]) : undefined), [graph, rootUnit]);
+    const layout = useMemo(() => layoutFamily(graph, { orientation: "vertical", include }), [graph, include]);
+    const rootName = rootId ? graph.people.get(rootId)?.label : null;
+    const fanRoot = rootUnit ?? graph.roots[0];
 
-    const go = (next: { root?: string | null; size?: PaperSize }) => {
+    const { bounds } = layout;
+    const box = {
+        x: bounds.minX - PAD,
+        y: bounds.minY - PAD,
+        w: bounds.maxX - bounds.minX + PAD * 2 + LABEL_W,
+        h: bounds.maxY - bounds.minY + PAD * 2,
+    };
+    const byId = new Map(layout.units.map((u) => [u.id, u]));
+    // The person's card sits at the right end of the unit; spouses extend to its left.
+    const cardX = (u: { x: number; width: number }) => u.x + u.width - CARD_W;
+    const peopleCount = layout.units.reduce((t, u) => t + 1 + u.spouses.filter((s) => s.memberId && !s.elsewhere).length, 0);
+
+    const go = (next: { root?: string | null; size?: PaperSize; style?: PosterStyle }) => {
         const sp = new URLSearchParams();
         const root = next.root === undefined ? rootId : next.root;
         if (root) sp.set("root", root);
         sp.set("size", next.size ?? paper);
+        const style = next.style ?? posterStyle;
+        if (style !== "tree") sp.set("style", style);
         router.replace(`/portal/poster?${sp.toString()}`);
     };
 
@@ -98,6 +103,13 @@ export default function TreePoster({
                     </select>
                 </label>
                 <label className="flex items-center gap-2 text-sm">
+                    النمط
+                    <select value={posterStyle} onChange={(e) => go({ style: e.target.value as PosterStyle })} className="bg-white text-ink rounded-lg px-2 py-1.5 text-sm">
+                        <option value="tree">شجرة</option>
+                        <option value="fan">مروحة</option>
+                    </select>
+                </label>
+                <label className="flex items-center gap-2 text-sm">
                     الورق
                     <select value={paper} onChange={(e) => go({ size: e.target.value as PaperSize })} className="bg-white text-ink rounded-lg px-2 py-1.5 text-sm">
                         {Object.entries(PAPER).map(([k, p]) => (
@@ -112,6 +124,7 @@ export default function TreePoster({
             </div>
             <p className="print:hidden text-center text-xs text-muted py-2">
                 لأفضل نتيجة: اختر الورق نفسه في نافذة الطباعة، وفعّل «طباعة الخلفيات»، أو اختر «حفظ بصيغة PDF».
+                {posterStyle === "fan" && !rootUnit && graph.roots.length > 1 && " المروحة تبدأ من أول جذر؛ اختر فرعاً لغيره."}
             </p>
 
             <div className="p-4 print:p-0">
@@ -128,42 +141,95 @@ export default function TreePoster({
                                 <span className="h-px w-24 bg-primary" />
                             </div>
                         </header>
-                        <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} preserveAspectRatio="xMidYMid meet" className="flex-1 w-full min-h-0" direction="rtl">
-                            <g fill="none" stroke="#B5952F" strokeWidth="2">
-                                {edges.map((e) => {
-                                    const a = byId.get(e.source);
-                                    const b = byId.get(e.target);
-                                    if (!a || !b) return null;
-                                    const x1 = a.position.x + NODE_WIDTH / 2;
-                                    const y1 = a.position.y + NODE_HEIGHT / 2 + BOX_H / 2;
-                                    const x2 = b.position.x + NODE_WIDTH / 2;
-                                    const y2 = b.position.y + NODE_HEIGHT / 2 - BOX_H / 2;
-                                    const mid = (y1 + y2) / 2;
-                                    return <path key={e.id} d={`M${x1} ${y1} V${mid} H${x2} V${y2}`} />;
-                                })}
-                            </g>
-                            {nodes.map((n) => {
-                                const x = n.position.x + (NODE_WIDTH - BOX_W) / 2;
-                                const y = n.position.y + (NODE_HEIGHT - BOX_H) / 2;
-                                const deceased = n.data.status === "deceased";
-                                return (
-                                    <g key={n.id}>
-                                        <rect x={x} y={y} width={BOX_W} height={BOX_H} rx="10" fill="#ffffff" stroke={n.data.gender === "female" ? "#ec4899" : "#102210"} strokeWidth="2" />
-                                        <rect x={x} y={y} width={BOX_W} height="6" rx="3" fill={n.data.gender === "female" ? "#ec4899" : "#D4AF37"} />
-                                        <text x={x + BOX_W / 2} y={y + 32} textAnchor="middle" fontFamily="Amiri, 'Noto Naskh Arabic', serif" fontWeight="700" fontSize="20" fill="#102210">
-                                            {n.data.label.length > 18 ? `${n.data.label.slice(0, 17)}…` : n.data.label}
+
+                        {posterStyle === "fan" ? (
+                            fanRoot ? (
+                                <FanChart graph={graph} rootId={fanRoot} maxDepth={10} print className="flex-1 w-full min-h-0" />
+                            ) : (
+                                <div className="flex-1" />
+                            )
+                        ) : (
+                            <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} preserveAspectRatio="xMidYMid meet" className="flex-1 w-full min-h-0" direction="rtl">
+                                {/* Generation bands with their names on the right */}
+                                {layout.bands.map((b, i) => (
+                                    <g key={b.depth}>
+                                        {i % 2 === 0 && <rect x={box.x} y={b.start} width={box.w} height={b.end - b.start} fill="#E8DCC0" fillOpacity={0.35} rx={18} />}
+                                        <text
+                                            x={box.x + box.w - 12}
+                                            y={(b.start + b.end) / 2}
+                                            textAnchor="start"
+                                            dominantBaseline="central"
+                                            fontFamily={FONT}
+                                            fontWeight={700}
+                                            fontSize={22}
+                                            fill="#8a6d1f"
+                                        >
+                                            {short(b.label, 14)}
                                         </text>
-                                        {(deceased || n.data.serialNumber) && (
-                                            <text x={x + BOX_W / 2} y={y + 49} textAnchor="middle" fontFamily="Cairo, sans-serif" fontSize="10" fill="#618975">
-                                                {[deceased ? (n.data.gender === "female" ? "رحمها الله" : "رحمه الله") : null, n.data.serialNumber].filter(Boolean).join(" · ")}
-                                            </text>
-                                        )}
                                     </g>
-                                );
-                            })}
-                        </svg>
+                                ))}
+
+                                <g fill="none" strokeWidth="2">
+                                    {layout.edges.map((e) => {
+                                        const a = byId.get(e.source);
+                                        const b = byId.get(e.target);
+                                        if (!a || !b) return null;
+                                        const x1 = cardX(a) + CARD_W / 2;
+                                        const y1 = a.y + CARD_H;
+                                        const x2 = cardX(b) + CARD_W / 2;
+                                        const y2 = b.y;
+                                        const mid = (y1 + y2) / 2;
+                                        const secondary = e.kind === "secondary";
+                                        return (
+                                            <path
+                                                key={e.id}
+                                                d={`M${x1} ${y1} V${mid} H${x2} V${y2}`}
+                                                stroke={secondary ? "#e8a3c0" : "#B5952F"}
+                                                strokeDasharray={secondary ? "6 4" : undefined}
+                                            />
+                                        );
+                                    })}
+                                </g>
+
+                                {layout.units.map((u) => {
+                                    const p = graph.people.get(u.id)!;
+                                    const x = cardX(u);
+                                    const female = p.gender === "female";
+                                    const deceased = p.status === "deceased";
+                                    const sub = [deceased ? (female ? "رحمها الله" : "رحمه الله") : null, p.serialNumber].filter(Boolean).join(" · ");
+                                    return (
+                                        <g key={u.id}>
+                                            <rect x={x} y={u.y} width={CARD_W} height={CARD_H} rx="12" fill="#ffffff" stroke={female ? "#ec4899" : "#102210"} strokeWidth="2" />
+                                            <rect x={x} y={u.y} width={CARD_W} height="7" rx="3" fill={branchColor(p.branch)} />
+                                            <text x={x + CARD_W / 2} y={u.y + (sub ? 46 : 54)} textAnchor="middle" fontFamily={FONT} fontWeight="700" fontSize="24" fill="#102210">
+                                                {short(p.label, 16)}
+                                            </text>
+                                            {sub && (
+                                                <text x={x + CARD_W / 2} y={u.y + 72} textAnchor="middle" fontFamily={SANS} fontSize="12" fill="#618975">
+                                                    {sub}
+                                                </text>
+                                            )}
+                                            {u.spouses.map((s, i) => {
+                                                const sx = x - CHIP_GAP - CHIP_W - i * (CHIP_W + CHIP_GAP);
+                                                const sy = u.y + (CARD_H - CHIP_H) / 2;
+                                                return (
+                                                    <g key={s.marriageId}>
+                                                        <line x1={sx + CHIP_W} y1={u.y + CARD_H / 2} x2={sx + CHIP_W + CHIP_GAP} y2={u.y + CARD_H / 2} stroke="#e8a3c0" strokeWidth="2" />
+                                                        <rect x={sx} y={sy} width={CHIP_W} height={CHIP_H} rx="9" fill="#FDFBF7" stroke="#D4AF37" strokeDasharray="4 3" strokeWidth="1.5" />
+                                                        <text x={sx + CHIP_W / 2} y={sy + CHIP_H / 2} textAnchor="middle" dominantBaseline="central" fontFamily={FONT} fontWeight="700" fontSize="15" fill="#102210">
+                                                            {short(s.name, 14)}
+                                                        </text>
+                                                    </g>
+                                                );
+                                            })}
+                                        </g>
+                                    );
+                                })}
+                            </svg>
+                        )}
+
                         <footer className="flex justify-between text-[10px] text-muted mt-2">
-                            <span>{nodes.length} فرداً</span>
+                            <span>{posterStyle === "fan" ? `${fanRoot ? descendantsOf(graph, fanRoot).size + 1 : 0} فرداً` : `${peopleCount} فرداً`}</span>
                             <span>طُبعت في {formatHijri(new Date())}</span>
                         </footer>
                     </div>

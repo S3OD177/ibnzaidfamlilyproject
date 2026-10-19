@@ -8,6 +8,7 @@ import {
     Images,
     Landmark,
     LayoutDashboard,
+    ListChecks,
     Newspaper,
     PartyPopper,
     PiggyBank,
@@ -50,7 +51,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     {
         name: "شجرة العائلة",
         icon: Users,
-        tabs: [{ name: "شجرة العائلة", href: "/portal/admin/tree", icon: Users }],
+        tabs: [
+            { name: "شجرة العائلة", href: "/portal/admin/tree", icon: Users },
+            { name: "فحص البيانات", href: "/portal/admin/tree/checks", icon: ListChecks },
+        ],
     },
     {
         name: "المحتوى",
@@ -95,11 +99,13 @@ export function sectionsFor(role: Role): AdminSection[] {
     );
 }
 
-/** The section and tab the current page belongs to, if any. */
+/** The section and tab the current page belongs to (the most specific match), if any. */
 export function findActive(sections: AdminSection[], pathname: string) {
+    let best: { section: AdminSection; tab: AdminTab } | null = null;
     for (const section of sections) {
-        const tab = section.tabs.find((t) => inTab(pathname, t.href));
-        if (tab) return { section, tab };
+        for (const tab of section.tabs) {
+            if (inTab(pathname, tab.href) && (!best || tab.href.length > best.tab.href.length)) best = { section, tab };
+        }
     }
-    return null;
+    return best;
 }

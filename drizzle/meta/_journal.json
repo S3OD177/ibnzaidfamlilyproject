@@ -85,6 +85,13 @@
       "when": 1792351121765,
       "tag": "0011_fund",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792352991323,
+      "tag": "0012_member_proposals",
+      "breakpoints": true
     }
   ]
 }

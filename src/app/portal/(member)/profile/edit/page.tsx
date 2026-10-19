@@ -45,6 +45,8 @@ export default async function EditMyProfilePage() {
                 <p className="text-sm text-gray-500 mt-1">
                     عدّل ما تريد ثم أرسل الطلب، وتظهر التعديلات في ملفك بعد أن تعتمدها الإدارة. الاسم والنسب وتواريخ الميلاد تعدّلها الإدارة فقط.{" "}
                     <Link href="/portal/profile/privacy" className="font-bold text-primary-dark hover:underline">من يرى بياناتي؟</Link>
+                    {" · "}
+                    <Link href="/portal/profile/propose" className="font-bold text-primary-dark hover:underline">إضافة مولود أو فرد جديد للشجرة</Link>
                 </p>
             </div>
 

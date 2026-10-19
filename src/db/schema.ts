@@ -450,6 +450,34 @@ export const memberChangeRequests = pgTable(
     ],
 );
 
+/** A member's proposal to add a new person (e.g. a newborn) under someone in their line. */
+export const memberProposals = pgTable(
+    "member_proposals",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        parentId: uuid("parent_id")
+            .notNull()
+            .references(() => members.id, { onDelete: "cascade" }),
+        fullName: text("full_name").notNull(),
+        gender: genderEnum("gender").notNull(),
+        status: lifeStatusEnum("status").notNull().default("alive"),
+        birthYear: integer("birth_year"),
+        birthCalendar: calendarEnum("birth_calendar"),
+        deathYear: integer("death_year"),
+        motherName: text("mother_name"),
+        note: text("note"),
+        requestStatus: requestStatusEnum("request_status").notNull().default("pending"),
+        requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
+        requesterName: text("requester_name").notNull(),
+        reviewNote: text("review_note"),
+        reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+        reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+        createdMemberId: uuid("created_member_id").references(() => members.id, { onDelete: "set null" }),
+        ...timestamps,
+    },
+    (t) => [index("member_proposals_status_idx").on(t.requestStatus, t.createdAt)],
+);
+
 export const settings = pgTable("settings", {
     key: text("key").primaryKey(),
     value: jsonb("value").notNull(),

@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/current";
 import { homeForRole, isStaff } from "@/lib/auth/session";
 import { countPendingRequests } from "@/lib/data/stats";
 import { countPendingChanges } from "@/lib/data/change-requests";
+import { countPendingProposals } from "@/lib/data/proposals";
 import { countPendingOccasions } from "@/lib/data/occasions";
 import { getSiteSettings } from "@/lib/settings";
 
@@ -19,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             displayName={session.displayName}
             siteName={(await getSiteSettings()).siteName}
             pendingRequests={session.role === "admin" ? await countPendingRequests() : 0}
-            pendingChanges={await countPendingChanges()}
+            pendingChanges={(await countPendingChanges()) + (await countPendingProposals())}
             pendingOccasions={await countPendingOccasions()}
         >
             {children}

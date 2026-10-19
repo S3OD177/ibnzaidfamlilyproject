@@ -102,6 +102,64 @@ export async function unlinkMembers(parentId: string, childId: string): Promise<
     });
 }
 
+/**
+ * Moves a child under a new parent: drops its link to oldParentId (its current primary
+ * parent, when it has one) and links it to newParentId, in one transaction. Refuses a
+ * move that would make the child its own ancestor.
+ */
+export async function setParent(
+    childId: string,
+    newParentId: string,
+    oldParentId: string | null,
+): Promise<ActionResult<{ id: string }>> {
+    return safeAction(async () => {
+        await requireStaff();
+        assertId(childId);
+        assertId(newParentId);
+        if (oldParentId !== null) assertId(oldParentId);
+        if (newParentId === childId) throw new ActionError("لا يمكن جعل الفرد أباً لنفسه");
+        const db = getDb();
+        const found = await db
+            .select({ id: schema.members.id })
+            .from(schema.members)
+            .where(inArray(schema.members.id, [childId, newParentId]));
+        if (found.length !== 2) throw new ActionError("العضو غير موجود");
+
+        // Walk the child's descendants (through every parent link) looking for the new parent.
+        const seen = new Set<string>([childId]);
+        let frontier = [childId];
+        while (frontier.length) {
+            const rows = await db
+                .select({ childId: schema.relationships.childId })
+                .from(schema.relationships)
+                .where(inArray(schema.relationships.parentId, frontier));
+            frontier = [];
+            for (const r of rows) {
+                if (r.childId === newParentId) throw new ActionError("لا يمكن نقل الفرد تحت أحد أبنائه أو أحفاده");
+                if (!seen.has(r.childId)) {
+                    seen.add(r.childId);
+                    frontier.push(r.childId);
+                }
+            }
+        }
+
+        return db.transaction(async (tx) => {
+            if (oldParentId && oldParentId !== newParentId) {
+                await tx
+                    .delete(schema.relationships)
+                    .where(and(eq(schema.relationships.parentId, oldParentId), eq(schema.relationships.childId, childId)));
+            }
+            await tx.insert(schema.relationships).values({ parentId: newParentId, childId }).onConflictDoNothing();
+            const [link] = await tx
+                .select({ id: schema.relationships.id })
+                .from(schema.relationships)
+                .where(and(eq(schema.relationships.parentId, newParentId), eq(schema.relationships.childId, childId)));
+            if (!link) throw new ActionError("تعذر حفظ الرابط");
+            return link;
+        });
+    });
+}
+
 export interface SpouseEntry {
     marriageId: string;
     spouseId: string | null;

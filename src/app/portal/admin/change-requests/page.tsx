@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ChangeRequestsManager from "@/components/admin/change-requests/ChangeRequestsManager";
+import ProposalsManager from "@/components/admin/change-requests/ProposalsManager";
 import { currentValuesFor, listChangeRequests } from "@/lib/data/change-requests";
+import { listProposals } from "@/lib/data/proposals";
 import type { ChangeRequestStatus } from "@/lib/change-requests";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,7 @@ const TABS: { key: ChangeRequestStatus; label: string }[] = [
 export default async function ChangeRequestsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
     const { status } = await searchParams;
     const tab = TABS.find((t) => t.key === status)?.key ?? "pending";
-    const requests = await listChangeRequests(tab);
+    const [requests, proposals] = await Promise.all([listChangeRequests(tab), listProposals(tab)]);
     // Old values are only meaningful while a request is pending; later the record has moved on.
     const current = tab === "pending" ? await currentValuesFor([...new Set(requests.map((r) => r.memberId))]) : new Map();
 
@@ -43,10 +45,24 @@ export default async function ChangeRequestsPage({ searchParams }: { searchParam
                 ))}
             </div>
 
-            <ChangeRequestsManager
-                requests={requests.map((r) => ({ ...r, current: current.get(r.memberId) ?? null }))}
-                emptyText={tab === "pending" ? "لا توجد طلبات بانتظار المراجعة." : "لا توجد طلبات هنا."}
-            />
+            <section className="space-y-4">
+                <div>
+                    <h2 className="text-xl font-black text-ink">أفراد جدد مقترحون</h2>
+                    <p className="text-sm text-muted mt-1">اقتراحات الأعضاء لإضافة مواليد أو أبناء وأحفاد إلى الشجرة. الاعتماد يضيف الفرد تحت أبيه أو أمه مباشرة.</p>
+                </div>
+                <ProposalsManager
+                    proposals={proposals}
+                    emptyText={tab === "pending" ? "لا توجد اقتراحات بانتظار المراجعة." : "لا توجد اقتراحات هنا."}
+                />
+            </section>
+
+            <section className="space-y-4">
+                <h2 className="text-xl font-black text-ink">تعديل البيانات</h2>
+                <ChangeRequestsManager
+                    requests={requests.map((r) => ({ ...r, current: current.get(r.memberId) ?? null }))}
+                    emptyText={tab === "pending" ? "لا توجد طلبات بانتظار المراجعة." : "لا توجد طلبات هنا."}
+                />
+            </section>
         </div>
     );
 }

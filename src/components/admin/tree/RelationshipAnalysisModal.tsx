@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { X, Heart, ArrowRightLeft, ShieldCheck, RotateCcw, Key } from 'lucide-react';
+import { X, Heart, ArrowRightLeft, ShieldCheck, RotateCcw, Key, Route } from 'lucide-react';
 import { Node, Edge } from '@xyflow/react';
 import type { TreeNodeData } from '@/lib/data/tree';
 
@@ -16,9 +16,11 @@ interface RelationshipAnalysisModalProps {
     onClose: () => void;
     nodes: Node[];
     edges: Edge[];
+    /** When given, the result offers to highlight the line between the two people on the tree. */
+    onShowPath?: (aId: string, bId: string) => void;
 }
 
-const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ isOpen, onClose, nodes, edges }) => {
+const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ isOpen, onClose, nodes, edges, onShowPath }) => {
     const [person1Id, setPerson1Id] = useState<string | null>(null);
     const [person2Id, setPerson2Id] = useState<string | null>(null);
     const [search1, setSearch1] = useState('');
@@ -392,6 +394,20 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                     <span className="text-primary font-bold">{person1FullName}</span> {pronoun} <span className="underline decoration-primary/40 underline-offset-4 font-bold decoration-2 text-xl mx-1 text-white">{analysisResult.relation}</span> لـ <span className="text-primary font-bold">{person2FullName}</span>
                                 </p>
                             </div>
+
+                            {onShowPath && person1Id && person2Id && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onShowPath(person1Id, person2Id);
+                                        onClose();
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 bg-primary text-deep font-bold rounded-xl px-4 py-3 text-sm hover:bg-primary-light"
+                                >
+                                    <Route className="w-4 h-4" />
+                                    عرض المسار على الشجرة
+                                </button>
+                            )}
 
                             {analysisResult.type === 'related' && (
                                 <div className="space-y-4">

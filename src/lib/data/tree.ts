@@ -36,10 +36,25 @@ export interface TreeNodeData {
     deathDate?: MemberDate;
 }
 
+export interface TreeMarriage {
+    id: string;
+    memberId: string;
+    spouseId: string | null;
+    spouseName: string | null;
+}
+
 export interface TreeData {
     nodes: { id: string; data: TreeNodeData }[];
     edges: { id: string; source: string; target: string }[];
+    marriages: TreeMarriage[];
 }
+
+const marriageColumns = {
+    id: schema.marriages.id,
+    memberId: schema.marriages.memberId,
+    spouseId: schema.marriages.spouseId,
+    spouseName: schema.marriages.spouseName,
+};
 
 const MAX_TEXT = 2000;
 const MAX_PHOTO = 1_500_000; // base64 data URL; moves to CranL storage later
@@ -167,39 +182,53 @@ export function nodeDataToRow(input: unknown): Omit<MemberInsert, "id"> {
 
 export async function getTreeData(): Promise<TreeData> {
     const db = getDb();
-    const [memberRows, links] = await Promise.all([
+    const [memberRows, links, marriages] = await Promise.all([
         db.select().from(schema.members).orderBy(asc(schema.members.serialNumber), asc(schema.members.createdAt)),
         db.select().from(schema.relationships),
+        db.select(marriageColumns).from(schema.marriages),
     ]);
     return {
         nodes: memberRows.map((row) => ({ id: row.id, data: rowToNodeData(row) })),
         edges: links.map((link) => ({ id: link.id, source: link.parentId, target: link.childId })),
+        marriages,
     };
 }
 
 /** What a member sees on a tree card; contact details stay on the profile page. */
-export type TreeViewNodeData = Pick<TreeNodeData, "label" | "gender" | "status" | "serialNumber" | "photo" | "role">;
+export type TreeViewNodeData = Pick<TreeNodeData, "label" | "gender" | "status" | "serialNumber" | "photo" | "role" | "branch"> & {
+    siblingOrder: number | null;
+    birthYear: number | null;
+    deathYear: number | null;
+    yearSuffix: "هـ" | "م";
+};
 
 export interface TreeViewData {
     nodes: { id: string; data: TreeViewNodeData }[];
     edges: { id: string; source: string; target: string }[];
+    marriages: TreeMarriage[];
 }
 
 /** The whole tree for the members' read-only view. */
 export async function getTreeView(viewer: Viewer): Promise<TreeViewData> {
     const db = getDb();
-    const [memberRows, links] = await Promise.all([
+    const [memberRows, links, marriages] = await Promise.all([
         db.select().from(schema.members).orderBy(asc(schema.members.serialNumber), asc(schema.members.createdAt)),
         db.select().from(schema.relationships),
+        db.select(marriageColumns).from(schema.marriages),
     ]);
-    const nodes = memberRows.map((row) => ({
-        id: row.id,
-        data: rowToNodeData(row),
-        showPhoto: canSee(readPrivacy(row.privacy).photo, viewer, row.id),
-    }));
+    const nodes = memberRows.map((row) => {
+        const privacy = readPrivacy(row.privacy);
+        return {
+            id: row.id,
+            row,
+            data: rowToNodeData(row),
+            showPhoto: canSee(privacy.photo, viewer, row.id),
+            showBirth: canSee(privacy.birthDate, viewer, row.id),
+        };
+    });
     const edges = links.map((link) => ({ id: link.id, source: link.parentId, target: link.childId }));
     return {
-        nodes: nodes.map(({ id, data, showPhoto }) => ({
+        nodes: nodes.map(({ id, row, data, showPhoto, showBirth }) => ({
             id,
             data: {
                 label: data.label,
@@ -208,8 +237,15 @@ export async function getTreeView(viewer: Viewer): Promise<TreeViewData> {
                 serialNumber: data.serialNumber,
                 photo: showPhoto ? data.photo : undefined,
                 role: data.role,
+                branch: data.branch,
+                siblingOrder: row.siblingOrder,
+                birthYear: showBirth ? row.birthYear : null,
+                deathYear: row.status === "deceased" ? row.deathYear : null,
+                yearSuffix: (showBirth ? row.birthCalendar : row.deathCalendar) === "gregorian" ? "م" : "هـ",
             },
         })),
         edges,
+        marriages,
     };
 }
+
