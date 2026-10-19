@@ -158,3 +158,9 @@ export function formatBytes(bytes: number) {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} ك.ب`;
     return `${(bytes / 1024 / 1024).toFixed(1)} م.ب`;
 }
+
+/** Resolve photo owners on every download, including files whose URL was shared earlier. */
+export async function getPhotoOwners(id: string) {
+    return getDb().select({ id: schema.members.id, privacy: schema.members.privacy, isPublic: schema.members.isPublic })
+        .from(schema.members).where(eq(schema.members.photoUrl, fileUrl(id)));
+}

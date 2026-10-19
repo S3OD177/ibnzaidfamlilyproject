@@ -1,5 +1,8 @@
 import { getSession } from "@/lib/auth/current";
-import { ALLOWED_TYPES, getFile } from "@/lib/files";
+import { ALLOWED_TYPES, getFile, getPhotoOwners } from "@/lib/files";
+
+import { canSee, readPrivacy, type Viewer } from "@/lib/privacy";
+import { isStaff } from "@/lib/auth/session";
 
 // Serves an uploaded file. Members-only files need a signed-in account.
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -7,10 +10,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const file = await getFile(id);
     if (!file) return new Response("Not found", { status: 404 });
 
-    if (file.visibility === "members" && !(await getSession())) {
+    const session = await getSession();
+    const viewer: Viewer = !session ? { kind: "anon" } : isStaff(session.role)
+        ? { kind: "staff" } : { kind: "member", memberId: session.memberId };
+    const owners = await getPhotoOwners(id);
+    // Shared files obey every owner's restriction, so reuse cannot bypass privacy.
+    const deniedPhoto = owners.some(owner =>
+        (viewer.kind === "anon" && owner.isPublic !== 1) ||
+        !canSee(readPrivacy(owner.privacy).photo, viewer, owner.id));
+    if (deniedPhoto || (file.visibility === "members" && !session)) {
+        if (session) return new Response("Forbidden", { status: 403, headers: { "Cache-Control": "private, no-store" } });
         const login = new URL("/portal/login", request.url);
         login.searchParams.set("next", `/files/${id}`);
-        return new Response(null, { status: 303, headers: { Location: `${login.pathname}${login.search}` } });
+        return new Response(null, { status: 303, headers: { Location: `${login.pathname}${login.search}`, "Cache-Control": "private, no-store" } });
     }
 
     const download = new URL(request.url).searchParams.has("download");
@@ -43,8 +55,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             "Accept-Ranges": "bytes",
             ...(contentRange ? { "Content-Range": contentRange } : {}),
             "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(file.name)}`,
-            // File ids never change content, so public files can be cached for good.
-            "Cache-Control": file.visibility === "public" ? "public, max-age=31536000, immutable" : "private, max-age=3600",
+            // Permissions can change even when the bytes do not. Never cache access decisions.
+            "Cache-Control": "private, no-store",
             "X-Content-Type-Options": "nosniff",
             "Content-Security-Policy": "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox",
         },

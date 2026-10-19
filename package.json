@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:seed:build": "node scripts/build-seed.mjs"
+    "db:seed:build": "node scripts/build-seed.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
@@ -37,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.4.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }

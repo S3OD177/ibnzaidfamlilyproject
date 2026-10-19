@@ -25,6 +25,7 @@ export const DEMO_ACCOUNTS: Record<"admin" | "member", { username: string; passw
 export interface TokenSession {
     userId: string;
     role: Role;
+    credentialVersion: string;
 }
 
 export function isDemoLoginEnabled(): boolean {
@@ -109,18 +110,18 @@ export async function checkCredentials(username: string, password: string): Prom
             const ok = await verifyPassword(password, user.passwordHash);
             if (!ok || user.status !== "active") return null;
             await db.update(schema.users).set({ lastLoginAt: new Date() }).where(eq(schema.users.id, user.id));
-            return { userId: user.id, role: user.role };
+            return { userId: user.id, role: user.role, credentialVersion: await credentialVersion(user.passwordHash) };
         }
     }
 
     const adminUser = process.env.ADMIN_USERNAME;
     const adminPass = process.env.ADMIN_PASSWORD;
     if (adminUser && adminPass && matches(username, password, { username: adminUser, password: adminPass })) {
-        return { userId: ENV_ADMIN_ID, role: "admin" };
+        return { userId: ENV_ADMIN_ID, role: "admin", credentialVersion: await credentialVersion(adminPass) };
     }
     if (isDemoLoginEnabled()) {
-        if (matches(username, password, DEMO_ACCOUNTS.admin)) return { userId: DEMO_IDS.admin, role: "admin" };
-        if (matches(username, password, DEMO_ACCOUNTS.member)) return { userId: DEMO_IDS.member, role: "member" };
+        if (matches(username, password, DEMO_ACCOUNTS.admin)) return { userId: DEMO_IDS.admin, role: "admin", credentialVersion: await credentialVersion(DEMO_ACCOUNTS.admin.password) };
+        if (matches(username, password, DEMO_ACCOUNTS.member)) return { userId: DEMO_IDS.member, role: "member", credentialVersion: await credentialVersion(DEMO_ACCOUNTS.member.password) };
     }
     return null;
 }
@@ -129,7 +130,7 @@ export async function createSessionToken(session: TokenSession): Promise<string>
     const secret = await getSecret();
     if (!secret) throw new Error("No session secret: set AUTH_SECRET or DATABASE_URL");
     const expires = Math.floor(Date.now() / 1000) + SESSION_MAX_AGE;
-    const payload = `${session.userId}.${session.role}.${expires}`;
+    const payload = `${session.userId}.${session.role}.${expires}.${session.credentialVersion}`;
     return `${payload}.${await sign(payload, secret)}`;
 }
 
@@ -137,10 +138,17 @@ export async function createSessionToken(session: TokenSession): Promise<string>
 export async function verifySessionToken(token: string | undefined): Promise<TokenSession | null> {
     if (!token) return null;
     const parts = token.split(".");
-    if (parts.length !== 4) return null;
-    const [userId, role, expires, signature] = parts;
+    if (parts.length !== 5) return null;
+    const [userId, role, expires, version, signature] = parts;
     if (!ROLES.includes(role as Role) || !(Number(expires) > Date.now() / 1000)) return null;
     const secret = await getSecret();
-    if (!secret || !safeEqual(signature, await sign(`${userId}.${role}.${expires}`, secret))) return null;
-    return { userId, role: role as Role };
+    if (!secret || !safeEqual(signature, await sign(`${userId}.${role}.${expires}.${version}`, secret))) return null;
+    return { userId, role: role as Role, credentialVersion: version };
+}
+
+/** Bind sessions to the credential used at login; every password change revokes them. */
+export async function credentialVersion(credential: string): Promise<string> {
+    const secret = await getSecret();
+    if (!secret) throw new Error("Session secret unavailable");
+    return sign(`credential:${credential}`, secret);
 }
