@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     for (const { table_name: table } of tables) {
         if (SKIP_TABLES.has(table)) continue;
         const rows = await db.execute<Record<string, unknown>>(sql.raw(`select * from "${table.replace(/"/g, "")}"`));
-        data[table] = rows.map((row) => {
+        // Only application content settings belong in a portable backup.
+        const exportRows = table === "settings" ? rows.filter(row => row.key === "site" || row.key === "about") : rows;
+        data[table] = exportRows.map((row) => {
             const out: Record<string, unknown> = { ...row };
             for (const col of SKIP_COLUMNS[table] ?? []) delete out[col];
             if (table === "files") {

@@ -3,7 +3,7 @@ import { ActionError } from "@/lib/action-result";
 import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
-import { DEMO_IDS, ENV_ADMIN_ID, SESSION_COOKIE, isDemoLoginEnabled, isStaff, verifySessionToken, type Role } from "@/lib/auth/session";
+import { DEMO_ACCOUNTS, credentialVersion, DEMO_IDS, ENV_ADMIN_ID, SESSION_COOKIE, isDemoLoginEnabled, isStaff, verifySessionToken, type Role } from "@/lib/auth/session";
 import type { Viewer } from "@/lib/privacy";
 
 export interface CurrentUser {
@@ -28,7 +28,7 @@ export async function getSession(): Promise<CurrentUser | null> {
 
     if (UUID.test(token.userId)) {
         const [user] = await getDb().select().from(schema.users).where(eq(schema.users.id, token.userId));
-        if (!user || user.status !== "active") return null;
+        if (!user || user.status !== "active" || token.credentialVersion !== await credentialVersion(user.passwordHash)) return null;
         return {
             userId: user.id,
             role: user.role,
@@ -38,10 +38,12 @@ export async function getSession(): Promise<CurrentUser | null> {
         };
     }
     if (token.userId === ENV_ADMIN_ID && process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+        if (token.credentialVersion !== await credentialVersion(process.env.ADMIN_PASSWORD)) return null;
         return { userId: ENV_ADMIN_ID, role: "admin", displayName: process.env.ADMIN_USERNAME, memberId: null, isDbUser: false };
     }
     if (isDemoLoginEnabled() && (token.userId === DEMO_IDS.admin || token.userId === DEMO_IDS.member)) {
         const role: Role = token.userId === DEMO_IDS.admin ? "admin" : "member";
+        if (token.credentialVersion !== await credentialVersion(DEMO_ACCOUNTS[role].password)) return null;
         // DEMO_MEMBER_ID links the demo member to a tree person, so "my profile" can be tried out.
         const demoMemberId = role === "member" && UUID.test(process.env.DEMO_MEMBER_ID ?? "") ? process.env.DEMO_MEMBER_ID! : null;
         return { userId: token.userId, role, displayName: role === "admin" ? "مدير تجريبي" : "عضو تجريبي", memberId: demoMemberId, isDbUser: false };
