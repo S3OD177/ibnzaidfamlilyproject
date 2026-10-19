@@ -6,6 +6,8 @@ import { getDb, schema } from "@/db";
 import { requireRole } from "@/lib/auth/current";
 import { nodeDataToRow, rowToNodeData, type TreeNodeData } from "@/lib/data/tree";
 import { persistImage } from "@/lib/files";
+import { memberDiff, memberSnapshot, recordChange, type DbExecutor } from "@/lib/tree-history";
+import { MEMBER_FIELD_LABELS } from "@/lib/tree-history-labels";
 
 // Admins and editors manage content; server actions re-check the account every call.
 async function requireStaff() {
@@ -23,17 +25,41 @@ function assertId(id: unknown): asserts id is string {
     if (typeof id !== "string" || !UUID.test(id)) throw new ActionError("معرّف غير صالح");
 }
 
+/** Names of members by id, for history summaries. */
+async function namesOf(exec: DbExecutor, ids: (string | null | undefined)[]): Promise<Map<string, { name: string; gender: "male" | "female" }>> {
+    const list = [...new Set(ids.filter((id): id is string => Boolean(id)))];
+    if (list.length === 0) return new Map();
+    const rows = await exec
+        .select({ id: schema.members.id, name: schema.members.fullName, gender: schema.members.gender })
+        .from(schema.members)
+        .where(inArray(schema.members.id, list));
+    return new Map(rows.map((r) => [r.id, { name: r.name, gender: r.gender }]));
+}
+
+const childWord = (gender: "male" | "female") => (gender === "female" ? "ابنةً" : "ابناً");
+
 export async function updateMember(id: string, data: unknown): Promise<ActionResult<TreeNodeData>> {
     return safeAction(async () => {
         const me = await requireStaff();
         assertId(id);
-        const [row] = await getDb()
-            .update(schema.members)
-            .set(nodeDataToRow(await withStoredPhoto(data, me.isDbUser ? me.userId : null)))
-            .where(eq(schema.members.id, id))
-            .returning();
-        if (!row) throw new ActionError("العضو غير موجود");
-        return rowToNodeData(row);
+        const values = nodeDataToRow(await withStoredPhoto(data, me.isDbUser ? me.userId : null));
+        return getDb().transaction(async (tx) => {
+            const [prev] = await tx.select().from(schema.members).where(eq(schema.members.id, id)).for("update");
+            if (!prev) throw new ActionError("العضو غير موجود");
+            const [row] = await tx.update(schema.members).set(values).where(eq(schema.members.id, id)).returning();
+            const diff = memberDiff(prev, row);
+            if (diff) {
+                const fields = Object.keys(diff.after).map((k) => MEMBER_FIELD_LABELS[k] ?? k);
+                await recordChange(tx, me, {
+                    action: "member.update",
+                    memberId: id,
+                    memberName: row.fullName,
+                    summary: `تعديل بيانات ${prev.fullName}: ${fields.join("، ")}`,
+                    ...diff,
+                });
+            }
+            return rowToNodeData(row);
+        });
     });
 }
 
@@ -56,6 +82,16 @@ export async function addMembers(
                     .insert(schema.relationships)
                     .values(inserted.map((row) => ({ parentId, childId: row.id })));
             }
+            const parentName = parentId ? (await namesOf(tx, [parentId])).get(parentId)?.name : undefined;
+            for (const row of inserted) {
+                await recordChange(tx, me, {
+                    action: "member.add",
+                    memberId: row.id,
+                    memberName: row.fullName,
+                    summary: `إضافة ${row.fullName}${parentName ? ` ${childWord(row.gender)} لـ${parentName}` : ""}`,
+                    after: { member: memberSnapshot(row), parentId },
+                });
+            }
             return inserted.map((row) => ({ id: row.id, data: rowToNodeData(row), parentId }));
         });
     });
@@ -63,42 +99,92 @@ export async function addMembers(
 
 export async function deleteMember(id: string): Promise<ActionResult<void>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(id);
-        // Relationships go with it (ON DELETE CASCADE).
-        await getDb().delete(schema.members).where(eq(schema.members.id, id));
+        await getDb().transaction(async (tx) => {
+            const [row] = await tx.select().from(schema.members).where(eq(schema.members.id, id)).for("update");
+            if (!row) return;
+            // Kept in the history so the person can be restored with their links.
+            const relationships = await tx
+                .select({ parentId: schema.relationships.parentId, childId: schema.relationships.childId })
+                .from(schema.relationships)
+                .where(or(eq(schema.relationships.parentId, id), eq(schema.relationships.childId, id)));
+            const marriages = await tx
+                .select({
+                    memberId: schema.marriages.memberId,
+                    spouseId: schema.marriages.spouseId,
+                    spouseName: schema.marriages.spouseName,
+                    marriageYear: schema.marriages.marriageYear,
+                })
+                .from(schema.marriages)
+                .where(or(eq(schema.marriages.memberId, id), eq(schema.marriages.spouseId, id)));
+            // Relationships go with it (ON DELETE CASCADE).
+            await tx.delete(schema.members).where(eq(schema.members.id, id));
+            await recordChange(tx, me, {
+                action: "member.delete",
+                memberId: id,
+                memberName: row.fullName,
+                summary: `حذف ${row.fullName}`,
+                before: { member: memberSnapshot(row), relationships, marriages },
+            });
+        });
     });
 }
 
 export async function linkMembers(parentId: string, childId: string): Promise<ActionResult<{ id: string }>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(parentId);
         assertId(childId);
         if (parentId === childId) throw new ActionError("لا يمكن ربط الفرد بنفسه");
-        const db = getDb();
-        const found = await db
-            .select({ id: schema.members.id })
-            .from(schema.members)
-            .where(inArray(schema.members.id, [parentId, childId]));
-        if (found.length !== 2) throw new ActionError("العضو غير موجود");
-        await db.insert(schema.relationships).values({ parentId, childId }).onConflictDoNothing();
-        const [link] = await db
-            .select({ id: schema.relationships.id })
-            .from(schema.relationships)
-            .where(and(eq(schema.relationships.parentId, parentId), eq(schema.relationships.childId, childId)));
-        return link;
+        return getDb().transaction(async (tx) => {
+            const names = await namesOf(tx, [parentId, childId]);
+            if (names.size !== 2) throw new ActionError("العضو غير موجود");
+            const added = await tx
+                .insert(schema.relationships)
+                .values({ parentId, childId })
+                .onConflictDoNothing()
+                .returning({ id: schema.relationships.id });
+            if (added.length) {
+                const child = names.get(childId)!;
+                await recordChange(tx, me, {
+                    action: "link.add",
+                    memberId: childId,
+                    memberName: child.name,
+                    summary: `ربط ${child.name} ${childWord(child.gender)} لـ${names.get(parentId)!.name}`,
+                    after: { parentId, childId },
+                });
+            }
+            const [link] = await tx
+                .select({ id: schema.relationships.id })
+                .from(schema.relationships)
+                .where(and(eq(schema.relationships.parentId, parentId), eq(schema.relationships.childId, childId)));
+            return link;
+        });
     });
 }
 
 export async function unlinkMembers(parentId: string, childId: string): Promise<ActionResult<void>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(parentId);
         assertId(childId);
-        await getDb()
-            .delete(schema.relationships)
-            .where(and(eq(schema.relationships.parentId, parentId), eq(schema.relationships.childId, childId)));
+        await getDb().transaction(async (tx) => {
+            const removed = await tx
+                .delete(schema.relationships)
+                .where(and(eq(schema.relationships.parentId, parentId), eq(schema.relationships.childId, childId)))
+                .returning({ id: schema.relationships.id });
+            if (!removed.length) return;
+            const names = await namesOf(tx, [parentId, childId]);
+            const childName = names.get(childId)?.name ?? "—";
+            await recordChange(tx, me, {
+                action: "link.remove",
+                memberId: childId,
+                memberName: childName,
+                summary: `فك ربط ${childName} عن ${names.get(parentId)?.name ?? "—"}`,
+                before: { parentId, childId },
+            });
+        });
     });
 }
 
@@ -113,7 +199,7 @@ export async function setParent(
     oldParentId: string | null,
 ): Promise<ActionResult<{ id: string }>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(childId);
         assertId(newParentId);
         if (oldParentId !== null) assertId(oldParentId);
@@ -155,6 +241,17 @@ export async function setParent(
                 .from(schema.relationships)
                 .where(and(eq(schema.relationships.parentId, newParentId), eq(schema.relationships.childId, childId)));
             if (!link) throw new ActionError("تعذر حفظ الرابط");
+            const names = await namesOf(tx, [childId, newParentId, oldParentId]);
+            const childName = names.get(childId)?.name ?? "—";
+            const from = oldParentId && oldParentId !== newParentId ? ` من ${names.get(oldParentId)?.name ?? "—"}` : "";
+            await recordChange(tx, me, {
+                action: "parent.move",
+                memberId: childId,
+                memberName: childName,
+                summary: `نقل ${childName}${from} إلى ${names.get(newParentId)?.name ?? "—"}`,
+                before: { parentId: oldParentId },
+                after: { parentId: newParentId },
+            });
             return link;
         });
     });
@@ -205,7 +302,7 @@ export async function addSpouse(
     input: { spouseId: string | null; spouseName: string; marriageYear: string },
 ): Promise<ActionResult<void>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(memberId);
         const spouseId = input.spouseId || null;
         if (spouseId) assertId(spouseId);
@@ -228,19 +325,47 @@ export async function addSpouse(
                 );
             if (existing) throw new ActionError("الزواج مسجل مسبقاً");
         }
-        await db.insert(schema.marriages).values({
-            memberId,
-            spouseId,
-            spouseName: spouseId ? null : spouseName,
-            marriageYear: year,
+        await db.transaction(async (tx) => {
+            const names = await namesOf(tx, [memberId, spouseId]);
+            const member = names.get(memberId);
+            if (!member || (spouseId && !names.has(spouseId))) throw new ActionError("العضو غير موجود");
+            const [marriage] = await tx
+                .insert(schema.marriages)
+                .values({ memberId, spouseId, spouseName: spouseId ? null : spouseName, marriageYear: year })
+                .returning();
+            await recordChange(tx, me, {
+                action: "marriage.add",
+                memberId,
+                memberName: member.name,
+                summary: `تسجيل زواج ${member.name} من ${spouseId ? names.get(spouseId)!.name : spouseName}${year ? ` (${year})` : ""}`,
+                after: { marriageId: marriage.id, memberId, spouseId, spouseName: marriage.spouseName, marriageYear: year },
+            });
         });
     });
 }
 
 export async function removeSpouse(marriageId: string): Promise<ActionResult<void>> {
     return safeAction(async () => {
-        await requireStaff();
+        const me = await requireStaff();
         assertId(marriageId);
-        await getDb().delete(schema.marriages).where(eq(schema.marriages.id, marriageId));
+        await getDb().transaction(async (tx) => {
+            const [removed] = await tx.delete(schema.marriages).where(eq(schema.marriages.id, marriageId)).returning();
+            if (!removed) return;
+            const names = await namesOf(tx, [removed.memberId, removed.spouseId]);
+            const memberName = names.get(removed.memberId)?.name ?? "—";
+            const spouse = (removed.spouseId && names.get(removed.spouseId)?.name) || removed.spouseName || "—";
+            await recordChange(tx, me, {
+                action: "marriage.remove",
+                memberId: removed.memberId,
+                memberName,
+                summary: `حذف زواج ${memberName} من ${spouse}`,
+                before: {
+                    memberId: removed.memberId,
+                    spouseId: removed.spouseId,
+                    spouseName: removed.spouseName,
+                    marriageYear: removed.marriageYear,
+                },
+            });
+        });
     });
 }

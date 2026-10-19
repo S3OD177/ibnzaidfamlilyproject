@@ -1,12 +1,14 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Background, Controls, ReactFlow, ReactFlowProvider, useNodesInitialized, useReactFlow, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ChevronsDownUp, ChevronsUpDown, Crosshair, House, Link2, Printer, Route, Search, Users, X } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, ChevronsDownUp, ChevronsUpDown, Crosshair, House, Link2, Printer, Route, Search, SlidersHorizontal, Users, X } from "lucide-react";
 import FamilyUnitNode, { GenerationBand } from "@/components/tree/FamilyUnitNode";
 import FanChart from "@/components/tree/FanChart";
+import TreeListView from "@/components/tree/TreeListView";
+import { branchesOf, branchInclude, intersectIncludes, livingInclude, searchPeople } from "@/components/tree/treeFilters";
 import RelationshipAnalysisModal from "@/components/admin/tree/RelationshipAnalysisModal";
 import WhatsAppShare from "@/components/common/WhatsAppShare";
 import { toast } from "@/components/ui/feedback";
@@ -19,20 +21,33 @@ import {
     directFamilyOf,
     layoutFamily,
     pathBetween,
+    pathFromPeople,
     unitIdOf,
+    branchColor,
     type FamilyGraph,
 } from "@/lib/tree/family";
-import { toFlowElements } from "@/lib/tree/flow";
+import { descendantCounts, toFlowElements } from "@/lib/tree/flow";
 import { viewToFamilyPeople } from "@/lib/tree/people";
 
 const nodeTypes = { familyUnit: FamilyUnitNode, generationBand: GenerationBand };
 
-type Mode = "vertical" | "horizontal" | "fan";
+type Mode = "vertical" | "horizontal" | "fan" | "list";
 const MODES: { id: Mode; label: string }[] = [
     { id: "vertical", label: "عمودي" },
     { id: "horizontal", label: "أفقي" },
     { id: "fan", label: "مروحة" },
+    { id: "list", label: "قائمة" },
 ];
+
+// Phones (narrower than 768px) open on the list view unless the visitor picks a mode.
+const NARROW_QUERY = "(max-width: 767px)";
+const subscribeNarrow = (onChange: () => void) => {
+    const m = window.matchMedia(NARROW_QUERY);
+    m.addEventListener("change", onChange);
+    return () => m.removeEventListener("change", onChange);
+};
+const isNarrowNow = () => window.matchMedia(NARROW_QUERY).matches;
+const isNarrowOnServer = () => false;
 
 const FIT = { padding: 0.2, maxZoom: 1.1, duration: 500 } as const;
 
@@ -82,7 +97,15 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
         return f && graph.people.has(f) ? unitIdOf(graph, f) : null;
     });
 
-    const [mode, setMode] = useState<Mode>("vertical");
+    const [chosenMode, setMode] = useState<Mode | null>(null);
+    const narrow = useSyncExternalStore(subscribeNarrow, isNarrowNow, isNarrowOnServer);
+    const mode: Mode = chosenMode ?? (narrow ? "list" : "vertical");
+    const [branch, setBranch] = useState<string | null>(null);
+    const [livingOnly, setLivingOnly] = useState(false);
+    const [optionsOpen, setOptionsOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    /** Index of the search result last jumped to; -1 before the first jump. */
+    const [matchIndex, setMatchIndex] = useState(-1);
     const [collapsed, setCollapsed] = useState<Set<string>>(() => unfoldTo(graph, defaultCollapsed(graph), initialFocus ? [initialFocus] : []));
     const [selectedId, setSelectedId] = useState<string | null>(() => (initialFocus ? searchParams.get("focus") : null));
     const [familyOf, setFamilyOf] = useState<string | null>(null);
@@ -97,7 +120,13 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
     const request = useCallback((c: { kind: "center"; id: string } | { kind: "fit"; ids?: string[] }) => setCamera({ ...c, n: cameraN.current++ }), []);
 
     const meInTree = myMemberId !== null && graph.people.has(myMemberId);
-    const include = useMemo(() => (familyOf ? directFamilyOf(graph, familyOf) : undefined), [graph, familyOf]);
+    const branches = useMemo(() => branchesOf(graph), [graph]);
+    const descendants = useMemo(() => descendantCounts(graph), [graph]);
+    const familyInclude = useMemo(() => (familyOf ? directFamilyOf(graph, familyOf) : undefined), [graph, familyOf]);
+    const branchSet = useMemo(() => (branch ? branchInclude(graph, branch) : undefined), [graph, branch]);
+    const livingSet = useMemo(() => (livingOnly ? livingInclude(graph) : undefined), [graph, livingOnly]);
+    const include = useMemo(() => intersectIncludes(familyInclude, branchSet, livingSet), [familyInclude, branchSet, livingSet]);
+    const activeFilters = Number(Boolean(branch)) + Number(livingOnly);
     const layout = useMemo(
         () => layoutFamily(graph, { orientation: mode === "horizontal" ? "horizontal" : "vertical", collapsed, include }),
         [graph, mode, collapsed, include],
@@ -119,11 +148,22 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
             const unit = unitIdOf(graph, id);
             setSelectedId(id);
             setCollapsed((prev) => unfoldTo(graph, prev, [unit]));
-            if (include && !include.has(unit)) setFamilyOf(null);
+            if (include && !include.has(unit)) {
+                setFamilyOf(null);
+                setBranch(null);
+                setLivingOnly(false);
+            }
             request({ kind: "center", id: unit });
         },
         [graph, include, request],
     );
+
+    const searchResults = useMemo(() => searchPeople(graph, query), [graph, query]);
+    const matchUnits = useMemo(
+        () => (searchResults.length ? new Set(searchResults.map((p) => unitIdOf(graph, p.id))) : undefined),
+        [graph, searchResults],
+    );
+    const matches = searchResults.slice(0, 8);
 
     const { nodes, edges } = useMemo(
         () =>
@@ -131,14 +171,26 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                 selectedId: selectedId ? unitIdOf(graph, selectedId) : null,
                 meId: myMemberId ? unitIdOf(graph, myMemberId) : null,
                 highlight,
+                descendants,
+                matches: matchUnits,
                 callbacks: (id) => ({
                     onToggle: () => toggle(id),
                     onView: () => router.push(`/portal/members/${id}`),
                     onFocusPerson: focusPerson,
                 }),
             }),
-        [graph, layout, selectedId, myMemberId, highlight, toggle, router, focusPerson],
+        [graph, layout, selectedId, myMemberId, highlight, descendants, matchUnits, toggle, router, focusPerson],
     );
+
+    /** Jump to search result i (wrapping around). */
+    const goToMatch = (i: number) => {
+        const n = searchResults.length;
+        if (!n) return;
+        const idx = ((i % n) + n) % n;
+        setMatchIndex(idx);
+        setSearchOpen(false);
+        focusPerson(searchResults[idx].id);
+    };
 
     // Camera requests run once React Flow is ready and the matching layout is on screen.
     const handled = useRef(-1);
@@ -156,27 +208,36 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
         [layout, setCenter, fitView],
     );
     const nodesReady = useNodesInitialized();
+    const onCanvas = mode === "vertical" || mode === "horizontal";
     useEffect(() => {
-        if (!nodesReady || mode === "fan" || !camera || camera.n === handled.current) return;
+        if (!nodesReady || !onCanvas || !camera || camera.n === handled.current) return;
         ready.current = true;
         const t = setTimeout(() => runCamera(camera), 60);
         return () => clearTimeout(t);
-    }, [nodesReady, camera, mode, runCamera]);
+    }, [nodesReady, camera, onCanvas, runCamera]);
     useEffect(() => {
-        if (mode === "fan") {
+        if (!onCanvas) {
             ready.current = false;
             return;
         }
         if (!camera || camera.n === handled.current || !ready.current) return;
         const frame = requestAnimationFrame(() => runCamera(camera));
         return () => cancelAnimationFrame(frame);
-    }, [camera, mode, runCamera]);
+    }, [camera, onCanvas, runCamera]);
 
-    const matches = useMemo(() => {
-        const q = query.trim();
-        if (q.length < 2) return [];
-        return [...graph.people.values()].filter((p) => p.label.includes(q) || p.serialNumber === q).slice(0, 8);
-    }, [graph, query]);
+    // In the list, "center" camera requests scroll the person's row into view instead.
+    const listScroll = useMemo(() => (camera?.kind === "center" ? { id: camera.id, n: camera.n } : null), [camera]);
+
+    // The toolbar floats over the content; the list starts below it.
+    const toolbarRef = useRef<HTMLDivElement>(null);
+    const [toolbarH, setToolbarH] = useState(64);
+    useEffect(() => {
+        const el = toolbarRef.current;
+        if (!el || typeof ResizeObserver === "undefined") return;
+        const ro = new ResizeObserver(() => setToolbarH(el.offsetHeight));
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
 
     // The relationship modal works on React Flow-like nodes and edges.
     const analysisNodes = useMemo<Node[]>(
@@ -185,22 +246,31 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
     );
     const analysisEdges = useMemo<Edge[]>(() => tree.edges.map((e) => ({ id: e.id, source: e.source, target: e.target })), [tree]);
 
-    const showPath = (a: string, b: string) => {
-        const path = pathBetween(graph, a, b);
+    // The relationship tool passes its kinship path (through fathers, mothers or marriage).
+    const showPath = (a: string, b: string, people?: string[]) => {
+        const path = people && people.length > 1 ? pathFromPeople(graph, people) : pathBetween(graph, a, b);
         if (!path) {
             toast.info("لا يوجد مسار نسب بين الشخصين في الشجرة.");
             return;
         }
         setFamilyOf(null);
+        setBranch(null);
+        setLivingOnly(false);
         setCollapsed((prev) => unfoldTo(graph, prev, path.units));
         setHighlight({ units: new Set(path.units), links: new Set(path.links) });
-        if (mode === "fan") setMode("vertical");
+        if (!onCanvas) setMode("vertical");
         request({ kind: "fit", ids: path.units });
     };
 
     const changeMode = (m: Mode) => {
         setMode(m);
-        if (m !== "fan") request({ kind: "fit" });
+        if (m === "list" && selectedId) request({ kind: "center", id: unitIdOf(graph, selectedId) });
+        else if (m !== "fan") request({ kind: "fit" });
+    };
+
+    const showInTree = (id: string) => {
+        setMode("vertical");
+        focusPerson(id);
     };
 
     const selected = selectedId ? graph.people.get(selectedId) : undefined;
@@ -211,26 +281,86 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
 
     return (
         <div className="relative h-[calc(100dvh-16rem)] xl:h-[calc(100dvh-12rem)] min-h-[460px] bg-white rounded-2xl border border-line overflow-hidden">
-            <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 z-10 flex flex-wrap gap-1.5 sm:gap-2 items-start">
-                <div className="relative flex-1 min-w-[180px] max-w-sm">
+            <div ref={toolbarRef} className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 z-10 flex flex-wrap gap-1.5 sm:gap-2 items-start">
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
                     <input
-                        type="search"
+                        type="text"
+                        inputMode="search"
+                        enterKeyHint="search"
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={(e) => {
+                            setQuery(e.target.value);
+                            setMatchIndex(-1);
+                            setSearchOpen(true);
+                        }}
+                        onFocus={() => setSearchOpen(true)}
+                        onBlur={() => setSearchOpen(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                goToMatch(e.shiftKey ? (matchIndex < 0 ? -1 : matchIndex - 1) : matchIndex + 1);
+                            } else if (e.key === "Escape") {
+                                setSearchOpen(false);
+                            }
+                        }}
                         placeholder="ابحث عن فرد بالاسم أو الرقم..."
-                        className="w-full bg-white border border-gray-200 rounded-xl pr-9 pl-3 py-2 text-sm shadow-sm outline-none focus:border-primary"
+                        aria-label="ابحث عن فرد"
+                        className={`w-full bg-white border border-gray-200 rounded-xl pr-9 py-2 text-sm shadow-sm outline-none focus:border-primary ${query.trim().length >= 2 ? "pl-36" : "pl-3"}`}
                     />
-                    {matches.length > 0 && (
+                    {query.trim().length >= 2 && (
+                        <div className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[11px] text-muted">
+                            <span className="px-1 whitespace-nowrap font-bold" aria-live="polite">
+                                {searchResults.length === 0
+                                    ? "لا نتائج"
+                                    : matchIndex >= 0
+                                      ? `${matchIndex + 1} من ${searchResults.length}`
+                                      : `${searchResults.length} نتيجة`}
+                            </span>
+                            <button
+                                type="button"
+                                disabled={!searchResults.length}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => goToMatch(matchIndex < 0 ? -1 : matchIndex - 1)}
+                                className="size-6 rounded-md flex items-center justify-center hover:bg-gray-100 disabled:opacity-40"
+                                aria-label="النتيجة السابقة"
+                                title="السابقة"
+                            >
+                                <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!searchResults.length}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => goToMatch(matchIndex + 1)}
+                                className="size-6 rounded-md flex items-center justify-center hover:bg-gray-100 disabled:opacity-40"
+                                aria-label="النتيجة التالية"
+                                title="التالية"
+                            >
+                                <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => {
+                                    setQuery("");
+                                    setMatchIndex(-1);
+                                }}
+                                className="size-6 rounded-md flex items-center justify-center hover:bg-gray-100"
+                                aria-label="مسح البحث"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    )}
+                    {searchOpen && matches.length > 0 && (
                         <ul className="absolute top-full mt-1 inset-x-0 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden">
-                            {matches.map((p) => (
+                            {matches.map((p, i) => (
                                 <li key={p.id}>
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            focusPerson(p.id);
-                                            setQuery("");
-                                        }}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => goToMatch(i)}
                                         className="w-full text-right px-3 py-2 text-sm hover:bg-gray-50 flex justify-between gap-2"
                                     >
                                         <span className="font-bold truncate">{p.label}</span>
@@ -313,15 +443,141 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                     <Printer className="w-4 h-4 text-primary-dark" />
                     طباعة
                 </a>
+                <a href={selectedId ? `/portal/book?root=${unitIdOf(graph, selectedId)}` : "/portal/book"} className={btn} title="كتاب العائلة للطباعة">
+                    <BookOpen className="w-4 h-4 text-primary-dark" />
+                    كتاب العائلة
+                </a>
                 {highlight && (
                     <button type="button" className={`${btn} !border-primary`} onClick={() => setHighlight(null)}>
                         <Route className="w-4 h-4 text-primary" />
                         إلغاء التمييز
                     </button>
                 )}
+
+                {mode !== "fan" && (
+                    <div className="sm:relative">
+                    <button
+                        type="button"
+                        className={`${btn} ${activeFilters ? "!border-primary" : ""}`}
+                        onClick={() => setOptionsOpen((o) => !o)}
+                        aria-expanded={optionsOpen}
+                        aria-haspopup="dialog"
+                    >
+                        <SlidersHorizontal className="w-4 h-4 text-primary-dark" />
+                        خيارات
+                        {activeFilters > 0 && (
+                            <span className="min-w-4 h-4 px-1 rounded-full bg-deep text-primary text-[10px] leading-4 text-center">{activeFilters}</span>
+                        )}
+                    </button>
+
+                {optionsOpen && (
+                    <>
+                        <button type="button" className="fixed inset-0 z-0 cursor-default" aria-label="إغلاق الخيارات" onClick={() => setOptionsOpen(false)} />
+                        <div
+                            role="dialog"
+                            aria-label="خيارات العرض"
+                            className="absolute top-full mt-1.5 inset-x-0 sm:inset-x-auto sm:right-0 sm:w-80 z-10 bg-white border border-line rounded-2xl shadow-xl p-3 space-y-3 text-sm"
+                        >
+                            <label className="block">
+                                <span className="block text-xs font-bold text-muted mb-1">الفرع</span>
+                                <select
+                                    value={branch ?? ""}
+                                    onChange={(e) => {
+                                        setBranch(e.target.value || null);
+                                        setHighlight(null);
+                                        request({ kind: "fit" });
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
+                                >
+                                    <option value="">كل الفروع</option>
+                                    {branches.map((b) => (
+                                        <option key={b} value={b}>
+                                            فرع {b}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {branches.length > 0 && (
+                                <div>
+                                    <span className="block text-xs font-bold text-muted mb-1">ألوان الفروع</span>
+                                    <ul className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                                        {branches.map((b) => (
+                                            <li key={b}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setBranch(branch === b ? null : b);
+                                                        setHighlight(null);
+                                                        request({ kind: "fit" });
+                                                    }}
+                                                    aria-pressed={branch === b}
+                                                    className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-bold ${branch === b ? "border-deep bg-deep text-primary" : "border-line bg-cream text-deep hover:border-primary"}`}
+                                                >
+                                                    <span className="size-2.5 rounded-full" style={{ backgroundColor: branchColor(b) }} aria-hidden />
+                                                    {b}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <label className="flex items-center justify-between gap-3 cursor-pointer">
+                                <span>
+                                    <span className="block font-bold text-deep">الأحياء فقط</span>
+                                    <span className="block text-[11px] text-muted">يُخفي المتوفين الذين ليس لهم ذرية أحياء</span>
+                                </span>
+                                <input
+                                    type="checkbox"
+                                    checked={livingOnly}
+                                    onChange={(e) => {
+                                        setLivingOnly(e.target.checked);
+                                        setHighlight(null);
+                                        request({ kind: "fit" });
+                                    }}
+                                    className="size-5 accent-[#B5952F]"
+                                />
+                            </label>
+
+                            {activeFilters > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBranch(null);
+                                        setLivingOnly(false);
+                                        request({ kind: "fit" });
+                                    }}
+                                    className="w-full rounded-xl border border-line py-1.5 text-xs font-bold text-muted hover:border-primary"
+                                >
+                                    إلغاء التصفية
+                                </button>
+                            )}
+                        </div>
+                    </>
+                )}
+                    </div>
+                )}
             </div>
 
-            {mode === "fan" ? (
+            {mode === "list" ? (
+                <TreeListView
+                    graph={graph}
+                    include={include}
+                    collapsed={collapsed}
+                    onToggle={toggle}
+                    selectedId={selectedId ? unitIdOf(graph, selectedId) : null}
+                    matches={matchUnits}
+                    query={query}
+                    descendants={descendants}
+                    onSelect={setSelectedId}
+                    onOpenProfile={(id) => router.push(`/portal/members/${id}`)}
+                    onShowInTree={showInTree}
+                    scrollTo={listScroll}
+                    className="absolute inset-x-0 bottom-0 pb-14"
+                    style={{ top: toolbarH + 16 }}
+                />
+            ) : mode === "fan" ? (
                 <div className="absolute inset-0 pt-28 sm:pt-16 pb-12 px-2 flex items-center justify-center bg-cream/40">
                     {fanRoot ? (
                         <FanChart
@@ -353,6 +609,12 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                     fitViewOptions={{ padding: FIT.padding, maxZoom: FIT.maxZoom, nodes: mainFamily?.map((id) => ({ id })) }}
                     onInit={(instance) => {
                         ready.current = true;
+                        // Coming from the list ("عرض في الشجرة"): run the pending camera request.
+                        if (camera && camera.n !== handled.current && camera.n > 0) {
+                            const pending = camera;
+                            setTimeout(() => runCamera(pending), 300);
+                            return;
+                        }
                         // A shared link opens centred on its person once the canvas is ready.
                         const u = initialFocus ? layout.units.find((x) => x.id === initialFocus) : undefined;
                         if (u) setTimeout(() => void instance.setCenter(u.x + u.width / 2, u.y + u.height / 2, { zoom: 1.1, duration: 600 }), 300);
@@ -391,6 +653,9 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                                 <Link2 className="w-3.5 h-3.5" />
                                 نسخ الرابط
                             </button>
+                            <a href={`/portal/tree/ancestors?person=${selected.id}`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold bg-cream border border-sand text-deep hover:border-primary">
+                                الآباء والأمهات
+                            </a>
                             <WhatsAppShare text={`${selected.label} في شجرة العائلة`} path={`/portal/tree?focus=${selected.id}`} className="!py-1.5" />
                             <button type="button" onClick={() => setSelectedId(null)} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100" aria-label="إلغاء التحديد">
                                 <X className="w-3.5 h-3.5" />
@@ -400,13 +665,17 @@ function Viewer({ tree, myMemberId }: { tree: TreeViewData; myMemberId: string |
                 ) : (
                     <>
                         <span>عدد الأفراد: {graph.people.size}</span>
-                        <span className="hidden sm:inline">{mode === "fan" ? "اضغط على اسم للتركيز عليه، وعلى الوسط للصعود" : "اضغط على البطاقة لتحديدها"}</span>
+                        <span className="hidden sm:inline">{mode === "fan"
+                                ? "اضغط على اسم للتركيز عليه، وعلى الوسط للصعود"
+                                : mode === "list"
+                                  ? "اضغط على السهم لفتح الأبناء أو طيّهم"
+                                  : "اضغط على البطاقة لتحديدها"}</span>
                     </>
                 )}
             </div>
 
             {isAnalysisOpen && (
-                <RelationshipAnalysisModal isOpen onClose={() => setIsAnalysisOpen(false)} nodes={analysisNodes} edges={analysisEdges} onShowPath={showPath} />
+                <RelationshipAnalysisModal isOpen onClose={() => setIsAnalysisOpen(false)} nodes={analysisNodes} edges={analysisEdges} onShowPath={showPath} marriages={tree.marriages} />
             )}
         </div>
     );

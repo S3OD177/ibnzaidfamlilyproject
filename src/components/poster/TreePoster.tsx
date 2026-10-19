@@ -150,25 +150,6 @@ export default function TreePoster({
                             )
                         ) : (
                             <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} preserveAspectRatio="xMidYMid meet" className="flex-1 w-full min-h-0" direction="rtl">
-                                {/* Generation bands with their names on the right */}
-                                {layout.bands.map((b, i) => (
-                                    <g key={b.depth}>
-                                        {i % 2 === 0 && <rect x={box.x} y={b.start} width={box.w} height={b.end - b.start} fill="#E8DCC0" fillOpacity={0.35} rx={18} />}
-                                        <text
-                                            x={box.x + box.w - 12}
-                                            y={(b.start + b.end) / 2}
-                                            textAnchor="start"
-                                            dominantBaseline="central"
-                                            fontFamily={FONT}
-                                            fontWeight={700}
-                                            fontSize={22}
-                                            fill="#8a6d1f"
-                                        >
-                                            {short(b.label, 14)}
-                                        </text>
-                                    </g>
-                                ))}
-
                                 <g fill="none" strokeWidth="2">
                                     {layout.edges.map((e) => {
                                         const a = byId.get(e.source);

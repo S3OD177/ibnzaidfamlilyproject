@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { ActionError, safeAction, type ActionResult } from "@/lib/action-result";
 import { requireRole } from "@/lib/auth/current";
+import { recordChange } from "@/lib/tree-history";
 import {
     MAX_IMPORT_ROWS,
     nameKey,
@@ -100,7 +101,7 @@ function updateValues(row: ImportRow, current: { birthYear: number | null; death
  */
 export async function importFamily(input: unknown, modeInput: unknown): Promise<ActionResult<ImportSummary>> {
     return safeAction(async () => {
-        await requireRole("admin");
+        const me = await requireRole("admin");
         if (modeInput !== "merge" && modeInput !== "replace") throw new ActionError("وضع الاستيراد غير صالح");
         const mode: ImportMode = modeInput;
         if (Array.isArray(input) && input.length > MAX_IMPORT_ROWS) throw new ActionError(`الحد الأقصى ${MAX_IMPORT_ROWS} صف`);
@@ -235,7 +236,7 @@ export async function importFamily(input: unknown, modeInput: unknown): Promise<
                 .flatMap((p, i) => p.issues.filter((x) => x.level === "warning").map((x) => `السطر ${rows[i].line}: ${x.message}`))
                 .slice(0, MAX_WARNINGS);
 
-            return {
+            const summary: ImportSummary = {
                 mode,
                 created: newRows.length,
                 updated,
@@ -244,6 +245,19 @@ export async function importFamily(input: unknown, modeInput: unknown): Promise<
                 marriages: marriages.length,
                 warnings,
             };
+            await recordChange(tx, me, {
+                action: "import",
+                summary: [
+                    mode === "replace" ? `استيراد كامل (استبدال ${deleted} فرد)` : "استيراد ودمج",
+                    `${rows.length} صف`,
+                    `أُضيف ${summary.created}`,
+                    `حُدّث ${updated}`,
+                    `${relationshipCount} رابط`,
+                    `${marriages.length} زواج`,
+                ].join(" — "),
+                after: { mode, rows: rows.length, created: summary.created, updated, deleted, relationships: relationshipCount, marriages: marriages.length, warnings: warnings.length },
+            });
+            return summary;
         });
     });
 }

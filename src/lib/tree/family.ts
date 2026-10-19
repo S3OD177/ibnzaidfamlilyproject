@@ -441,3 +441,17 @@ export function lifeYears(p: FamilyPerson): string {
     if (p.deathYear) return `ت ${p.deathYear} ${suffix}`;
     return "";
 }
+
+/**
+ * Highlight data for a path given as a list of people (e.g. from the kinship tool):
+ * the units they are drawn in, and the parent-child links between consecutive people.
+ */
+export function pathFromPeople(g: FamilyGraph, ids: string[]): { units: string[]; links: string[] } {
+    const links: string[] = [];
+    for (let i = 0; i + 1 < ids.length; i++) {
+        const [a, b] = [ids[i], ids[i + 1]];
+        const link = g.links.find((l) => (l.source === a && l.target === b) || (l.source === b && l.target === a));
+        if (link) links.push(link.id);
+    }
+    return { units: [...new Set(ids.map((id) => unitIdOf(g, id)))], links };
+}

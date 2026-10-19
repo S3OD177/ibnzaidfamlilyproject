@@ -500,3 +500,23 @@ export const settings = pgTable("settings", {
     value: jsonb("value").notNull(),
     updatedAt: timestamps.updatedAt,
 });
+
+// Audit log of every change to the family tree (edits, links, merges, imports). memberId
+// has no foreign key so the history of a deleted person survives; "before" and "after"
+// hold the affected values (for a delete, the whole record with its links and marriages).
+export const treeChanges = pgTable(
+    "tree_changes",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        action: text("action").notNull(), // e.g. "member.update", "link.add", "member.merge", "import"
+        memberId: uuid("member_id"),
+        memberName: text("member_name"),
+        summary: text("summary").notNull(),
+        before: jsonb("before").$type<Record<string, unknown>>(),
+        after: jsonb("after").$type<Record<string, unknown>>(),
+        actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
+        actorName: text("actor_name"),
+        createdAt: timestamps.createdAt,
+    },
+    (t) => [index("tree_changes_created_idx").on(t.createdAt), index("tree_changes_member_idx").on(t.memberId, t.createdAt)],
+);

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { X, Heart, ArrowRightLeft, ShieldCheck, RotateCcw, Key, Route } from 'lucide-react';
 import { Node, Edge } from '@xyflow/react';
 import type { TreeNodeData } from '@/lib/data/tree';
+import { kinship, kinshipGraph } from '@/lib/tree/kinship';
 
 function info(node: Node): TreeNodeData;
 function info(node: Node | undefined): TreeNodeData | undefined;
@@ -16,11 +17,18 @@ interface RelationshipAnalysisModalProps {
     onClose: () => void;
     nodes: Node[];
     edges: Edge[];
-    /** When given, the result offers to highlight the line between the two people on the tree. */
-    onShowPath?: (aId: string, bId: string) => void;
+    /** Marriages, for in-law relations (زوج، حمو، كنّة…). Optional: without them only blood relations are named. */
+    marriages?: { memberId: string; spouseId: string | null }[];
+    /**
+     * When given, the result offers to highlight the line between the two people on the tree.
+     * path is the kinship path (ids from A to B, possibly through mothers or a marriage).
+     */
+    onShowPath?: (aId: string, bId: string, path?: string[]) => void;
 }
 
-const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ isOpen, onClose, nodes, edges, onShowPath }) => {
+const NO_MARRIAGES: { memberId: string; spouseId: string | null }[] = [];
+
+const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ isOpen, onClose, nodes, edges, marriages = NO_MARRIAGES, onShowPath }) => {
     const [person1Id, setPerson1Id] = useState<string | null>(null);
     const [person2Id, setPerson2Id] = useState<string | null>(null);
     const [search1, setSearch1] = useState('');
@@ -81,7 +89,8 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                 }
                 lastNodeGender = gender;
             }
-            const edge = edges.find(e => e.target === currentId);
+            const parentEdges = edges.filter(e => e.target === currentId);
+            const edge = parentEdges.find(e => info(nodes.find(n => n.id === e.source))?.gender === 'male') ?? parentEdges[0];
             currentId = edge?.source;
             depth++;
         }
@@ -91,106 +100,39 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
     const person1FullName = useMemo(() => getFullLineageName(person1Id), [person1Id, nodes, edges]);
     const person2FullName = useMemo(() => getFullLineageName(person2Id), [person2Id, nodes, edges]);
 
-    const getRelationshipName = (d1: number, d2: number, gender1: string) => {
-        const isMale = gender1 === 'male';
-
-        if (d1 === 0 && d2 === 0) return "نفس الشخص";
-
-        // Linear Ancestry
-        if (d1 === 0) {
-            if (d2 === 1) return isMale ? "والد" : "والدة";
-            if (d2 === 2) return isMale ? "جد" : "جدة";
-            if (d2 === 3) return isMale ? "جد والد" : "جدة والد";
-            return `${isMale ? "جد" : "جدة"} أعـلـى (${d2} أجيال)`;
-        }
-        if (d2 === 0) {
-            if (d1 === 1) return isMale ? "ابن" : "بنت";
-            if (d1 === 2) return isMale ? "حفيد" : "حفيدة";
-            if (d1 === 3) return isMale ? "حفيد حفيد" : "حفيدة حفيدة";
-            return `${isMale ? "حفيد" : "حفيدة"} بـعـيد (${d1} أجيال)`;
-        }
-
-        // Horizontal (Siblings)
-        if (d1 === 1 && d2 === 1) return isMale ? "أخ مباشر" : "أخت مباشرة";
-
-        // Uncles / Aunts (Gen 1)
-        if (d1 === 1) {
-            if (d2 === 2) return isMale ? "عم مباشر" : "عمة مباشرة";
-            if (d2 === 3) return isMale ? "عم الوالد" : "عمة الوالد";
-            return `${isMale ? "عم" : "عمة"} لأجداد بعيدين`;
-        }
-
-        // Nephews / Nieces
-        if (d2 === 1) {
-            if (d1 === 2) return isMale ? "ابن أخ / أخت" : "بنت أخ / أخت";
-            if (d1 === 3) return isMale ? "حفيد أخ / أخت" : "حفيدة أخ / أخت";
-            return `${isMale ? "سليل" : "سليلة"} أخ / أخت`;
-        }
-
-        // Cousins (Gen 2+)
-        if (d1 === 2 && d2 === 2) return isMale ? "ابن عم مباشر" : "بنت عم مباشرة";
-        if (d1 === 3 && d2 === 3) return isMale ? "ابن عم (درجة ثانية)" : "بنت عم (درجة ثانية)";
-
-        if (d1 === 2 && d2 === 3) return isMale ? "ابن عم الوالد" : "بنت عم الوالد";
-        if (d1 === 3 && d2 === 2) return isMale ? "ابن ابن عم" : "بنت ابن عم";
-
-        const term = isMale ? "قريب عائلي" : "قريبة عائلية";
-        const gap = Math.abs(d1 - d2);
-        const generationMatch = d1 === d2 ? "من نفس الجيل" : `بفارق ${gap} أجيال`;
-
-        return `${term} (${generationMatch})`;
-    };
-
-    const getPathToRoot = (nodeId: string): string[] => {
-        const path: string[] = [];
-        let currentId: string | undefined = nodeId;
-        while (currentId) {
-            path.push(currentId);
-            const edge = edges.find(e => e.target === currentId);
-            currentId = edge?.source;
-        }
-        return path;
-    };
+    // Kinship through any parent (fathers and mothers) and by marriage, from lib/tree/kinship.
+    const graph = useMemo(
+        () =>
+            kinshipGraph(
+                nodes.map((n) => ({ id: n.id, label: info(n).label, gender: info(n).gender })),
+                edges.map((e) => ({ source: e.source, target: e.target })),
+                marriages,
+            ),
+        [nodes, edges, marriages],
+    );
 
     const analysisResult = useMemo(() => {
         if (!person1Id || !person2Id || !person1 || !person2) return null;
-        if (person1Id === person2Id) {
-            return { type: 'same', commonAncestor: person1Id, path1: [person1Id], path2: [person2Id], distance1: 0, distance2: 0, relation: "نفس الشخص" };
+        const k = kinship(graph, person1Id, person2Id);
+        if (!k) return { type: 'none' as const };
+        if (k.kind === 'self') {
+            return { type: 'same' as const, kinship: k, relation: k.label, commonAncestor: person1Id, path1: [person1Id], path2: [person2Id], distance1: 0, distance2: 0 };
         }
-
-        const path1 = getPathToRoot(person1Id);
-        const path2 = getPathToRoot(person2Id);
-
-        let commonAncestor: string | null = null;
-        for (const id of path1) {
-            if (path2.includes(id)) {
-                commonAncestor = id;
-                break;
-            }
+        if (k.kind === 'marriage') {
+            return { type: 'marriage' as const, kinship: k, relation: k.label, path: k.path };
         }
-
-        if (!commonAncestor) return { type: 'none' };
-
-        const subPath1 = path1.slice(0, path1.indexOf(commonAncestor) + 1).reverse();
-        const subPath2 = path2.slice(0, path2.indexOf(commonAncestor) + 1).reverse();
-        const d1 = subPath1.length - 1;
-        const d2 = subPath2.length - 1;
-
-        const relation = getRelationshipName(
-            d1, d2,
-            info(person1).gender
-        );
-
+        const idx = k.path.indexOf(k.commonAncestor!);
         return {
-            type: 'related',
-            commonAncestor,
-            path1: subPath1,
-            path2: subPath2,
-            distance1: d1,
-            distance2: d2,
-            relation
+            type: 'related' as const,
+            kinship: k,
+            relation: k.label,
+            commonAncestor: k.commonAncestor!,
+            path1: k.path.slice(0, idx + 1).reverse(),
+            path2: k.path.slice(idx),
+            distance1: k.distanceA,
+            distance2: k.distanceB,
         };
-    }, [person1Id, person2Id, edges, person1, person2]);
+    }, [graph, person1Id, person2Id, person1, person2]);
 
     if (!isOpen) return null;
 
@@ -333,7 +275,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                             className="w-full py-4 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold shadow-xl hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all text-base flex items-center justify-center gap-3"
                         >
                             <Key className="w-5 h-5 text-primary" />
-                            بـدء الـتـحـلـيـل الـعـائـلـي
+                            اعرف صلة القرابة
                         </button>
                     )}
 
@@ -370,7 +312,11 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                             {analysisResult.relation}
                                         </h3>
                                         <p className="text-sm text-gray-400 font-medium">
-                                            تم تحديد صلة القرابة بنجاح
+                                            {analysisResult.type === 'marriage'
+                                                ? 'قرابة بالمصاهرة'
+                                                : analysisResult.kinship?.viaMother
+                                                    ? 'تم تحديد صلة القرابة (عن طريق الأم)'
+                                                    : 'تم تحديد صلة القرابة بنجاح'}
                                         </p>
                                     </div>
 
@@ -399,7 +345,7 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        onShowPath(person1Id, person2Id);
+                                        onShowPath(person1Id, person2Id, analysisResult.kinship?.path);
                                         onClose();
                                     }}
                                     className="w-full flex items-center justify-center gap-2 bg-primary text-deep font-bold rounded-xl px-4 py-3 text-sm hover:bg-primary-light"
@@ -461,6 +407,22 @@ const RelationshipAnalysisModal: React.FC<RelationshipAnalysisModalProps> = ({ i
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {analysisResult.type === 'marriage' && (
+                                <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide text-center border-b border-gray-50 pb-2 mb-3">مسار المصاهرة</p>
+                                    <div className="flex flex-wrap items-center justify-center gap-2">
+                                        {analysisResult.path.map((id, i) => (
+                                            <React.Fragment key={id}>
+                                                {i > 0 && <span className="text-gray-300 text-xs">←</span>}
+                                                <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${id === person1Id || id === person2Id ? 'bg-primary text-white font-bold' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {info(nodes.find(n => n.id === id))?.label}
+                                                </span>
+                                            </React.Fragment>
+                                        ))}
                                     </div>
                                 </div>
                             )}

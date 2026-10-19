@@ -7,6 +7,8 @@ export interface TreeCheckItem {
     memberId: string;
     name: string;
     detail: string;
+    /** Possible-duplicate checks: every record in the set (this one included), for merging. */
+    duplicates?: string[];
 }
 
 export interface TreeCheckGroup {
@@ -155,7 +157,7 @@ export function computeTreeChecks(
                 if (reportedSibling.has(id)) continue; // already listed via the other parent
                 reportedSibling.add(id);
                 const others = ids.filter((o) => o !== id).map(nameOf).join("، ");
-                siblingDupes.push(item(byId.get(id)!, `نفس الاسم لدى نفس الوالد (${nameOf(parentId)}) — مع: ${others}`));
+                siblingDupes.push({ ...item(byId.get(id)!, `نفس الاسم لدى نفس الوالد (${nameOf(parentId)}) — مع: ${others}`), duplicates: ids });
             }
         }
     }
@@ -173,7 +175,10 @@ export function computeTreeChecks(
         const allSiblings = group.every((a, i) => group.every((b, j) => i >= j || siblingPairs.has([a.id, b.id].sort().join("|"))));
         if (allSiblings) continue;
         for (const m of group) {
-            yearDupes.push(item(m, `نفس الاسم وسنة الميلاد ${m.birthYear} ${calendarLabel(m.birthCalendar ?? "hijri")} — ${plural(group.length - 1, "سجل آخر", "سجلات أخرى")}`));
+            yearDupes.push({
+                ...item(m, `نفس الاسم وسنة الميلاد ${m.birthYear} ${calendarLabel(m.birthCalendar ?? "hijri")} — ${plural(group.length - 1, "سجل آخر", "سجلات أخرى")}`),
+                duplicates: group.map((g) => g.id),
+            });
         }
     }
 

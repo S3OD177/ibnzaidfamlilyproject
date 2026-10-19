@@ -11,16 +11,49 @@ export interface FlowOptions {
     meId?: string | null;
     /** Units and link ids on a highlighted path; everything else is dimmed. */
     highlight?: { units: Set<string>; links: Set<string> } | null;
+    /** Background stripes per generation; off by default (the tree reads as one tree). */
     showBands?: boolean;
     callbacks?: (id: string) => Pick<FamilyUnitData, "onToggle" | "onView" | "onAdd" | "onFocusPerson">;
+    /** Precomputed descendant counts per unit; computed (and cached per graph) when omitted. */
+    descendants?: Map<string, number>;
+    /** Units matching a search; drawn with a gold ring. */
+    matches?: Set<string>;
+}
+
+const descendantCache = new WeakMap<FamilyGraph, Map<string, number>>();
+
+/**
+ * Descendant count for every unit (the same as descendantsOf(g, id).size), computed
+ * bottom-up once per graph and cached, so it stays cheap on large trees.
+ */
+export function descendantCounts(g: FamilyGraph): Map<string, number> {
+    const cached = descendantCache.get(g);
+    if (cached) return cached;
+    const out = new Map<string, number>();
+    const visiting = new Set<string>();
+    const count = (id: string): number => {
+        const known = out.get(id);
+        if (known !== undefined) return known;
+        if (visiting.has(id)) return 0;
+        visiting.add(id);
+        let n = 0;
+        for (const c of g.childrenOf.get(id) ?? []) n += 1 + count(c);
+        visiting.delete(id);
+        out.set(id, n);
+        return n;
+    };
+    for (const id of g.people.keys()) if (!g.absorbedInto.has(id)) count(id);
+    descendantCache.set(g, out);
+    return out;
 }
 
 export function toFlowElements(g: FamilyGraph, layout: FamilyLayout, opts: FlowOptions = {}): { nodes: Node[]; edges: Edge[] } {
     const vertical = layout.orientation === "vertical";
     const { bounds } = layout;
     const nodes: Node[] = [];
+    const descendants = opts.descendants ?? descendantCounts(g);
 
-    if (opts.showBands !== false) {
+    if (opts.showBands) {
         layout.bands.forEach((band, i) => {
             nodes.push({
                 id: `band-${band.depth}`,
@@ -55,6 +88,8 @@ export function toFlowElements(g: FamilyGraph, layout: FamilyLayout, opts: FlowO
             highlighted: opts.highlight?.units.has(u.id),
             dimmed: Boolean(opts.highlight && !opts.highlight.units.has(u.id)),
             isMe: opts.meId === u.id,
+            descendants: descendants.get(u.id) ?? 0,
+            matched: opts.matches?.has(u.id) || undefined,
             ...opts.callbacks?.(u.id),
         };
         nodes.push({

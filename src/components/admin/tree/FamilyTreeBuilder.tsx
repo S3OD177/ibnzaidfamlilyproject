@@ -24,6 +24,7 @@ import {
     descendantsOf,
     layoutFamily,
     pathBetween,
+    pathFromPeople,
     unitIdOf,
     type FamilyGraph,
     type Orientation,
@@ -182,7 +183,6 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
             toFlowElements(graph, layout, {
                 selectedId,
                 highlight,
-                showBands: true,
                 callbacks: (id) => ({
                     onToggle: () => toggle(id),
                     onView: () => openModal(id, 'edit'),
@@ -431,8 +431,9 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
 
     // ---------- Path highlight ----------
 
-    const showPath = useCallback((a: string, b: string) => {
-        const path = pathBetween(graph, a, b);
+    // The relationship tool passes its kinship path (through fathers, mothers or marriage).
+    const showPath = useCallback((a: string, b: string, people?: string[]) => {
+        const path = people && people.length > 1 ? pathFromPeople(graph, people) : pathBetween(graph, a, b);
         if (!path) {
             toast.info('لا يوجد مسار يربط بين الشخصين في الشجرة');
             return;
@@ -655,6 +656,7 @@ const FamilyTreeContent = ({ initialTree }: { initialTree: TreeData }) => {
                     nodes={plainNodes}
                     edges={plainEdges}
                     onShowPath={showPath}
+                    marriages={marriages}
                 />
             )}
 

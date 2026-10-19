@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, PencilLine, ShieldCheck, UserPlus, UserX } from "lucide-react";
+import { ArrowRight, Network, PencilLine, ShieldCheck, UserPlus, UserX } from "lucide-react";
 import ProfileHeader from "@/components/admin/members/ProfileHeader";
 import FamilyConnections from "@/components/admin/members/FamilyConnections";
 import { getPortalMember } from "@/lib/data/members";
@@ -66,6 +66,13 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                         {backLink.label}
                     </Link>
                     <div className="flex flex-wrap gap-2">
+                        <Link
+                            href={`/portal/tree/ancestors?person=${member.id}`}
+                            className="inline-flex items-center gap-2 bg-white border border-sand text-deep font-bold text-sm rounded-xl px-4 py-2.5 hover:border-primary"
+                        >
+                            <Network className="w-4 h-4 text-primary-dark" />
+                            شجرة الآباء والأمهات
+                        </Link>
                         {(session.memberId === member.id || isStaff(session.role)) && (
                             <Link
                                 href={session.memberId === member.id ? "/portal/profile/privacy" : `/portal/profile/privacy?member=${member.id}`}

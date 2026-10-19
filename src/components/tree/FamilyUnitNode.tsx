@@ -17,6 +17,10 @@ export interface FamilyUnitData {
     highlighted?: boolean;
     dimmed?: boolean;
     isMe?: boolean;
+    /** Number of descendants below this unit; shown when > 0. */
+    descendants?: number;
+    /** Matches the current search; drawn with a gold ring. */
+    matched?: boolean;
     onToggle?: () => void;
     onView?: () => void;
     onAdd?: () => void;
@@ -61,7 +65,7 @@ function FamilyUnitNode({ data, sourcePosition, targetPosition }: NodeProps) {
             {/* Person card */}
             <div
                 dir="rtl"
-                className={`relative bg-white rounded-xl border-2 shadow-sm overflow-hidden cursor-pointer ${d.highlighted ? "ring-4 ring-primary/60" : ""} ${d.selected ? "border-primary shadow-lg" : female ? "border-pink-200" : "border-line"} ${d.isMe ? "outline outline-2 outline-offset-2 outline-primary" : ""}`}
+                className={`relative bg-white rounded-xl border-2 shadow-sm overflow-hidden cursor-pointer ${d.highlighted ? "ring-4 ring-primary/60" : d.matched ? "ring-4 ring-amber-400 ring-offset-1" : ""}${d.selected ? "border-primary shadow-lg" : female ? "border-pink-200" : "border-line"} ${d.isMe ? "outline outline-2 outline-offset-2 outline-primary" : ""}`}
                 style={{ width: CARD_W, height: CARD_H }}
             >
                 <span className="absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: branchColor(p.branch) }} />
@@ -88,9 +92,14 @@ function FamilyUnitNode({ data, sourcePosition, targetPosition }: NodeProps) {
                         </button>
                     )}
                 </div>
-                <p className="px-2.5 mt-1 text-[10px] text-primary-dark font-bold truncate">
-                    {d.selected && d.lineage ? d.lineage : p.branch ? `فرع ${p.branch}` : p.role ?? ""}
-                </p>
+                <div className="px-2.5 mt-1 flex items-center gap-1.5 text-[10px]">
+                    <p className="min-w-0 flex-1 text-primary-dark font-bold truncate">
+                        {d.selected && d.lineage ? d.lineage : p.branch ? `فرع ${p.branch}` : p.role ?? ""}
+                    </p>
+                    {(d.descendants ?? 0) > 0 && !(d.selected && (d.onAdd || d.lineage)) && (
+                        <span className="shrink-0 text-muted">{d.descendants} من الذرية</span>
+                    )}
+                </div>
                 {d.selected && d.onAdd && (
                     <button
                         type="button"

@@ -6,6 +6,7 @@ import { getDb, schema } from "@/db";
 import { ActionError, safeAction, type ActionResult } from "@/lib/action-result";
 import { requireRole } from "@/lib/auth/current";
 import { getPendingProposal } from "@/lib/data/proposals";
+import { memberSnapshot, recordChange } from "@/lib/tree-history";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,17 +54,30 @@ export async function approveProposal(id: string, note?: string): Promise<Action
                     generationLabel: nextGeneration(parent.generationLabel),
                     branch: parent.branch,
                 })
-                .returning({ id: schema.members.id });
+                .returning();
             await tx.insert(schema.relationships).values({ parentId: parent.id, childId: created.id });
 
             const mother = proposal.motherName?.trim();
+            let motherAdded = false;
             if (mother && parent.gender === "male") {
                 const [existing] = await tx
                     .select({ id: schema.marriages.id })
                     .from(schema.marriages)
                     .where(and(eq(schema.marriages.memberId, parent.id), eq(schema.marriages.spouseName, mother)));
-                if (!existing) await tx.insert(schema.marriages).values({ memberId: parent.id, spouseName: mother });
+                if (!existing) {
+                    await tx.insert(schema.marriages).values({ memberId: parent.id, spouseName: mother });
+                    motherAdded = true;
+                }
             }
+
+            const word = created.gender === "female" ? "ابنةً" : "ابناً";
+            await recordChange(tx, me, {
+                action: "member.add",
+                memberId: created.id,
+                memberName: created.fullName,
+                summary: `اعتماد مقترح ${proposal.requesterName}: إضافة ${created.fullName} ${word} لـ${parent.fullName}${motherAdded ? ` (وتسجيل الزوجة ${mother})` : ""}`,
+                after: { member: memberSnapshot(created), parentId: parent.id, proposalId: proposal.id },
+            });
 
             await tx
                 .update(p)

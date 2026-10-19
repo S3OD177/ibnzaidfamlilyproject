@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertOctagon, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import MergeButton from "@/components/admin/merge/MergeButton";
 import { getTreeChecks, type CheckSeverity, type TreeCheckGroup } from "@/lib/data/tree-checks";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ function ItemList({ group }: { group: TreeCheckGroup }) {
                             <div className="text-sm text-muted">{it.detail}</div>
                         </div>
                         <div className="flex gap-2 shrink-0">
+                            {it.duplicates && it.duplicates.length > 1 && <MergeButton ids={it.duplicates} currentId={it.memberId} />}
                             <Link
                                 href={`/portal/admin/tree?focus=${it.memberId}`}
                                 className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary-dark border border-primary/20 hover:bg-primary/20"

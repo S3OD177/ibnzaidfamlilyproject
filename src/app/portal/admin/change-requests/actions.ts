@@ -5,7 +5,9 @@ import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { ActionError, safeAction, type ActionResult } from "@/lib/action-result";
 import { requireRole } from "@/lib/auth/current";
-import { applyChanges, getPendingRequest } from "@/lib/data/change-requests";
+import { applyChanges, getMemberRow, getPendingRequest } from "@/lib/data/change-requests";
+import { memberDiff, recordChange } from "@/lib/tree-history";
+import { MEMBER_FIELD_LABELS } from "@/lib/tree-history-labels";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -15,7 +17,22 @@ async function review(id: string, decision: "approved" | "rejected", note?: stri
     const request = await getPendingRequest(id);
     if (!request) throw new ActionError("الطلب غير موجود أو تمت مراجعته");
 
-    if (decision === "approved") await applyChanges(request.memberId, request.changes);
+    if (decision === "approved") {
+        const before = await getMemberRow(request.memberId);
+        await applyChanges(request.memberId, request.changes);
+        const after = await getMemberRow(request.memberId);
+        const diff = before && after ? memberDiff(before, after) : null;
+        if (after && diff) {
+            const fields = Object.keys(diff.after).map((k) => MEMBER_FIELD_LABELS[k] ?? k);
+            await recordChange(getDb(), me, {
+                action: "member.update",
+                memberId: request.memberId,
+                memberName: after.fullName,
+                summary: `اعتماد طلب تعديل من ${request.requesterName} لبيانات ${after.fullName}: ${fields.join("، ")}`,
+                ...diff,
+            });
+        }
+    }
     await getDb()
         .update(schema.memberChangeRequests)
         .set({
