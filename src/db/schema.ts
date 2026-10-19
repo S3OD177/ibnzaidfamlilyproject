@@ -268,6 +268,23 @@ export const users = pgTable(
     ],
 );
 
+// "Forgot password" links sent by email. Only the sha256 of the token is stored; a
+// token works once, for one hour (see src/app/portal/forgot and src/app/portal/reset).
+export const passwordResets = pgTable(
+    "password_resets",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        tokenHash: text("token_hash").notNull(),
+        expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+        usedAt: timestamp("used_at", { withTimezone: true }),
+        createdAt: timestamps.createdAt,
+    },
+    (t) => [uniqueIndex("password_resets_token_hash_key").on(t.tokenHash), index("password_resets_user_idx").on(t.userId, t.createdAt)],
+);
+
 export const membershipRequests = pgTable(
     "membership_requests",
     {

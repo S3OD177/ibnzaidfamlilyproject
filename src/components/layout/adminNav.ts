@@ -2,6 +2,7 @@ import {
     BarChart3,
     Calendar,
     FilePen,
+    FileUp,
     FileText,
     Gavel,
     History,
@@ -54,6 +55,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         tabs: [
             { name: "شجرة العائلة", href: "/portal/admin/tree", icon: Users },
             { name: "فحص البيانات", href: "/portal/admin/tree/checks", icon: ListChecks },
+            { name: "استيراد البيانات", href: "/portal/admin/tree/import", icon: FileUp, adminOnly: true },
         ],
     },
     {

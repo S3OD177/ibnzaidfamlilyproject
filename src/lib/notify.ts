@@ -16,7 +16,7 @@ export function emailEnabled() {
 }
 
 /** The site's own address for links in emails: SITE_URL, or the address of this request. */
-async function siteUrl() {
+export async function siteUrl() {
     if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, "");
     const h = await headers();
     const host = h.get("x-forwarded-host") ?? h.get("host");

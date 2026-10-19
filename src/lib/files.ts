@@ -9,6 +9,11 @@ import { ActionError } from "@/lib/action-result";
 export type Visibility = "public" | "members";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024;
+/** Audio and video files may be larger. */
+export const MAX_MEDIA_BYTES = 50 * 1024 * 1024;
+
+export const isMediaType = (mimeType: string) => /^(audio|video)\//.test(mimeType);
+export const maxBytesFor = (mimeType: string) => (isMediaType(mimeType) ? MAX_MEDIA_BYTES : MAX_FILE_BYTES);
 
 // Allowed uploads. No SVG or HTML: they can run scripts when opened from our domain.
 export const ALLOWED_TYPES: Record<string, { label: string; inline: boolean }> = {
@@ -23,6 +28,16 @@ export const ALLOWED_TYPES: Record<string, { label: string; inline: boolean }> =
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { label: "Excel", inline: false },
     "application/vnd.ms-powerpoint": { label: "PowerPoint", inline: false },
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": { label: "PowerPoint", inline: false },
+    "audio/mpeg": { label: "صوت", inline: true },
+    "audio/mp4": { label: "صوت", inline: true },
+    "audio/x-m4a": { label: "صوت", inline: true },
+    "audio/aac": { label: "صوت", inline: true },
+    "audio/wav": { label: "صوت", inline: true },
+    "audio/ogg": { label: "صوت", inline: true },
+    "audio/webm": { label: "صوت", inline: true },
+    "video/mp4": { label: "فيديو", inline: true },
+    "video/webm": { label: "فيديو", inline: true },
+    "video/quicktime": { label: "فيديو", inline: true },
 };
 
 export const fileUrl = (id: string) => `/files/${id}`;
@@ -34,9 +49,10 @@ export async function storeFile(input: {
     visibility: Visibility;
     uploadedBy?: string | null;
 }): Promise<{ id: string; url: string; sizeBytes: number }> {
-    if (!ALLOWED_TYPES[input.mimeType]) throw new ActionError("نوع الملف غير مسموح (PDF أو صور أو مستندات Office)");
+    if (!ALLOWED_TYPES[input.mimeType]) throw new ActionError("نوع الملف غير مسموح (PDF أو صور أو مستندات Office أو تسجيلات صوت وفيديو)");
     if (input.data.length === 0) throw new ActionError("الملف فارغ");
-    if (input.data.length > MAX_FILE_BYTES) throw new ActionError("حجم الملف يتجاوز 15 ميجابايت");
+    const maxBytes = maxBytesFor(input.mimeType);
+    if (input.data.length > maxBytes) throw new ActionError(`حجم الملف يتجاوز ${maxBytes / 1024 / 1024} ميجابايت`);
 
     const name = input.name.replace(/[\\/\r\n"]/g, "_").slice(0, 200) || "file";
     const [row] = await getDb()

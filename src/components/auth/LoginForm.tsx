@@ -100,7 +100,7 @@ export default function LoginForm({ demoAccounts, siteName }: { demoAccounts: De
                                 <label className="text-sm font-bold text-ink select-none" htmlFor="password">
                                     كلمة المرور
                                 </label>
-                                <Link href="/#contact" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
+                                <Link href="/portal/forgot" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
                                     نسيت كلمة المرور؟
                                 </Link>
                             </div>

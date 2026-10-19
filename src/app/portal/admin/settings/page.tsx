@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ExternalLink, Settings } from "lucide-react";
 import { AboutContentForm, SiteSettingsForm } from "@/components/admin/settings/SettingsForms";
+import DataTools from "@/components/admin/settings/DataTools";
+import { hasDemoContent } from "./demo-actions";
 import { getSession } from "@/lib/auth/current";
 import { getAboutContent, getSiteSettings } from "@/lib/settings";
 
@@ -29,6 +31,7 @@ export default async function SettingsPage() {
             </div>
             <SiteSettingsForm initial={site} />
             <AboutContentForm initial={about} />
+            <DataTools hasDemo={await hasDemoContent()} />
         </div>
     );
 }

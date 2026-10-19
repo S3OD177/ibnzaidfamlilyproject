@@ -3,13 +3,16 @@ import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, homeForRole, isStaff, verifySessionToken } from "@/lib/auth/session";
 
 // Admin-only sections inside the staff portal.
-const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals", "/portal/admin/settings", "/portal/admin/fund"];
+const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals", "/portal/admin/settings", "/portal/admin/fund", "/portal/admin/tree/import"];
 
-// Everything under /portal except the login page needs a session; /portal/admin needs
+// Pages anyone may open: sign-in and the "forgot password" flow.
+const PUBLIC = ["/portal/login", "/portal/forgot", "/portal/reset"];
+
+// Everything under /portal except those pages needs a session; /portal/admin needs
 // an admin or editor. Pages re-check the account in the database (lib/auth/current).
 export async function proxy(request: NextRequest) {
     const { pathname, search } = request.nextUrl;
-    if (pathname === "/portal/login") return NextResponse.next();
+    if (PUBLIC.includes(pathname)) return NextResponse.next();
 
     const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
 

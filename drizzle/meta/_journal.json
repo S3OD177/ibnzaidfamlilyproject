@@ -92,6 +92,13 @@
       "when": 1792352991323,
       "tag": "0012_member_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792401767171,
+      "tag": "0013_password_resets",
+      "breakpoints": true
     }
   ]
 }
