@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, homeForRole, isStaff, verifySessionToken } from "@/lib/auth/session";
 
 // Admin-only sections inside the staff portal.
-const ADMIN_ONLY = ["/portal/admin/users", "/portal/admin/approvals", "/portal/admin/settings", "/portal/admin/fund", "/portal/admin/tree/import"];
+const ADMIN_ONLY = ["/portal/admin/ramadan", "/portal/admin/users", "/portal/admin/approvals", "/portal/admin/settings", "/portal/admin/fund", "/portal/admin/tree/import"];
 
 // Pages anyone may open: sign-in and the "forgot password" flow.
 const PUBLIC = ["/portal/login", "/portal/forgot", "/portal/reset"];

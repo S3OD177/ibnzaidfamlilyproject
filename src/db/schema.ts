@@ -520,3 +520,55 @@ export const treeChanges = pgTable(
     },
     (t) => [index("tree_changes_created_idx").on(t.createdAt), index("tree_changes_member_idx").on(t.memberId, t.createdAt)],
 );
+
+// Ramadan competitions: visibility is independent from each round's answer window.
+export const ramadanCompetitions = pgTable("ramadan_competitions", {
+    questionCount: integer("question_count").notNull().default(15),
+    intervalHours: integer("interval_hours").notNull().default(48),
+    durationHours: integer("duration_hours").notNull().default(24),
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    enabled: boolean("enabled").notNull().default(false),
+    visibleAt: timestamp("visible_at", { withTimezone: true }).notNull(),
+    ...timestamps,
+});
+
+export const ramadanRounds = pgTable("ramadan_rounds", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    competitionId: uuid("competition_id").notNull().references(() => ramadanCompetitions.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    question: text("question").notNull(),
+    options: jsonb("options").$type<string[]>().notNull(),
+    correctIndex: integer("correct_index").notNull(),
+    points: integer("points").notNull().default(1),
+    opensAt: timestamp("opens_at", { withTimezone: true }).notNull(),
+    closesAt: timestamp("closes_at", { withTimezone: true }).notNull(),
+    manuallyClosed: boolean("manually_closed").notNull().default(false),
+    resultsPublished: boolean("results_published").notNull().default(false),
+    winnerName: text("winner_name"),
+    winnerUserId: uuid("winner_user_id").references(() => users.id, { onDelete: "set null" }),
+    drawnAt: timestamp("drawn_at", { withTimezone: true }),
+    drawnBy: text("drawn_by"),
+    drawPool: jsonb("draw_pool").$type<string[]>(),
+    ...timestamps,
+}, (t) => [
+    index("ramadan_rounds_competition_idx").on(t.competitionId),
+    check("ramadan_rounds_window", sql`${t.closesAt} > ${t.opensAt}`),
+    check("ramadan_rounds_points", sql`${t.points} between 1 and 100`),
+    check("ramadan_rounds_options", sql`jsonb_array_length(${t.options}) between 2 and 6 and ${t.correctIndex} >= 0 and ${t.correctIndex} < jsonb_array_length(${t.options})`),
+]);
+
+export const ramadanAnswers = pgTable("ramadan_answers", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    roundId: uuid("round_id").notNull().references(() => ramadanRounds.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    participantName: text("participant_name").notNull(),
+    xHandle: text("x_handle"),
+    rulesApproved: boolean("rules_approved").notNull().default(false),
+    optionIndex: integer("option_index").notNull(),
+    createdAt: timestamps.createdAt,
+}, (t) => [
+    uniqueIndex("ramadan_answers_round_user_key").on(t.roundId, t.userId),
+    check("ramadan_answers_option", sql`${t.optionIndex} between 0 and 5`),
+]);

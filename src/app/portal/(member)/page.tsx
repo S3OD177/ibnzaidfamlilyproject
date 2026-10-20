@@ -1,3 +1,5 @@
+import RamadanBoard from "@/components/ramadan/RamadanBoard";
+import { listRamadan, ramadanServerNow } from "@/lib/data/ramadan";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BarChart3, CalendarDays, ChevronLeft, Images, PartyPopper, Vote, FileText, Gavel, Network, Newspaper, Paperclip, UserCircle, Users } from "lucide-react";
@@ -54,6 +56,7 @@ export default async function MemberHomePage() {
     const session = await getSession();
     if (!session) redirect("/portal/login");
 
+    const competitions = await listRamadan();
     const today = new Date().toISOString().slice(0, 10);
     const [member, news, events, decisions, documents, occasions, albums, openPolls] = await Promise.all([
         session.memberId ? getPortalMember(session.memberId, { kind: "member", memberId: session.memberId }) : Promise.resolve(null),
@@ -67,9 +70,11 @@ export default async function MemberHomePage() {
     ]);
     const upcoming = events.filter((e) => e.date >= today).slice(0, 4);
     const files = documents.filter((d) => d.fileId);
+    const serverNow = await ramadanServerNow();
 
     return (
         <div className="space-y-6">
+            <RamadanBoard competitions={competitions} serverNow={serverNow} compact />
             {/* Greeting and my card */}
             <section className="relative overflow-hidden bg-deep text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-primary/25">
                 <div className="absolute inset-0 heritage-pattern opacity-10 pointer-events-none" />

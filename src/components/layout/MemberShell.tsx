@@ -20,6 +20,7 @@ const NAV = [
     { name: "الأعضاء", href: "/portal/directory", icon: Users },
     { name: "الأفراح", href: "/portal/occasions", icon: PartyPopper },
     { name: "الصور", href: "/portal/albums", icon: Images, desktopOnly: true },
+    { name: "المسابقات", href: "/portal/ramadan", icon: Vote, desktopOnly: true },
     { name: "التصويت", href: "/portal/polls", icon: Vote, desktopOnly: true },
     { name: "الإحصائيات", href: "/portal/stats", icon: BarChart3, desktopOnly: true },
     { name: "الصندوق", href: "/portal/fund", icon: PiggyBank, desktopOnly: true },

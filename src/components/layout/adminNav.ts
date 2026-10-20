@@ -64,6 +64,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: Newspaper,
         tabs: [
             { name: "الأخبار", href: "/portal/admin/news", icon: Newspaper },
+            { name: "المسابقات", href: "/portal/admin/ramadan", icon: Vote, adminOnly: true },
             { name: "التقويم", href: "/portal/admin/calendar", icon: Calendar },
             { name: "السجل التاريخي", href: "/portal/admin/timeline", icon: History },
             { name: "الأفراح", href: "/portal/admin/occasions", icon: PartyPopper, badge: "occasions" },

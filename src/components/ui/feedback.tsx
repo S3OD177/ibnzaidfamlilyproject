@@ -129,7 +129,8 @@ function ConfirmDialog({ request }: { request: ConfirmRequest }) {
 
 const getToasts = () => toasts;
 const getConfirm = () => confirmRequest;
-const getServerToasts = () => [] as ToastItem[];
+const emptyServerToasts: ToastItem[] = [];
+const getServerToasts = () => emptyServerToasts;
 const getServerConfirm = () => null;
 
 export function FeedbackHost() {

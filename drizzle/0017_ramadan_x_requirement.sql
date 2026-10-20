@@ -1,0 +1,1 @@
+ALTER TABLE "ramadan_answers" ADD COLUMN "x_handle" text;
